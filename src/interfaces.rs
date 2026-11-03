@@ -29,6 +29,10 @@ const VIRTUAL_NAME_HINTS: &[&str] = &[
 /// leads to the office or a hotspot.
 const WIRELESS_NAME_HINTS: &[&str] = &["wlan", "wi-fi", "wifi", "wireless", "wlp", "wlo"];
 
+/// Name parts of mobile data: Android's `ccmni`/`rmnet`, `wwan` on Linux, Windows' "Cellular" or
+/// "Mobile Broadband". No plant is reached that way, so it never comes before Wi-Fi or a cable.
+const CELLULAR_NAME_HINTS: &[&str] = &["ccmni", "rmnet", "wwan", "cellular", "mobile broadband"];
+
 /// Smallest prefix length (largest subnet) still asked address by address: /22 has 1022 hosts.
 pub const MIN_SWEEP_PREFIX_LEN: u8 = 22;
 
@@ -184,7 +188,9 @@ impl Adapter {
     pub fn kind(&self) -> AdapterKind {
         if self.point_to_point || self.name_contains_any(VIRTUAL_NAME_HINTS) {
             AdapterKind::Virtual
-        } else if self.name_contains_any(WIRELESS_NAME_HINTS) {
+        } else if self.name_contains_any(WIRELESS_NAME_HINTS)
+            || self.name_contains_any(CELLULAR_NAME_HINTS)
+        {
             AdapterKind::Wireless
         } else {
             AdapterKind::Cable
@@ -206,7 +212,9 @@ impl Adapter {
         if !self.ip.is_loopback() {
             score += 16;
         }
-        if !self.name_contains_any(VIRTUAL_NAME_HINTS) {
+        if !self.name_contains_any(VIRTUAL_NAME_HINTS)
+            && !self.name_contains_any(CELLULAR_NAME_HINTS)
+        {
             score += 8;
         }
         if !self.name_contains_any(WIRELESS_NAME_HINTS) {
@@ -300,6 +308,17 @@ mod tests {
             adapter("Ethernet", [192, 168, 10, 23], 24),
         ];
         assert_eq!(pick_default(&adapters).unwrap().name, "Ethernet");
+    }
+
+    #[test]
+    fn default_prefers_wifi_over_mobile_data() {
+        // a phone: mobile data has a public-looking address and no wireless name
+        let adapters = vec![
+            adapter("ccmni1", [100, 95, 203, 218], 8),
+            adapter("wlan0", [192, 168, 178, 105], 24),
+        ];
+        assert_eq!(pick_default(&adapters).unwrap().name, "wlan0");
+        assert_eq!(adapters[0].kind(), AdapterKind::Wireless);
     }
 
     #[test]
