@@ -33,7 +33,8 @@ export default {
     await page.waitForSelector(".card .series-head");
     await page.click("button[data-act=rec-view][data-view=compare]");
     // drawing a span zooms in, and comes back out
-    const box = await (await page.$(".chart.compare svg")).boundingBox();
+    // a locator finds the chart anew: the page redraws it with every measurement
+    const box = await page.locator(".chart.compare svg").boundingBox();
     await page.mouse.move(box.x + box.width * 0.2, box.y + 60);
     await page.mouse.down();
     await page.mouse.move(box.x + box.width * 0.6, box.y + 60);
