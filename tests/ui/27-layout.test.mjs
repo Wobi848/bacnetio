@@ -31,6 +31,11 @@ const problems = (page) =>
         }
       }
     }
+    // a group head sticks above its rows; it must not lie on the first of them
+    for (const group of document.querySelectorAll(".rows .row.group")) {
+      const next = group.nextElementSibling;
+      if (shown(group) && next && shown(next) && box(next).top < box(group).bottom - 1) out.push(`group covers a row: ${group.textContent.trim().slice(0, 30)}`);
+    }
     if (document.documentElement.scrollWidth > innerWidth) {
       const wide = [...document.querySelectorAll("body *")].filter((element) => shown(element) && box(element).right > innerWidth + 1 && !element.closest(".tabs"));
       out.push(`page too wide (${document.documentElement.scrollWidth} px): ${wide.slice(0, 3).map((element) => element.id || element.className || element.tagName).join(", ")}`);
