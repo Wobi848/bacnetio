@@ -310,17 +310,17 @@ the switch itself is the maintainer's.
 - [x] `CONTRIBUTING.md`, templates for pull requests and issues, `SECURITY.md`.
 - [x] Tree and history searched for real site addresses and personal data (3 November: none
       left; one example address replaced before it was pushed).
-- [ ] Commits carry the maintainer's e-mail address; GitHub can show a no-reply address instead
-      (*Settings → Emails*). The maintainer decides; old commits keep theirs.
+- [x] Commits carry the maintainer's no-reply address. The history was folded into one commit
+      before going public; the old one is kept by the maintainer outside GitHub.
 - [x] The logo emblem: made with ChatGPT, whose terms let the maintainer publish it. As an AI image
       it is likely not protected by copyright, so others may reuse it; accepted for now.
 - [x] `AGENTS.md` names things only the maintainer has (the mbusio folder as the model, another AI
       session in the same folder): worded for anyone; the maintainer's own notes moved to
       `CLAUDE.local.md`, which Git ignores.
-- [ ] On GitHub: protect `main` (pull request and green CI required), switch on private
-      vulnerability reporting, a short description and topics.
-- [ ] CI runs again: GitHub is not paid for, so it starts once the repo is public. The stacked
-      branches are merged; the last fix left on `plant-tools` came over with `going-public`.
+- [x] On GitHub: `main` protected (pull request and green CI required), private vulnerability
+      reporting on, a short description and topics. Public since 3 November 2026.
+- [x] CI runs again, free for a public repo. The stacked branches are merged; the last fix left on
+      `plant-tools` came over with `going-public`.
 - [ ] A first release with the Windows build, on the maintainer's word.
 
 ## Done
