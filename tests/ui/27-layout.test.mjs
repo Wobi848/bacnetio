@@ -77,8 +77,8 @@ export default {
         for (const width of WIDTHS) {
           await page.setViewportSize({ width, height: 800 });
           for (const area of AREAS) {
-            await page.goto(`${base}/#/${area}`);
-            await page.reload();
+            // a query of its own makes this one full load; a changed hash alone would not reload
+            await page.goto(`${base}/?${language}-${theme}-${width}#/${area}`);
             await page.waitForSelector("#adapter");
             await page.waitForTimeout(area === "points" ? 600 : 200);
             for (const problem of await problems(page)) found.push(`${language}, ${theme}, ${width} px, ${area}: ${problem}`);
