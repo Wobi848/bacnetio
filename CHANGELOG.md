@@ -1,8 +1,12 @@
 # Changelog
 
-All notable changes for users of bacnetio. No release yet; everything below is unreleased.
+All notable changes for users of bacnetio.
 
 ## Unreleased
+
+## v0.1.0 (03.11.2026)
+
+The first release.
 
 ### Changed
 

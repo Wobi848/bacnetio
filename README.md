@@ -5,6 +5,12 @@
 BACnet browser that finds devices reliably, also without administrator rights, and says in plain
 words why when it cannot. Work in progress; see [docs/concept.md](docs/concept.md).
 
+## Download
+
+[Releases](https://github.com/Wobi848/bacnetio/releases/latest): `bacnetio-windows-x86_64.exe`,
+`bacnetio-linux-x86_64` and `bacnetio-android.apk`. Nothing to install: start the program, and the
+browser opens. On Android, allow installing from this source.
+
 ## Usage
 
 `bacnetio` without a command starts the local web server on http://127.0.0.1:8081/ and opens the
@@ -96,7 +102,8 @@ node --test tests/web/*.test.js   # UI logic, no browser needed
 To try the UI without a plant, run `cargo run --example simulated_plant` on another machine or in a
 network namespace (see Usage).
 
-Windows and Linux binaries: GitHub Actions → Build → Run workflow, then download the artifact.
+Windows and Linux binaries of any commit: GitHub Actions → Build → Run workflow, then download the
+artifact. A tag `v…` builds them and publishes a release.
 
 Windows binary locally on Linux, without MinGW: install [zig](https://ziglang.org) (e.g.
 `pip install ziglang`) and `cargo install cargo-zigbuild`, then
