@@ -4,6 +4,11 @@ All notable changes for users of bacnetio.
 
 ## Unreleased
 
+### Fixed
+
+- Android: the status bar, the camera cutout, the navigation bar and the keyboard no longer cover the interface.
+- Mobile data (`ccmni`, `rmnet`, `wwan`, *Cellular*) is no longer chosen by itself before Wi-Fi; it stays in the list to choose.
+
 ## v0.1.0 (03.11.2026)
 
 The first release.
