@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="running">bacnetio está en marcha</string>
+    <string name="running_text">Los registros continúan en segundo plano. Tocar para abrir.</string>
+    <string name="channel">bacnetio en marcha</string>
+    <string name="stop">Terminar</string>
+    <string name="starting">bacnetio se está iniciando …</string>
+    <string name="failed">bacnetio no se inicia. Ver bacnetio.log en los datos de la app.</string>
+    <string name="saved">Guardado en Descargas: %1$s</string>
+    <string name="save_failed">No se pudo guardar: %1$s</string>
+</resources>

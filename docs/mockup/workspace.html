@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bacnetio workspace mockup</title>
+<!-- Clickable mockup for docs/concept-redesign.md. Static data, nothing talks to a device. -->
+<style>
+:root { --bg:#f2f4f8; --surface:#fff; --sunken:#e9edf4; --line:#dce2ec; --line-strong:#7f8ba0; --text:#0f1728; --muted:#515d75;
+  --accent:#2448e0; --accent-soft:#e6ecfe; --brand:#2448e0; --ok:#3f7a12; --ok-soft:#eef6e2; --warn:#a85000; --warn-soft:#fbf0e3; --err:#b42318; --err-soft:#fdecea; }
+* { box-sizing: border-box; }
+body { margin:0; height:100vh; display:grid; grid-template-columns:232px 1fr; font:14px/1.45 system-ui, sans-serif; color:var(--text); background:var(--bg); }
+.side { background:#0a1120; color:#e9eef6; padding:12px; display:flex; flex-direction:column; gap:10px; }
+.side b { font-size:15px; }
+.side select, .side input { width:100%; height:32px; border-radius:8px; border:1px solid #5a6a88; background:#111827; color:#e9eef6; padding:0 8px; }
+.side .state { font-size:13px; color:#a5b0c4; }
+.side nav a { display:flex; justify-content:space-between; padding:8px 10px; border-radius:8px; color:#e9eef6; text-decoration:none; cursor:pointer; }
+.side nav a.on { background:#1b3a4a; box-shadow:inset 3px 0 0 #8ea2ff; font-weight:650; }
+.side .n { font-size:11px; padding:0 6px; border-radius:999px; background:#1b3a4a; color:#4fd0c0; }
+.side .n.warn { background:#33240f; color:#f0a548; }
+.side .n.err { background:#3b1815; color:#ff8378; }
+.main { display:flex; flex-direction:column; min-width:0; }
+.head { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 16px; background:var(--surface); border-bottom:1px solid var(--line); }
+.head h1 { margin:0; font-size:20px; } .head p { margin:2px 0 0; color:var(--muted); }
+button { height:32px; padding:0 10px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; font:inherit; font-weight:600; cursor:pointer; }
+button.quiet { background:var(--surface); color:var(--accent); } button.tonal { background:var(--accent-soft); color:var(--accent); }
+button.danger { background:var(--err); border-color:var(--err); }
+.work { flex:1; min-height:0; display:grid; grid-template-columns:280px 1fr 380px; }
+.tree, .table, .detail { overflow:auto; background:var(--surface); border-right:1px solid var(--line); }
+.tree ul { list-style:none; margin:0; padding:0 0 0 14px; } .tree > ul { padding:6px 0; }
+.tree li > span { display:flex; justify-content:space-between; gap:6px; padding:4px 8px; border-radius:6px; cursor:pointer; }
+.tree li > span:hover { background:var(--sunken); } .tree li > span.on { background:var(--accent-soft); box-shadow:inset 3px 0 0 var(--brand); }
+.tree .count { color:var(--muted); font-size:12px; }
+.chip { display:inline-flex; align-items:center; height:20px; padding:0 7px; border-radius:999px; font-size:11.5px; font-weight:600; background:var(--sunken); color:var(--muted); }
+.chip.err { background:var(--err-soft); color:var(--err); } .chip.warn { background:var(--warn-soft); color:var(--warn); } .chip.ok { background:var(--ok-soft); color:var(--ok); }
+.toolbar { display:flex; gap:8px; padding:6px 12px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--surface); }
+table { width:100%; border-collapse:collapse; } th, td { text-align:left; padding:6px 12px; border-bottom:1px solid var(--line); }
+th { font-size:11.5px; text-transform:uppercase; color:var(--muted); background:var(--sunken); position:sticky; top:45px; }
+tr.row { cursor:pointer; } tr.row:hover { background:var(--sunken); } tr.row.on { background:var(--accent-soft); box-shadow:inset 3px 0 0 var(--brand); }
+td.v { text-align:right; font-family:ui-monospace, monospace; font-weight:650; }
+.detail { padding:14px; border-right:0; }
+.detail h2 { margin:0; font-size:16px; } .big { font-size:34px; font-weight:700; font-family:ui-monospace, monospace; margin:6px 0; }
+.detail h3 { font-size:13px; margin:16px 0 6px; display:flex; gap:8px; align-items:center; } .detail h3::before { content:""; width:3px; height:12px; background:var(--brand); border-radius:2px; }
+.slots { display:grid; grid-template-columns:repeat(8, 1fr); gap:4px; }
+.slot { border:1px solid var(--line); border-radius:6px; padding:4px; text-align:center; font-size:11px; color:var(--muted); min-height:46px; }
+.slot b { display:block; font-size:12px; color:var(--text); } .slot.taken { background:var(--sunken); } .slot.win { background:var(--accent-soft); border-color:var(--accent); } .slot.mine { border-color:var(--warn); }
+.ask { margin-top:10px; padding:10px; border:1px solid var(--warn); background:var(--warn-soft); border-radius:8px; color:var(--warn); }
+.status { display:flex; justify-content:space-between; padding:6px 12px; font-size:12px; color:var(--muted); background:var(--surface); border-top:1px solid var(--line); }
+.leave { position:fixed; inset:0; background:rgba(0,0,0,.35); display:none; place-items:center; } .leave.on { display:grid; }
+.leave div { background:var(--surface); padding:18px; border-radius:10px; max-width:440px; box-shadow:0 8px 24px rgba(0,0,0,.2); }
+.hint { color:var(--muted); font-size:12.5px; }
+</style>
+</head>
+<body>
+<aside class="side">
+  <b>bacnetio</b>
+  <select><option>HOOC TAP0 · 192.168.10.240</option></select>
+  <div class="state">● 3 devices · 192.168.10.0/24 <button class="quiet" style="height:26px;float:right">Change</button></div>
+  <input id="search" placeholder="Search the whole site (/)">
+  <nav>
+    <a data-view="workspace" class="on">Workspace <span class="n">3</span></a>
+    <a data-view="problems">Site problems <span class="n err">4</span></a>
+    <a data-view="recording">Recording <span class="n"></span></a>
+    <a data-view="held">Held by you <span class="n warn" id="held-n">1</span></a>
+    <a data-view="settings">Settings</a>
+  </nav>
+  <p class="hint">Mockup: click the tree, a row, the slots, "Leave", the search.</p>
+</aside>
+<div class="main">
+  <div class="head"><div><h1 id="title">DDC4000_#21</h1><p id="lead">Kieback&amp;Peter DDC4000 · #21 · 192.168.10.21 · 170 objects</p></div>
+    <div><button class="quiet" id="leave">Leave the site</button></div></div>
+  <div class="work" id="work">
+    <section class="tree"><ul>
+      <li><span>BACnet/IP 192.168.10.0/24 <span class="count">3</span></span><ul>
+        <li><span class="on" data-node="ddc">DDC4000_#21 <span><span class="chip err">1</span> <span class="chip warn">1</span></span></span><ul>
+          <li><span data-node="sy">000/00/00/SY_Datsi.01 <span class="count">4</span></span></li>
+          <li><span data-node="s337">000/09/11/S337.01 <span><span class="chip err">1</span> <span class="count">12</span></span></span></li>
+          <li><span data-node="h903">02/15/H903.01 <span class="count">8</span></span></li>
+          <li><span>By type <span class="count">170</span></span><ul>
+            <li><span>Analog values <span class="count">34</span></span></li><li><span>Binary values <span class="count">58</span></span></li>
+            <li><span>Multi-state … <span class="count">14</span></span></li><li><span>Trend logs <span class="count">40</span></span></li></ul></li>
+        </ul></li>
+        <li><span data-node="ahu">AHU-01 <span class="chip warn">1</span></span></li>
+        <li><span>Router 192.168.10.5 → net 2 <span class="count">MS/TP</span></span><ul><li><span>VAV-12 <span class="chip err">offline</span></span></li></ul></li>
+      </ul></li></ul></section>
+    <section class="table"><div class="toolbar"><input placeholder="Search in DDC4000_#21" style="flex:1;height:32px;border-radius:8px;border:1px solid var(--line-strong);padding:0 8px">
+      <button class="quiet">Read again</button><button class="quiet">CSV</button></div>
+      <table><thead><tr><th>Name</th><th>Type</th><th style="text-align:right">Value</th><th>State</th></tr></thead><tbody id="rows"></tbody></table></section>
+    <section class="detail" id="detail"></section>
+  </div>
+  <div class="status"><span>● Ready · reading values of S337.01 (12 of 12)</span><span><span class="chip warn">1 held by you</span></span></div>
+</div>
+<div class="leave" id="leave-box"><div><h2 style="margin-top:0">You still hold 1 value</h2>
+  <p>AHU-01 · Heating valve = 42.5 % at priority 8. It stays like this in the plant until you release it.</p>
+  <p><button class="danger" id="release-all">Release all and leave</button> <button class="quiet" id="stay">Stay</button></p>
+  <p class="hint">Also shown after a restart of bacnetio, from the write log.</p></div></div>
+<script>
+const points = {
+  s337: [["5101", "Sollwert Aktuell", "AV", "0 °C", "err"], ["5102", "Istwert", "AV", "21.4 °C", ""], ["DV01", "Pumpe Freigabe", "BV", "active", ""]],
+  sy: [["state", "System state", "MSI", "Running", ""], ["procBar", "Progress", "AI", "100 %", ""], ["command", "Command", "MSO", "None", ""]],
+  h903: [["31", "Betriebsart", "MSV", "Auto", ""], ["13", "Handbetrieb", "MSV", "Auto", "warn"]],
+  ahu: [["Heating valve", "", "AO", "42.5 %", "mine"], ["Supply air temp", "", "AI", "21.4 °C", ""]],
+  ddc: [["5101", "Sollwert Aktuell (S337.01)", "AV", "0 °C", "err"], ["13", "Handbetrieb (H903.01)", "MSV", "Auto", "warn"]],
+};
+const problems = [["DDC4000_#21", "S337.01/5101 Sollwert Aktuell", "Fault, alarm", "err"], ["DDC4000_#21", "H903.01/13 Handbetrieb", "Overridden", "warn"],
+  ["AHU-01", "Heating valve", "Held by you at 8", "warn"], ["VAV-12 (net 2)", "—", "Offline since 10:42", "err"]];
+const chip = { err: '<span class="chip err">Fault</span>', warn: '<span class="chip warn">Overridden</span>', mine: '<span class="chip warn">Held by you</span>', "": "" };
+function rows(list) {
+  document.getElementById("rows").innerHTML = list.map(([name, description, type, value, state], i) =>
+    `<tr class="row" data-i="${i}"><td><b>${name}</b> <span class="hint">${description}</span></td><td>${type}</td><td class="v">${value}</td><td>${chip[state]}</td></tr>`).join("");
+  document.querySelectorAll("tr.row").forEach((row) => row.onclick = () => {
+    document.querySelectorAll("tr.row").forEach((other) => other.classList.remove("on"));
+    row.classList.add("on");
+    detail(list[row.dataset.i]);
+  });
+}
+function detail([name, description, type, value]) {
+  const slots = Array.from({ length: 16 }, (_, i) => {
+    const n = i + 1;
+    if (n === 5) return `<div class="slot taken"><b>${n}</b>45 %<br>Critical</div>`;
+    if (n === 8) return `<div class="slot taken mine"><b>${n}</b>42.5 %<br>You</div>`;
+    return `<div class="slot"><b>${n}</b>—</div>`;
+  }).join("");
+  document.getElementById("detail").innerHTML = `<h2>${name}</h2><div class="hint">${type} · ${description}</div><div class="big">${value}</div>
+    <h3>Priority array: what wins now</h3><div class="slots">${slots}</div>
+    <p class="hint">Slot 5 (45 %, critical equipment) wins. Default 35 %.</p>
+    <h3>Write</h3><input value="40" style="height:32px;width:90px"> at <select style="height:32px"><option>8 · Manual operator</option></select> <button id="write">Write value</button>
+    <div class="ask" id="ask" hidden>Priority 5 holds 45 % and is higher than 8: your value would not act. <button class="quiet">Write anyway</button> <button class="quiet">Cancel</button></div>
+    <h3>Details</h3><div class="hint">Status, unit, all properties, trend chart, record …</div>`;
+  document.getElementById("write").onclick = () => { document.getElementById("ask").hidden = false; };
+}
+document.querySelectorAll("[data-node]").forEach((node) => node.onclick = () => {
+  document.querySelectorAll("[data-node]").forEach((other) => other.classList.remove("on"));
+  node.classList.add("on");
+  rows(points[node.dataset.node] ?? []);
+  document.getElementById("title").textContent = node.firstChild.textContent.trim();
+});
+document.querySelectorAll("nav a").forEach((link) => link.onclick = () => {
+  document.querySelectorAll("nav a").forEach((other) => other.classList.remove("on"));
+  link.classList.add("on");
+  if (link.dataset.view === "problems") {
+    document.getElementById("title").textContent = "Site problems";
+    document.getElementById("lead").textContent = "Everything faulty, overridden, out of service or offline, across all devices.";
+    document.getElementById("rows").innerHTML = problems.map(([device, point, what, kind]) =>
+      `<tr class="row"><td><b>${device}</b> <span class="hint">${point}</span></td><td></td><td class="v"></td><td><span class="chip ${kind}">${what}</span></td></tr>`).join("");
+  }
+});
+document.getElementById("search").oninput = (event) => {
+  const word = event.target.value.toLowerCase();
+  const found = Object.entries(points).flatMap(([node, list]) => list.filter((point) => point.join(" ").toLowerCase().includes(word)).map((point) => [`${point[0]} · ${node}`, ...point.slice(1)]));
+  document.getElementById("title").textContent = `Search: ${event.target.value}`;
+  rows(found);
+};
+document.getElementById("leave").onclick = () => document.getElementById("leave-box").classList.add("on");
+document.getElementById("stay").onclick = () => document.getElementById("leave-box").classList.remove("on");
+document.getElementById("release-all").onclick = () => { document.getElementById("leave-box").classList.remove("on"); document.getElementById("held-n").textContent = ""; };
+rows(points.ddc);
+detail(points.ahu[0]);
+</script>
+</body>
+</html>

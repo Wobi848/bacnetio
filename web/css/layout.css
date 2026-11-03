@@ -1,0 +1,102 @@
+/* Layout per window width: phone and narrow windows on top, from 1000 px the sidebar */
+
+/* ---------------------------------------------------------------- Narrow windows and phone */
+
+@media (max-width: 999px) {
+  .side { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 8px; padding: 8px 12px 0; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .side .site-search { grid-column: 1 / -1; }
+  .side .net { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .side .net .where { display: none; }
+  /* wrapped, so that Recording and Log do not hide behind a sideways scroll */
+  .side .tabs { grid-column: 1 / -1; flex-wrap: wrap; }
+  .side .tabs a { flex: none; padding: 0 8px; border-radius: 0; border-bottom: 2px solid transparent; box-shadow: none; background: none; }
+  .side .tabs a[aria-current="page"] { border-bottom-color: var(--brand); background: none; }
+  .side .tabs .n { margin-left: 0; }
+  .side .settings-link { grid-row: 1; grid-column: 2; }
+  .side .settings-link .side-label { display: none; }
+  .nav-i { display: none; }
+  .side .site-link { grid-column: 1 / -1; }
+  .side .settings-link .nav-i { display: block; color: inherit; }
+  .pagehead h1, .pagehead p.lead { display: none; }
+  .pagehead { flex-basis: 100%; }
+  .nextbar { padding: 8px 12px; }
+  .nextbar:not(:has(#next)) { display: none; }
+  #next { flex: 1; justify-content: center; }
+  button, select, input, a.button, a.quiet { height: 36px; }
+  .toolbar input[type=search] { flex: 1 1 100%; width: auto; }
+  .toolbar .end { margin-left: 0; }
+  /* list over the whole width with the way back; the groups in the table stand in for the tree */
+  .listwrap { border-right: 0; }
+  .phone-back { display: inline-flex; flex: 1 1 100%; }
+  .detail.open { inset: 0; width: auto; }
+  .row.head { display: none; }
+  .row.devices { grid-template-columns: minmax(0, 1fr) auto; row-gap: 0; }
+  .row.devices .objects .label { display: inline; }
+  .row.devices > :nth-child(3), .row.devices > :nth-child(4), .row.devices > :nth-child(5) { grid-column: 1 / -1; text-align: left; font-size: 12.5px; color: var(--muted); }
+  .row.points { grid-template-columns: minmax(0, 1fr) auto; padding-block: 4px; }
+  .row.points > .type, .row.points > .desc, .row.points > .id { display: none; }
+  .row.points > .chips { grid-column: 1 / -1; }
+  .row.points > .chips:empty { display: none; }
+  .row.log { grid-template-columns: minmax(0, 1fr) auto; padding-block: 4px; }
+  .row.problem { grid-template-columns: minmax(0, 1fr) auto; padding-block: 6px; row-gap: 2px; }
+  .row.problem > .chips { grid-column: 1 / -1; justify-content: flex-start; }
+  .row.problem > .chips:empty, .row.problem > span:empty { display: none; }
+  .menu.dialog { position: fixed; left: 12px; right: 12px; top: 60px; min-width: 0; }
+  .facts { grid-template-columns: 110px minmax(0, 1fr); }
+}
+
+/* ---------------------------------------------------------------- Details */
+
+/* without room for three columns the details slide over the table, with the way back */
+@media (max-width: 1199px) {
+  .detail { display: none; }
+  .detail.open { display: block; position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100vw); z-index: 30; box-shadow: var(--shadow); }
+  .detail .back { display: inline-flex; margin-bottom: 8px; }
+  .drawer-only { display: inline-flex; }
+  .resize[data-panel=detail] { display: none; }
+}
+
+/* ---------------------------------------------------------------- Sidebar (wide windows) */
+
+@media (min-width: 1000px) {
+  /* the widths follow the window; a width the user dragged comes in as a variable (panels.js) */
+  body { grid-template-rows: minmax(0, 1fr); grid-template-columns: var(--side-width, 232px) minmax(0, 1fr); }
+  .workspace { grid-template-columns: var(--tree-width, clamp(200px, 16vw, 300px)) minmax(0, 1fr); }
+  .tree { display: block; }
+  .resize { display: block; }
+  /* The sidebar is dark in both themes: so it separates from the content at first sight.
+     The colours apply to everything inside, also to the menus opening from it. */
+  .side {
+    color-scheme: dark;
+    color: #e9eef6;
+    --surface: #0a1120; --sunken: #18233a; --line: #222e45; --line-strong: #56668a;
+    --text: #e8edf5; --muted: #a3aec2;
+    --accent: #8ea8ff; --accent-strong: #b0c2ff; --accent-ink: #0a1230; --accent-soft: #1e2c55;
+    --brand: #8ea8ff; --ok: #8fdb52; --ok-soft: #1f3313; --warn: #f0a548; --warn-soft: #33240f; --err: #ff8378; --err-soft: #3b1815;
+    position: relative; z-index: 30;
+    display: flex; flex-direction: column; gap: 12px; padding: 12px;
+    background: var(--surface); border-right: 1px solid var(--line);
+  }
+  /* the dark sidebar's accent follows the chosen accent colour */
+  :root[data-accent="crimson"] .side { --accent: #ff6f8d; --accent-strong: #ff9bb0; --accent-ink: #2a0712; --accent-soft: #3b1622; --brand: #ff6f8d; }
+  :root[data-accent="violet"] .side { --accent: #a98bfa; --accent-strong: #c4b5fd; --accent-ink: #1a0b3d; --accent-soft: #2a1d4d; --brand: #a98bfa; }
+  :root[data-accent="teal"] .side { --accent: #2dd4bf; --accent-strong: #5eead4; --accent-ink: #042f2c; --accent-soft: #10302d; --brand: #2dd4bf; }
+  /* the sidebar follows the background, darker than the content in every choice */
+  :root[data-background="grey"] .side, :root[data-background="graphite"] .side { --surface: #0c0d0f; --sunken: #1b1d20; --line: #26282c; --line-strong: #5f636b; --text: #ececee; --muted: #adb0b8; color: #ececee; }
+  :root[data-background="black"] .side { --surface: #000000; --sunken: #141416; --line: #232327; --line-strong: #5a5a63; --text: #f0f0f2; --muted: #a9a9b2; color: #f0f0f2; }
+  :root[data-background="warm"] .side { --surface: #1a1610; --sunken: #2a241b; --line: #3a3226; --line-strong: #7a6d5a; --text: #f1ece4; --muted: #b9ae9d; color: #f1ece4; }
+  .side .tabs { flex: 1; min-height: 0; flex-direction: column; overflow-y: auto; }
+  .side .tabs a { height: 38px; color: var(--text); font-weight: 500; }
+  /* the page you are on: filled, seen at once */
+  .side .tabs a[aria-current="page"], .side .tabs a[aria-current="page"]:hover { color: var(--accent-ink); background: var(--accent); box-shadow: none; font-weight: 650; }
+  .side .tabs a[aria-current="page"] .nav-i { color: var(--accent-ink); }
+  .side .tabs a[aria-current="page"] .n { background: rgba(10, 18, 48, .18); color: var(--accent-ink); }
+  .side .settings-link { width: 100%; justify-content: flex-start; }
+  .side .settings-link[aria-current="page"], .side .settings-link[aria-current="page"]:hover { background: var(--accent); color: var(--accent-ink); }
+  .side .menu { left: calc(100% + 8px); top: 0; }
+}
+
+/* from 1200 px the details stand beside the list instead of covering it */
+@media (min-width: 1200px) {
+  .workspace { grid-template-columns: var(--tree-width, clamp(200px, 16vw, 300px)) minmax(0, 1fr) var(--detail-width, clamp(300px, 24vw, 420px)); }
+}

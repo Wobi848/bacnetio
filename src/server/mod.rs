@@ -1,0 +1,266 @@
+//! The local web server: the user interface from `web/` and the JSON API it talks to
+//! (docs/api.md). Listens on 127.0.0.1 only, because the API can write to the plant.
+
+mod commands;
+mod devices;
+mod exports;
+mod guard;
+mod json;
+mod reading;
+mod recording;
+mod references;
+mod remembered;
+mod scanning;
+mod session;
+mod site;
+mod writing;
+
+use std::net::{Ipv4Addr, SocketAddr};
+use std::path::PathBuf;
+use std::sync::Arc;
+
+use anyhow::Context;
+use axum::extract::DefaultBodyLimit;
+use axum::http::{StatusCode, Uri, header};
+use axum::response::{IntoResponse, Response};
+use axum::routing::{get, post};
+use axum::{Json, Router};
+use rust_embed::RustEmbed;
+use serde_json::json;
+use tokio::net::TcpListener;
+
+pub use session::{AppState, Shared};
+
+pub const DEFAULT_PORT: u16 = 8081;
+
+/// A site file brought back in: large sites have tens of thousands of points.
+const MOST_SITE_BYTES: usize = 64 * 1024 * 1024;
+
+#[derive(RustEmbed)]
+#[folder = "web/"]
+struct Assets;
+
+pub fn router(state: Shared) -> Router {
+    let object = "/api/devices/{device}/objects/{type}/{instance}";
+    Router::new()
+        .route("/api/info", get(info))
+        .route("/api/adapters", get(scanning::adapters))
+        .route("/api/scan/stop", post(scanning::stop))
+        .route(
+            "/api/scan",
+            get(scanning::scan_state).post(scanning::start_scan),
+        )
+        .route("/api/devices.csv", get(exports::devices_csv))
+        .route("/api/devices/locate", post(scanning::locate))
+        .route("/api/devices/{device}/points", get(devices::points))
+        .route(
+            "/api/devices/{device}/points/last",
+            get(devices::last_points),
+        )
+        .route("/api/devices/{device}/read/stop", post(reading::stop))
+        .route(
+            "/api/devices/{device}/read",
+            get(reading::progress).post(reading::start),
+        )
+        .route("/api/devices/{device}/points.csv", get(exports::points_csv))
+        .route(
+            "/api/devices/{device}/points-priorities.csv",
+            get(exports::points_priorities_csv),
+        )
+        .route(
+            "/api/devices/{device}/points.ede-states.csv",
+            get(exports::points_ede_states),
+        )
+        .route("/api/devices/{device}/priorities", get(devices::priorities))
+        .route("/api/devices/{device}/values", post(devices::live_values))
+        .route("/api/devices/{device}/structure", get(devices::structure))
+        .route("/api/devices/{device}/bbmd", get(devices::bbmd_tables))
+        .route("/api/devices/{device}/restart", post(commands::restart))
+        .route(
+            "/api/devices/{device}/communication",
+            post(commands::communication),
+        )
+        .route(
+            "/api/devices/{device}/alarms/acknowledge",
+            post(commands::acknowledge),
+        )
+        .route(
+            &format!("{object}/schedule"),
+            get(commands::schedule).post(commands::write_day),
+        )
+        .route(&format!("{object}/calendar"), get(commands::calendar))
+        .route("/api/who-has", post(commands::who_has))
+        .route("/api/events", get(commands::events))
+        .route("/api/site/points", get(site::points))
+        .route("/api/sites", get(site::list))
+        .route("/api/sites/open", post(site::open))
+        .route("/api/sites/delete", post(site::delete))
+        .route("/api/sites/rename", post(site::rename))
+        .route(
+            "/api/site.json",
+            get(site::export)
+                .post(site::import)
+                .layer(DefaultBodyLimit::max(MOST_SITE_BYTES)),
+        )
+        .route("/api/site.ede.csv", get(exports::site_ede))
+        .route("/api/site.ede-states.csv", get(exports::site_ede_states))
+        .route(
+            "/api/devices/{device}/points.ede.csv",
+            get(exports::points_ede),
+        )
+        .route("/api/devices/{device}/alarms", get(devices::alarms))
+        .route(
+            "/api/devices/{device}/instance",
+            post(writing::change_instance),
+        )
+        .route("/api/devices/{device}/clock", post(writing::set_clock))
+        .route(
+            "/api/devices/{device}/reference",
+            get(references::compare).post(references::save),
+        )
+        .route(object, get(devices::object))
+        .route(&format!("{object}/properties"), get(devices::properties))
+        .route(&format!("{object}/value"), get(devices::value))
+        .route(&format!("{object}/trend"), get(devices::trend))
+        .route(&format!("{object}/trend.csv"), get(devices::trend_csv))
+        .route(&format!("{object}/write"), post(writing::write_value))
+        .route(&format!("{object}/property"), post(writing::write_property))
+        .route(&format!("{object}/release"), post(writing::release))
+        .route("/api/held", get(writing::held))
+        .route("/api/log", get(writing::log))
+        .route("/api/recording", get(recording::recording))
+        .route("/api/recording/points", post(recording::add_point))
+        .route(
+            "/api/recording/points/remove",
+            post(recording::remove_point),
+        )
+        .route("/api/recording/start", post(recording::start))
+        .route("/api/recording/mode", post(recording::set_mode))
+        .route("/api/recording/stop", post(recording::stop))
+        .route("/api/recording/clear", post(recording::clear))
+        .route("/api/recording.csv", get(recording::csv))
+        .fallback(static_file)
+        .layer(axum::middleware::from_fn_with_state(
+            Arc::clone(&state),
+            guard::same_origin_only,
+        ))
+        .with_state(state)
+}
+
+/// Serves until the process ends. Takes the next free port if `port` is taken. The write log is
+/// kept in `data_dir`; without one, it lasts only as long as the process.
+pub async fn serve(
+    port: u16,
+    open_in_browser: bool,
+    data_dir: Option<PathBuf>,
+    loopback: bool,
+) -> anyhow::Result<()> {
+    let mut state = match data_dir {
+        Some(dir) => AppState::with_data_dir(dir)?,
+        None => AppState::default(),
+    };
+    state.loopback = loopback;
+    let listener = match TcpListener::bind((Ipv4Addr::LOCALHOST, port)).await {
+        Ok(listener) => listener,
+        Err(_) => TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
+            .await
+            .context("cannot open a local web server port")?,
+    };
+    let address = listener.local_addr()?;
+    state.web_address = Some(address);
+    let url = local_url(address);
+    println!("bacnetio is running at {url}");
+    println!("Close this window to quit.");
+    if open_in_browser {
+        open_browser(&url);
+    }
+    axum::serve(listener, router(Arc::new(state)))
+        .await
+        .context("the web server stopped")
+}
+
+fn local_url(address: SocketAddr) -> String {
+    format!("http://127.0.0.1:{}/", address.port())
+}
+
+fn open_browser(url: &str) {
+    let started = if cfg!(windows) {
+        // "start" is a cmd built-in; the empty title keeps the URL from being taken as title
+        std::process::Command::new("cmd")
+            .args(["/C", "start", "", url])
+            .spawn()
+    } else if cfg!(target_os = "macos") {
+        std::process::Command::new("open").arg(url).spawn()
+    } else if std::env::var_os("DISPLAY").is_some() || std::env::var_os("WAYLAND_DISPLAY").is_some()
+    {
+        std::process::Command::new("xdg-open").arg(url).spawn()
+    } else {
+        return;
+    };
+    if started.is_err() {
+        println!("Open {url} in your browser.");
+    }
+}
+
+/// The version, for the About line.
+async fn info() -> Json<serde_json::Value> {
+    Json(json!({ "version": env!("CARGO_PKG_VERSION") }))
+}
+
+async fn static_file(uri: Uri) -> Response {
+    let path = uri.path().trim_start_matches('/');
+    let path = if path.is_empty() { "index.html" } else { path };
+    match Assets::get(path) {
+        Some(file) => {
+            let mime = mime_guess::from_path(path).first_or_octet_stream();
+            ([(header::CONTENT_TYPE, mime.as_ref())], file.data).into_response()
+        }
+        None if path == "index.html" => (
+            StatusCode::OK,
+            "bacnetio is running. The user interface is not built in yet; the API is under /api/.",
+        )
+            .into_response(),
+        None => (StatusCode::NOT_FOUND, "Not found").into_response(),
+    }
+}
+
+/// An error the API answers with: `{"error": "..."}` in plain words.
+#[derive(Debug)]
+pub struct ApiError {
+    status: StatusCode,
+    message: String,
+}
+
+impl ApiError {
+    fn new(status: StatusCode, message: impl ToString) -> Self {
+        ApiError {
+            status,
+            message: message.to_string(),
+        }
+    }
+
+    /// The request itself is wrong.
+    pub fn bad_request(message: impl ToString) -> Self {
+        Self::new(StatusCode::BAD_REQUEST, message)
+    }
+
+    /// Not possible right now, e.g. before the first scan.
+    pub fn conflict(message: impl ToString) -> Self {
+        Self::new(StatusCode::CONFLICT, message)
+    }
+
+    /// The network or a device did not do what was asked.
+    pub fn device(message: impl ToString) -> Self {
+        Self::new(StatusCode::BAD_GATEWAY, message)
+    }
+
+    pub fn internal(message: impl ToString) -> Self {
+        Self::new(StatusCode::INTERNAL_SERVER_ERROR, message)
+    }
+}
+
+impl IntoResponse for ApiError {
+    fn into_response(self) -> Response {
+        (self.status, Json(json!({ "error": self.message }))).into_response()
+    }
+}

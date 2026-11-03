@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="running">bacnetio läuft</string>
+    <string name="running_text">Aufzeichnungen laufen im Hintergrund weiter. Tippen zum Öffnen.</string>
+    <string name="channel">bacnetio läuft</string>
+    <string name="stop">Beenden</string>
+    <string name="starting">bacnetio startet …</string>
+    <string name="failed">bacnetio startet nicht. Siehe bacnetio.log in den App-Daten.</string>
+    <string name="saved">In Downloads gespeichert: %1$s</string>
+    <string name="save_failed">Speichern fehlgeschlagen: %1$s</string>
+</resources>

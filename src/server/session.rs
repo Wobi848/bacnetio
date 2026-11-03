@@ -1,0 +1,369 @@
+//! The open BACnet connection and the scan running on it. One connection at a time: a new scan
+//! on another adapter, port or BBMD replaces it.
+
+use std::collections::{HashMap, VecDeque};
+use std::net::{Ipv4Addr, SocketAddrV4};
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex, Weak};
+
+use anyhow::Context;
+use serde::{Deserialize, Serialize};
+
+use super::ApiError;
+use super::json::ObjectRef;
+use super::recording::Sampler;
+use super::scanning::ScanView;
+use crate::alarms;
+use crate::connection::{self, BACNET_PORT, Client, Connection, Endpoint};
+use crate::interfaces::{self, Adapter};
+use crate::points::Point;
+use crate::record::Recording;
+use crate::scan::{self, Device, Progress};
+use crate::storage;
+use crate::watch::Watch;
+use crate::write::Journal;
+use bacnet_client::client::{ReceivedCOVNotification, ReceivedEventNotification};
+use std::time::{SystemTime, UNIX_EPOCH};
+use tokio::sync::broadcast;
+
+#[derive(Default)]
+pub struct AppState {
+    connection: tokio::sync::Mutex<Option<Open>>,
+    pub(super) scan: Mutex<ScanStatus>,
+    /// Ends a running search, keeping the devices found so far.
+    pub(super) scan_stop: tokio::sync::Notify,
+    /// The last reading of each device, for the CSV export.
+    pub readings: Mutex<HashMap<u32, Vec<Point>>>,
+    /// Alarm messages received, the last [`KEPT_EVENTS`].
+    pub(super) events: Mutex<VecDeque<EventView>>,
+    /// The site remembered on disk, shown until a new search (site.rs).
+    pub(super) site: Mutex<Option<super::site::Site>>,
+    /// Readings running in the background or finished, with their request logs.
+    pub reads: Mutex<HashMap<u32, super::reading::ReadJob>>,
+    pub journal: Mutex<Journal>,
+    /// Values the devices report by COV.
+    pub watch: Mutex<Watch>,
+    /// Where the write log and the recording backup are kept; none means memory only.
+    pub data_dir: Option<PathBuf>,
+    /// The devices of the last finished scan, for the CSV export.
+    pub devices: Mutex<Vec<Device>>,
+    pub recording: Mutex<Recording>,
+    /// What a user waits for goes before the reading of a list (precedence.rs).
+    pub precedence: crate::precedence::Precedence,
+    pub sampler: Mutex<Option<Sampler>>,
+    /// The loopback interface counts as an adapter (browser tests).
+    pub loopback: bool,
+    /// Where the web server listens; requests must name it (guard.rs). `None` in tests that call
+    /// the router directly.
+    pub web_address: Option<std::net::SocketAddr>,
+}
+
+pub type Shared = Arc<AppState>;
+
+struct Open {
+    /// Interface, port and BBMD the connection was opened with.
+    key: (Ipv4Addr, u16, Option<SocketAddrV4>),
+    connection: Connection,
+}
+
+#[derive(Default)]
+pub(super) enum ScanStatus {
+    #[default]
+    Idle,
+    Running(Progress),
+    Done(ScanView),
+    Failed(String),
+}
+
+impl AppState {
+    /// Every write and release is appended here, so held values survive a restart.
+    pub fn journal_file(&self) -> Option<PathBuf> {
+        self.data_dir
+            .as_ref()
+            .map(|dir| dir.join(storage::JOURNAL_FILE))
+    }
+
+    /// State with the write log of earlier sessions, read from `data_dir`.
+    pub fn with_data_dir(data_dir: PathBuf) -> anyhow::Result<Self> {
+        let journal_file = data_dir.join(storage::JOURNAL_FILE);
+        let (entries, unreadable) = storage::load(&journal_file)
+            .with_context(|| format!("cannot read {}", journal_file.display()))?;
+        if unreadable > 0 {
+            eprintln!(
+                "Note: {unreadable} line(s) of {} could not be read and were skipped.",
+                journal_file.display()
+            );
+        }
+        let mut journal = Journal::default();
+        entries.into_iter().for_each(|entry| journal.record(entry));
+        let site = super::site::load(&data_dir).unwrap_or_else(|reason| {
+            eprintln!("Note: the remembered site could not be read and starts empty: {reason}");
+            None
+        });
+        let state = AppState {
+            site: Mutex::new(site),
+            journal: Mutex::new(journal),
+            data_dir: Some(data_dir),
+            ..AppState::default()
+        };
+        super::remembered::restore(&state);
+        Ok(state)
+    }
+
+    /// The client of the open connection; there is none before the first scan.
+    pub async fn client(&self) -> Result<Arc<Client>, ApiError> {
+        match &*self.connection.lock().await {
+            Some(open) => Ok(Arc::clone(&open.connection.client)),
+            None => Err(ApiError::conflict("search for devices first")),
+        }
+    }
+
+    /// The client, made ready for `device`: opens a connection on the default adapter if none is
+    /// open, and finds the device at `address` or by Who-Is if the client does not know it. So
+    /// values held from an earlier session can be released without a scan first.
+    pub async fn client_for(
+        self: &Arc<Self>,
+        device: u32,
+        address: Option<SocketAddrV4>,
+    ) -> Result<Arc<Client>, ApiError> {
+        let client = match self.client().await {
+            Ok(client) => client,
+            Err(_) => {
+                let (_, endpoint) = NetworkRequest::default().endpoint(self.loopback)?;
+                self.connect(&endpoint)
+                    .await
+                    .map_err(|error| ApiError::device(format!("{error:#}")))?
+                    .0
+            }
+        };
+        if client.get_device(device).await.is_none() {
+            scan::locate(&client, Some(device), address, scan::DEFAULT_WHO_IS_WAIT)
+                .await
+                .map_err(|error| ApiError::device(format!("{error:#}")))?;
+        }
+        Ok(client)
+    }
+
+    /// Reuses the open connection if it has the same endpoint, else replaces it.
+    pub(super) async fn connect(
+        self: &Arc<Self>,
+        endpoint: &Endpoint,
+    ) -> anyhow::Result<(Arc<Client>, Option<String>)> {
+        let key = (endpoint.interface, endpoint.port, endpoint.bbmd);
+        let mut current = self.connection.lock().await;
+        if let Some(open) = current.as_ref().filter(|open| open.key == key) {
+            let connection = &open.connection;
+            return Ok((
+                Arc::clone(&connection.client),
+                connection.port_unavailable.clone(),
+            ));
+        }
+        if let Some(old) = current.take() {
+            old.connection.close().await?;
+        }
+        let connection = connection::open(endpoint).await?;
+        tokio::spawn(follow_notifications(
+            Arc::clone(self),
+            connection.client.cov_notifications(),
+        ));
+        tokio::spawn(follow_events(
+            Arc::clone(self),
+            connection.client.event_notifications(),
+        ));
+        tokio::spawn(keep_devices_known(
+            Arc::clone(self),
+            Arc::downgrade(&connection.client),
+        ));
+        let found = (
+            Arc::clone(&connection.client),
+            connection.port_unavailable.clone(),
+        );
+        *current = Some(Open { key, connection });
+        Ok(found)
+    }
+
+    pub(super) fn set_scan(&self, status: ScanStatus) {
+        *self.scan.lock().expect("scan status lock") = status;
+    }
+}
+
+/// Alarm messages kept, the latest ones: a chattering device must not fill the memory.
+const KEPT_EVENTS: usize = 500;
+const KEEP_KNOWN_EVERY: std::time::Duration = std::time::Duration::from_secs(60);
+/// Well before the client's 10 minutes, so a lost answer still leaves a second try.
+const ASK_AGAIN_AFTER: std::time::Duration = std::time::Duration::from_secs(5 * 60);
+
+/// One alarm message from a device: it reports an object changing state, unasked.
+#[derive(Clone, Serialize)]
+pub struct EventView {
+    /// Seconds since 1970-01-01 UTC, when bacnetio received it.
+    time: u64,
+    device: u32,
+    #[serde(flatten)]
+    object: ObjectRef,
+    from: String,
+    to: String,
+    text: Option<String>,
+}
+
+/// Collects the alarm messages until the connection closes. Devices send them to computers listed in
+/// their notification classes, so this may stay empty.
+async fn follow_events(state: Shared, mut events: broadcast::Receiver<ReceivedEventNotification>) {
+    loop {
+        match events.recv().await {
+            Ok(received) => {
+                let event = received.notification;
+                let view = EventView {
+                    time: SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .map_or(0, |since| since.as_secs()),
+                    device: event.initiating_device_identifier.instance_number(),
+                    object: ObjectRef::new(event.event_object_identifier),
+                    from: alarms::state_text(event.from_state),
+                    to: alarms::state_text(event.to_state),
+                    text: event.message_text.clone(),
+                };
+                let mut kept = state.events.lock().expect("events lock");
+                if kept.len() == KEPT_EVENTS {
+                    kept.pop_front();
+                }
+                kept.push_back(view);
+            }
+            // missed some under load; the device's alarm list still has them
+            Err(broadcast::error::RecvError::Lagged(_)) => {}
+            Err(broadcast::error::RecvError::Closed) => return,
+        }
+    }
+}
+
+/// Keeps the live values up to date until the connection closes.
+async fn follow_notifications(
+    state: Shared,
+    mut notifications: broadcast::Receiver<ReceivedCOVNotification>,
+) {
+    loop {
+        match notifications.recv().await {
+            Ok(received) => {
+                let time = SystemTime::now();
+                let notification = &received.notification;
+                let device = notification.initiating_device_identifier.instance_number();
+                let object = notification.monitored_object_identifier;
+                let value = {
+                    let mut watch = state.watch.lock().expect("watch lock");
+                    watch.apply(notification, time);
+                    watch
+                        .reported(device, object)
+                        .and_then(|live| crate::record::number(&live.value))
+                };
+                if state.sampler.lock().expect("sampler lock").is_some() {
+                    state
+                        .recording
+                        .lock()
+                        .expect("recording lock")
+                        .record_report(device, object, time, value);
+                }
+            }
+            // missed some; the next notification brings the current value again
+            Err(broadcast::error::RecvError::Lagged(_)) => {}
+            Err(broadcast::error::RecvError::Closed) => return,
+        }
+    }
+}
+
+/// The client forgets a device 10 minutes after its last I-Am, answers to requests do not count,
+/// and then every request to it fails. Before that, ask each known device again, or for one that
+/// only answers at its address, note it again; a device that no longer answers is forgotten.
+/// Holds the client only weakly between rounds, so a search on another adapter can close it.
+async fn keep_devices_known(state: Shared, client: Weak<Client>) {
+    let mut ticks = tokio::time::interval(KEEP_KNOWN_EVERY);
+    ticks.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
+    loop {
+        ticks.tick().await;
+        let current = state
+            .connection
+            .lock()
+            .await
+            .as_ref()
+            .map(|open| Arc::clone(&open.connection.client));
+        let Some(client) = current.filter(|current| Arc::as_ptr(current) == client.as_ptr()) else {
+            return;
+        };
+        let known: Vec<(u32, Option<SocketAddrV4>)> = state
+            .devices
+            .lock()
+            .expect("devices lock")
+            .iter()
+            .map(|device| {
+                let by_address = !device.answered_who_is && device.remote.is_none();
+                (device.instance, by_address.then_some(device.address))
+            })
+            .collect();
+        for (instance, by_address) in known {
+            let fresh = client
+                .get_device(instance)
+                .await
+                .is_some_and(|found| found.last_seen.elapsed() < ASK_AGAIN_AFTER);
+            if fresh {
+                continue;
+            }
+            match by_address {
+                Some(address) => {
+                    let _ = client.add_device(instance, &connection::mac(address)).await;
+                }
+                None => scan::ask_again(&client, instance).await,
+            }
+        }
+    }
+}
+
+/// Adapter, port and BBMD of a request; all optional.
+#[derive(Deserialize, Default)]
+pub struct NetworkRequest {
+    /// IP of the adapter; the default one if missing.
+    interface: Option<Ipv4Addr>,
+    port: Option<u16>,
+    /// IP or IP:PORT.
+    bbmd: Option<String>,
+}
+
+impl NetworkRequest {
+    pub(super) fn endpoint(&self, loopback: bool) -> Result<(Adapter, Endpoint), ApiError> {
+        let bbmd = match self.bbmd.as_deref().map(str::trim) {
+            None | Some("") => None,
+            Some(text) => Some(connection::parse_address(text).map_err(ApiError::bad_request)?),
+        };
+        let adapter =
+            interfaces::choose(self.interface, loopback).map_err(ApiError::bad_request)?;
+        let endpoint = Endpoint {
+            interface: adapter.ip,
+            broadcast: adapter.broadcast(),
+            port: self.port.unwrap_or(BACNET_PORT),
+            bbmd,
+        };
+        Ok((adapter, endpoint))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn endpoint(port: u16) -> Endpoint {
+        Endpoint {
+            interface: Ipv4Addr::LOCALHOST,
+            broadcast: Ipv4Addr::new(127, 255, 255, 255),
+            port,
+            bbmd: None,
+        }
+    }
+
+    /// The tasks that follow a connection must not keep it open: a search on another adapter or
+    /// port has to close it ("a request is still running" otherwise, field test 2 November).
+    #[tokio::test]
+    async fn a_search_elsewhere_replaces_the_connection() {
+        let state = Arc::new(AppState::default());
+        state.connect(&endpoint(47_891)).await.unwrap();
+        tokio::task::yield_now().await;
+        state.connect(&endpoint(47_892)).await.unwrap();
+    }
+}

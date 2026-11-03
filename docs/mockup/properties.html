@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="de" data-theme="light" data-accent="crimson">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Properties mockup</title>
+<!-- Mockup for docs/concept-properties.md: the properties of an analog input, grouped and in plain words. -->
+<link rel="stylesheet" href="../../web/css/tokens.css">
+<link rel="stylesheet" href="../../web/css/app.css">
+<link rel="stylesheet" href="../../web/css/list.css">
+<style>
+  body { display: block; background: var(--bg); padding: 16px; }
+  .detail { width: 400px; border: 1px solid var(--line); border-radius: 10px; }
+  .props-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+  .props-bar input { flex: 1; min-width: 0; }
+  .props-note { margin: 6px 0 0; font-size: 12.5px; color: var(--muted); }
+  .props-note button { height: 26px; padding: 0 10px; font-size: 12.5px; margin-left: 6px; }
+  .detail h3 { display: flex; justify-content: space-between; }
+  .props { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 13fr); margin: 0; }
+  .props > :nth-last-child(-n+2) { border-bottom: 0; }
+  .props dt, .props dd { margin: 0; padding: 6px 0; border-bottom: 1px solid var(--line); min-width: 0; }
+  .props dt { color: var(--muted); font-size: 13px; padding-right: 10px; }
+  .props dt .bn { display: block; font-family: var(--mono); font-size: 11px; color: var(--muted); opacity: .8; overflow-wrap: anywhere; }
+  .props dd { overflow-wrap: anywhere; font-size: 13.5px; font-weight: 600; display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+  .props dd .unit { color: var(--muted); font-weight: 500; }
+  .props dd.empty { color: var(--muted); font-weight: 400; font-style: italic; }
+  .props dd.changed { box-shadow: inset 3px 0 0 var(--accent); padding-left: 8px; background: var(--accent-soft); }
+  .flag { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; font-size: 12px; font-weight: 600; border: 1px solid var(--line-strong); color: var(--muted); background: var(--surface); }
+  .flag.on { border-color: var(--warn); color: var(--warn); background: var(--warn-soft); }
+  .flag.yes { border-color: var(--ok); color: var(--ok); background: var(--ok-soft); }
+  .flag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .35; }
+  .flag.on::before, .flag.yes::before { opacity: 1; }
+  .stamps { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-weight: 500; }
+  .stamps span:nth-child(odd) { color: var(--muted); }
+  .props dd button.quiet { height: 26px; padding: 0 10px; font-size: 12.5px; margin-left: auto; }
+  details.more summary { cursor: pointer; margin-top: 14px; color: var(--muted); font-size: 13px; font-weight: 600; }
+  .side-by-side { display: flex; gap: 24px; align-items: flex-start; }
+  .label { font: 600 13px system-ui; color: var(--muted); margin: 0 0 6px; }
+</style>
+</head>
+<body>
+<div class="side-by-side">
+<div>
+<p class="label">Normal: Klartext, gegliedert</p>
+<aside class="detail">
+  <div class="props-bar">
+    <input type="search" placeholder="Eigenschaft suchen">
+    <span class="seg"><button type="button" aria-pressed="true">Klartext</button><button type="button">BACnet</button></span>
+  </div>
+  <p class="props-note">Alle 10 s gelesen, Änderungen markiert. <button type="button" class="quiet">Ändern entsperren …</button></p>
+
+  <h3>Objekt</h3>
+  <dl class="props">
+    <dt>Name</dt><dd>/21/000/00/00/RA_Zone.05/temp</dd>
+    <dt>Beschreibung</dt><dd class="empty">leer</dd>
+    <dt>Typ und Nummer</dt><dd>Analogeingang 205</dd>
+    <dt>Gerät</dt><dd>21 <span class="unit">· 127.0.0.3:47809</span></dd>
+  </dl>
+
+  <h3>Wert</h3>
+  <dl class="props">
+    <dt>Aktueller Wert</dt><dd class="changed">20,5 <span class="unit">°C</span></dd>
+    <dt>Zustand</dt><dd><span class="flag yes">Normal</span></dd>
+    <dt>Zuverlässigkeit</dt><dd><span class="flag yes">Kein Fehler</span></dd>
+    <dt>Ausser Betrieb</dt><dd>Nein</dd>
+    <dt>Zustand (Beispiel)</dt><dd><span class="flag on">Übersteuert</span><span class="flag on">Ausser Betrieb</span></dd>
+    <dt>COV-Schwelle</dt><dd>0 <span class="unit">°C</span></dd>
+  </dl>
+
+  <h3>Alarmgrenzen</h3>
+  <dl class="props">
+    <dt>Obergrenze</dt><dd>100 <span class="unit">°C · nicht überwacht</span></dd>
+    <dt>Untergrenze</dt><dd>0 <span class="unit">°C · nicht überwacht</span></dd>
+    <dt>Totband</dt><dd>1 <span class="unit">°C</span></dd>
+    <dt>Verzögerung</dt><dd>0 <span class="unit">s, zurück 0 s</span></dd>
+  </dl>
+
+  <h3>Alarmierung</h3>
+  <dl class="props">
+    <dt>Ereigniszustand</dt><dd><span class="flag yes">Normal</span></dd>
+    <dt>Melden bei</dt><dd class="empty">nichts eingeschaltet</dd>
+    <dt>Quittiert</dt><dd><span class="flag yes">Alles quittiert</span></dd>
+    <dt>Meldeart</dt><dd>Alarm</dd>
+    <dt>Meldeklasse</dt><dd>0</dd>
+    <dt>Letzte Meldungen</dt><dd><span class="stamps"><span>Alarm</span><span>nie</span><span>Störung</span><span>nie</span><span>Normal</span><span>nie</span></span></dd>
+    <dt>Meldetexte</dt><dd class="empty">leer</dd>
+  </dl>
+
+  <details class="more"><summary>Weitere Eigenschaften (4)</summary></details>
+</aside>
+</div>
+
+<div>
+<p class="label">Umschalter auf BACnet, Ändern entsperrt</p>
+<aside class="detail">
+  <div class="props-bar">
+    <input type="search" value="limit">
+    <span class="seg"><button type="button">Klartext</button><button type="button" aria-pressed="true">BACnet</button></span>
+  </div>
+  <p class="props-note">Alle 10 s gelesen, Änderungen markiert. Ändern entsperrt.</p>
+
+  <h3>Alarmgrenzen</h3>
+  <dl class="props">
+    <dt>Obergrenze<span class="bn">high-limit · real</span></dt><dd>100 <span class="unit">°C</span> <button type="button" class="quiet">Ändern</button></dd>
+    <dt>Untergrenze<span class="bn">low-limit · real</span></dt><dd>0 <span class="unit">°C</span> <button type="button" class="quiet">Ändern</button></dd>
+    <dt>Überwacht<span class="bn">limit-enable · bits 01</span></dt><dd><span class="flag on">Obergrenze</span></dd>
+  </dl>
+</aside>
+</div>
+</div>
+</body>
+</html>
