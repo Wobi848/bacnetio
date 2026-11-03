@@ -5,12 +5,18 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
+import android.content.res.Configuration
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.webkit.URLUtil
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import android.widget.Toast
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -43,8 +49,33 @@ class MainActivity : Activity() {
             download(url, URLUtil.guessFileName(url, disposition, mime), mime)
         }
         web.loadData(getString(R.string.starting), "text/plain; charset=utf-8", null)
-        setContentView(web)
+        setContentView(clearOfSystemBars(web))
         waitForBacnetio()
+    }
+
+    /**
+     * Since Android 15 the app draws under the status bar, the camera cutout and the navigation
+     * bar: the page keeps clear of them, and of the keyboard, so nothing hides behind them. The
+     * strips take the colour of the interface (web/css/tokens.css, --surface).
+     */
+    private fun clearOfSystemBars(content: WebView): FrameLayout {
+        val night = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+            Configuration.UI_MODE_NIGHT_YES
+        val frame = FrameLayout(this)
+        frame.setBackgroundColor(Color.parseColor(if (night) "#141c2b" else "#ffffff"))
+        frame.addView(content)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            frame.setOnApplyWindowInsetsListener { view, insets ->
+                val bars = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
+                val keyboard = insets.getInsets(WindowInsets.Type.ime())
+                view.setPadding(bars.left, bars.top, bars.right, maxOf(bars.bottom, keyboard.bottom))
+                WindowInsets.CONSUMED
+            }
+            val dark = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
+                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+            frame.post { window.insetsController?.setSystemBarsAppearance(if (night) 0 else dark, dark) }
+        }
+        return frame
     }
 
     private fun waitForBacnetio() = thread {
