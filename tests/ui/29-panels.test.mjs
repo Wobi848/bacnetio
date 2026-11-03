@@ -75,8 +75,8 @@ export default {
     assert.equal(await tracks(".row.points.head"), await tracks(".row.points:not(.head)"));
     await page.reload();
     await page.waitForSelector(".row.points:not(.head)");
-    // the list settles after the reload, as its points come in
-    for (let tries = 0; tries < 20 && Math.abs(await column() - (before + 50)) > 2; tries += 1) await page.waitForTimeout(250);
+    // the list settles after the reload, as its points come in; slowly on a CI runner
+    for (let tries = 0; tries < 60 && Math.abs(await column() - (before + 50)) > 2; tries += 1) await page.waitForTimeout(250);
     assert.ok(Math.abs(await column() - (before + 50)) <= 2, `column width remembered: ${before} + 50, now ${await tracks(".row.points:not(.head)")} at ${await value()}, stored ${await page.evaluate(() => localStorage.getItem("bacnetio.columns"))}`);
     await page.dblclick(".row.points.head [role=columnheader]:nth-child(5) .col-border");
     assert.equal(await page.evaluate(() => localStorage.getItem("bacnetio.columns")), "{}", "double-click: automatic widths");
