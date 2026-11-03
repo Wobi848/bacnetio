@@ -167,6 +167,8 @@ export const state = {
   /** The colour of each recorded point, kept for as long as the page is open. */
   recColors: {},
   version: null,
+  /** What the last look for a new version found (update.js). */
+  update: null,
   /** The pointer is on a chart; a redraw would drop the crosshair. */
   onChart: false,
   error: null,

@@ -23,6 +23,10 @@ from `web/` and this JSON API under `/api/`.
 
 `GET /api/info`: `{ "version": "0.1.0" }`
 
+`GET /api/update` asks GitHub for the newest release (docs/concept-update-check.md):
+`{ "current": "0.1.0", "latest": { "version": "0.2.0", "url": "https://github.com/…/releases/tag/v0.2.0" }, "newer": true }`.
+`latest` is `null` while nothing is published. Without an answer from GitHub: 502 with `error`.
+
 ## Adapters
 
 `GET /api/adapters`

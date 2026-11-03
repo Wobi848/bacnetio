@@ -5,6 +5,8 @@ import { LANGUAGES, languageChoice, t } from "./i18n.js";
 
 const THEMES = ["auto", "light", "dark"];
 const THEME_KEY = "bacnetio.theme";
+/** Whether the page may ask for a new version (update.js); on unless switched off. */
+export const UPDATE_CHOICE_KEY = "bacnetio.updateCheck";
 /** Accent colours to choose from; states keep their own colours whatever is chosen. */
 const ACCENTS = ["blue", "crimson", "violet", "teal"];
 const ACCENT_KEY = "bacnetio.accent";
@@ -72,6 +74,35 @@ function backgroundsHtml(theme) {
   return `<h3>${t(`set.background.${theme}`)}</h3><span class="choices">${buttons}</span>`;
 }
 
+export function updateCheckOn() {
+  try {
+    return localStorage.getItem(UPDATE_CHOICE_KEY) !== "off";
+  } catch {
+    return true;
+  }
+}
+
+function statusText(update) {
+  if (!updateCheckOn()) return t("update.offHint");
+  if (!update || update.checking) return t("update.checking");
+  if (update.error) return `${t("update.failed")} <span class="mono">${h(update.error)}</span>`;
+  if (update.newer) return `${t("update.newer", { version: h(update.version) })} <a href="${h(update.url)}" target="_blank" rel="noopener">${t("update.page")}</a>`;
+  return update.version ? t("update.current") : t("update.none");
+}
+
+/** The settings card: this version, what the last check found, and the switch. */
+export function updateCardHtml(state) {
+  const on = updateCheckOn();
+  const look = on ? `<button type="button" data-act="update-now"${state.update?.checking ? " disabled" : ""}>${t("update.now")}</button>` : "";
+  return `<section class="card"><h2>${t("update.title")}</h2>
+    <p>bacnetio ${h(state.version ?? "")}</p>
+    <p class="hint update-status">${statusText(state.update)}</p>
+    <h3>${t("update.check")}</h3>
+    <span class="seg"><button type="button" data-act="update-check" data-on="true" aria-pressed="${on}">${t("update.on")}</button><button type="button" data-act="update-check" data-on="false" aria-pressed="${!on}">${t("update.off")}</button></span>
+    ${look}
+    <p class="hint">${t("update.privacy")}</p></section>`;
+}
+
 export function viewSettings(state) {
   const languages = [["auto", t("set.auto")], ...LANGUAGES].map(([code, name]) =>
     `<button type="button" data-act="language" data-code="${code}" aria-pressed="${languageChoice() === code}">${h(name)}</button>`).join("");
@@ -90,7 +121,8 @@ export function viewSettings(state) {
       <section class="card"><h2>${t("set.theme")}</h2><span class="seg">${themes}</span>
         <h2>${t("set.accent")}</h2><span class="choices">${accents}</span>
         <h2>${t("set.background")}</h2>${backgroundsHtml("light")}${backgroundsHtml("dark")}</section>
-      <section class="card"><h2>${t("set.keys")}</h2><dl class="facts">${keys}</dl><p class="hint">bacnetio ${h(state.version ?? "")}</p></section>
+      ${updateCardHtml(state)}
+      <section class="card"><h2>${t("set.keys")}</h2><dl class="facts">${keys}</dl></section>
     </div></div>`,
   };
 }

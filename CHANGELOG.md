@@ -24,6 +24,7 @@ All notable changes for users of bacnetio. No release yet; everything below is u
 
 ### Added
 
+- A note when a new version is out: once a day bacnetio asks GitHub for the newest release and shows *New version …* in the sidebar, linked to its download page. *Settings → Version* shows the running version, what the last check found, *Look now*, and a switch to turn the check off; then bacnetio does not go online.
 - *Change device name* in the device commands, behind the unlock: the device list, the tree and the details show the new name at once. A device that refuses says so in words.
 - Columns to resize in the device list, the point list, site problems and the watch list: drag the border right of a column head (a line shows under the mouse). The first column gives or takes the room; the browser remembers each column's width, also when the details open or close; a double-click returns to the automatic widths. Not in a list as narrow as a phone.
 - Site problems and the watch list have the search of the point list (also `#123`, `type:AO`, `value:>50`, and the device's name), the states as views with their counts (*Alarm*, *Fault*, *Read error*, *Offline*, *Overridden*, *Out of service*), and a choice of one device; *Clear all filters* returns to everything.

@@ -30,6 +30,7 @@ const objectPath = (device, type, instance) => `/api/devices/${device}/objects/$
 
 export const api = {
   info: () => call("GET", "/api/info"),
+  update: () => call("GET", "/api/update"),
   adapters: () => call("GET", "/api/adapters"),
   startScan: (settings) => call("POST", "/api/scan", settings),
   stopScan: () => call("POST", "/api/scan/stop"),

@@ -14,7 +14,7 @@
 .card .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .card .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 4px; }
 .card .facts { grid-template-columns: max-content minmax(0, 1fr); }
-.card .seg { align-self: start; }
+.card .seg, .card > button { align-self: start; }
 .sites { list-style: none; display: grid; gap: 12px; max-width: 960px; margin: 0 0 16px; padding: 0; }
 .sites .site { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 16px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--raise); }
 .sites .site.open { border-color: var(--accent); }

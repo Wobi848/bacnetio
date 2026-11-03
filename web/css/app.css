@@ -110,3 +110,8 @@ button.chip { height: 22px; border: 0; cursor: pointer; }
 .site-link .site-now, .site-link .site-net { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .site-link .site-net { color: var(--muted); font-size: 12px; }
 .site-link[aria-current="page"] { border-color: var(--accent); background: var(--accent-soft); }
+
+/* A newer release is out: a link to its page, below the site */
+.update-note { display: block; padding: 8px 10px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent-soft); color: var(--text); font-weight: 600; text-decoration: none; }
+.update-note:hover { background: var(--sunken); }
+.update-status .mono { display: block; overflow-wrap: anywhere; }

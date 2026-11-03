@@ -273,6 +273,9 @@ Open, in the maintainer's words where it helps. The larger ones are planned in
       panels.
 - [x] **Rename a device** (its object name): a NovoCon kept the name `NovoCon-#4194303` after its
       new ID.
+- [x] **Note when a new version is out** ("anzeigen falls eine neue Version released wurde"): asks
+      GitHub once a day, a link in the sidebar, a switch in the settings
+      (docs/concept-update-check.md).
 - [x] Area keys `1` to `6` instead of `0` to `5`, side by side on the keyboard.
 - [x] Accent colour to choose ("ich liebe Crimson", "ich mag das Blau nicht"): blue, crimson,
       violet, teal.

@@ -80,6 +80,13 @@ function siteLink(state) {
   return `<a class="site-link" href="#/sites" data-area="sites"${current} title="${h(site ? `${siteTitle(site)} · ${site.name}` : t("sites.title"))}">${SITES_ICON}<span><span class="side-caption">${t("sites.title")}</span>${name}${network}</span></a>`;
 }
 
+/** The note in the sidebar: only when a newer release is out. */
+export function updateNoteHtml(state) {
+  const update = state.update;
+  if (!update?.newer) return "";
+  return `<a class="update-note" href="${h(update.url)}" target="_blank" rel="noopener">${t("update.new", { version: update.version })}</a>`;
+}
+
 export function sideHtml(state) {
   const options = state.adapters.map((adapter, index) => {
     const label = `${adapter.name} · ${adapter.ip}`;
@@ -94,6 +101,7 @@ export function sideHtml(state) {
   const settingsCurrent = state.area === "settings" ? ' aria-current="page"' : "";
   return `<a class="brand" href="#/workspace"><img src="icon.svg" alt="">bacnetio</a>
     ${siteLink(state)}
+    ${updateNoteHtml(state)}
     <div class="net">
       ${adapterField}
       <div class="conn menu-host">${connection(state)}

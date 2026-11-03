@@ -27,5 +27,6 @@ pub mod storage;
 pub mod structure;
 pub mod table;
 pub mod trend;
+pub mod update;
 pub mod watch;
 pub mod write;
