@@ -78,6 +78,13 @@ handle ReadPropertyMultiple, values are read one by one. The output says when th
 Direct answers get through the Windows firewall even when broadcast answers are dropped, which
 is the usual reason other tools find nothing without administrator rights.
 
+### New versions
+
+Once a day bacnetio asks GitHub whether a newer release is out and, if so, shows a link to it in
+the sidebar. GitHub sees the computer's internet address, nothing else; bacnetio never downloads
+or installs anything by itself. *Settings → Version* switches the check off, and then bacnetio
+does not go online at all. Without internet, as on most plants, nothing is shown.
+
 ## Build
 
 ```sh

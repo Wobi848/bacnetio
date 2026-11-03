@@ -15,7 +15,7 @@
   .side .settings-link { grid-row: 1; grid-column: 2; }
   .side .settings-link .side-label { display: none; }
   .nav-i { display: none; }
-  .side .site-link { grid-column: 1 / -1; }
+  .side .site-link, .side .update-note { grid-column: 1 / -1; }
   .side .settings-link .nav-i { display: block; color: inherit; }
   .pagehead h1, .pagehead p.lead { display: none; }
   .pagehead { flex-basis: 100%; }

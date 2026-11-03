@@ -16,6 +16,7 @@ import { editDay, editProperty, releaseHeld, releaseHere, releaseOther, selectPo
 import { pollRecording, recordHere, recordPoint, recordingRequest, removeRecorded, setRecordMode } from "./recording-actions.js";
 import { setAccent, setBackground, setTheme } from "./settings.js";
 import { nextSort } from "./sorting.js";
+import { checkForUpdate, setUpdateCheck } from "./update.js";
 import { TABLE_FILTERS, noTableFilter } from "./table-filter.js";
 import { AREAS, areaOfHash, forgetDeviceReads, go, refreshHeld, render, state, toast } from "./store.js";
 import { loadStructure } from "./structure-actions.js";
@@ -282,6 +283,8 @@ const actions = {
   "rec-stop": () => recordingRequest(() => api.recordStop()),
   language: (element) => { setLanguage(element.dataset.code); render(); },
   theme: (element) => { setTheme(element.dataset.theme); render(); },
+  "update-check": (element) => setUpdateCheck(element.dataset.on === "true"),
+  "update-now": () => checkForUpdate(true),
   accent: (element) => { setAccent(element.dataset.accent); render(); },
   background: (element) => { setBackground(element.dataset.scheme, element.dataset.background); render(); },
 };
@@ -521,6 +524,7 @@ async function start() {
   ]).catch((error) => { state.error = error.message; });
   render();
   pollRecording();
+  checkForUpdate();
 }
 
 start();
