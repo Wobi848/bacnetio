@@ -4,6 +4,16 @@ All notable changes for users of bacnetio.
 
 ## Unreleased
 
+### Changed
+
+- Android: the app icon is the new logo.
+
+### Fixed
+
+- Android: the status bar, the camera cutout, the navigation bar and the keyboard no longer cover the interface.
+- On a phone the group heads of the point list (*Inputs*, …) no longer stop below the top and cover the rows scrolling under them.
+- Mobile data (`ccmni`, `rmnet`, `wwan`, *Cellular*) is no longer chosen by itself before Wi-Fi; it stays in the list to choose.
+
 ## v0.1.0 (03.11.2026)
 
 The first release.
