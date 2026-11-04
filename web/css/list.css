@@ -180,6 +180,8 @@ mark { border-radius: 2px; background: var(--warn-soft); color: inherit; border-
 .facts dd { margin: 0; overflow-wrap: anywhere; }
 .facts.mono dt, .facts.mono dd { font-size: 12px; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
+/* opens a part of the page below, so it stands apart from the switches */
+.detail .disclosure { display: flex; width: 100%; justify-content: space-between; margin: 4px 0 10px; }
 .big { font-size: 40px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.15; overflow-wrap: anywhere; }
 .big small, .big .unit { font-size: 16px; color: var(--muted); font-weight: 500; margin-left: 4px; }
 /* watch, record, properties: one row across the panel */
