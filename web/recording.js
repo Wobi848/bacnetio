@@ -86,8 +86,8 @@ function figuresRow(item) {
   const found = figures(item.samples, item.stepped);
   const units = item.stepped ? "" : item.units ?? "";
   const stepped = item.stepped && found.onShare !== null ? `${Math.round(found.onShare * 100)} % · ${t("rec.changes", { n: found.changes })}` : "";
-  return `<tr><th scope="row"><span class="swatch" style="background:var(--series-${item.color})"></span>${h(item.label)} <button type="button" class="quiet" data-act="rec-remove" data-key="${item.key}">${t("rec.removeShort")}</button>
-    <div class="rec-meta">${modeHtml(item.point)}${lastMeasuredHtml(item.point)}</div></th>
+  return `<tr><th scope="row"><span class="swatch" style="background:var(--series-${item.color})"></span>${h(item.label)}
+    <div class="rec-meta">${modeHtml(item.point)}${lastMeasuredHtml(item.point)}<button type="button" class="quiet" data-act="rec-remove" data-key="${item.key}">${t("rec.removeShort")}</button></div></th>
     <td class="mono">${h(figureText(found.last, units))}</td><td class="mono">${h(figureText(found.low, units))}</td><td class="mono">${h(figureText(found.high, units))}</td>
     <td class="mono">${h(item.stepped ? stepped : figureText(found.mean, units))}</td><td class="mono">${found.count}${found.gaps ? ` <span class="chip warn">${t("rec.gaps", { n: found.gaps })}</span>` : ""}</td></tr>`;
 }
