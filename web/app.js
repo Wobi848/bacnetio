@@ -12,6 +12,7 @@ import { toggleLiveList } from "./live-list.js";
 import { loadMemory, loadPropertyNames, loadTreeView, loadWatch, saveMemory, savePropertyNames, saveTreeView } from "./memory.js";
 import { installColumns } from "./columns.js";
 import { installPanels } from "./panels.js";
+import { installDragToggle } from "./drag-toggle.js";
 import { editDay, editProperty, releaseHeld, releaseHere, releaseOther, selectPoint, setClock, showTechnical, writeDay, writeProperty, writeValue } from "./object-actions.js";
 import { pollRecording, recordHere, recordPoint, recordingRequest, removeRecorded, setRecordMode } from "./recording-actions.js";
 import { setAccent, setBackground, setTheme } from "./settings.js";
@@ -516,6 +517,7 @@ async function start() {
   state.area = areaOfHash(location.hash);
   installPanels();
   installColumns();
+  installDragToggle();
   render();
   try {
     state.adapters = await api.adapters();
