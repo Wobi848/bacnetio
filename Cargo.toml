@@ -1,6 +1,6 @@
 [package]
 name = "bacnetio"
-version = "0.1.0"
+version = "0.1.1"
 description = "BACnet browser"
 repository = "https://github.com/Wobi848/bacnetio"
 license = "MIT"
