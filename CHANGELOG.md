@@ -9,6 +9,8 @@ All notable changes for users of bacnetio.
 - A connected VPN is chosen before mobile data; Wi-Fi and a cable still come first.
 - When only direct questions found devices through a VPN, the note names the VPN instead of the firewall.
 - On a phone the head folds to one line with the site and its devices; a tap unfolds the adapter, *Change* and the site search. The tabs swipe in one line, and watch and record sit beside the value, so a point takes one line and the list gets most of the screen.
+- In the point list, press on a watch or record switch and drag the mouse over other rows: they all take the same state, as in Blender. A plain click still switches one; touch screens scroll as before.
+- The top of the device tree is a button, *All devices*, so the way back to the device list is easy to find.
 - In the details *Properties* stands apart from *Watch* and *Record*, as a button that opens the properties below.
 - Android: the back key steps back (details, device, device list, workspace). With no step left it asks whether to leave bacnetio running in the background or to stop it, and warns of values still held.
 

@@ -307,10 +307,12 @@ Open, in the maintainer's words where it helps. The larger ones are planned in
       leaving, and more room for the list on a phone ("der Oberteil nimmt zu viel Platz ein"): the
       head folds to one line (site, devices, settings) and unfolds adapter, *Change* and the site
       search on a tap; the tabs swipe in one line; watch and record sit beside the value.
-- [ ] **Drag to switch many at once**, as in Blender (4 November: "wenn man mit gedrückter
+- [x] **Drag to switch many at once**, as in Blender (4 November: "wenn man mit gedrückter
       maustaste darüber fährt das man alle gleich markiert oder auswählt"): press on one switch,
       such as watch or record in a row, and drag over others: they all take the state of the first.
-      Concept: `docs/concept-drag-toggle.md`, waiting for the maintainer.
+      Concept: `docs/concept-drag-toggle.md`. Built for watch and record in the point list, mouse
+      only. Also: the top of the device tree as a button, *All devices* ("viel bin ich immer am
+      suchen").
 - Decided: the instance of other objects cannot be changed (devices rarely allow it, and
   references break). Revisit only for a concrete case.
 

@@ -31,6 +31,6 @@ idea and not part of this.
   recorded.
 - With the keyboard nothing changes: each switch is still a button.
 
-## Open question for the maintainer
+## Decided
 
-- Only the point list first, or other places right away?
+- 4 November: built for the point list first; other places only when asked.
