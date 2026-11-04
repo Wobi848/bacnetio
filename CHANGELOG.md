@@ -8,6 +8,7 @@ All notable changes for users of bacnetio.
 
 - A connected VPN is chosen before mobile data; Wi-Fi and a cable still come first.
 - When only direct questions found devices through a VPN, the note names the VPN instead of the firewall.
+- Android: the back key steps back (details, device, device list, workspace). With no step left it asks whether to leave bacnetio running in the background or to stop it, and warns of values still held.
 
 ### Fixed
 
