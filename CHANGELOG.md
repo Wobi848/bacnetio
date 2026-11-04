@@ -7,6 +7,7 @@ All notable changes for users of bacnetio.
 ### Changed
 
 - Android: the app icon is the new logo.
+- On a phone the site problems show the device above, so a value stays beside its point, and the change log gives the point its own line, so the change itself is no longer cut short.
 
 ### Fixed
 
