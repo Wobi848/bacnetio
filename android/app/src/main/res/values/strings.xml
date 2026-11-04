@@ -8,4 +8,12 @@
     <string name="failed">bacnetio does not start. See bacnetio.log in the app data.</string>
     <string name="saved">Saved in Downloads: %1$s</string>
     <string name="save_failed">Could not save: %1$s</string>
+    <string name="leave_title">Leave bacnetio?</string>
+    <string name="leave_text">bacnetio keeps running in the background, so recordings go on. Stop ends it.</string>
+    <string name="leave">Leave</string>
+    <string name="stay">Stay</string>
+    <plurals name="leave_held">
+        <item quantity="one">You still hold one value: it stays in the plant until you release it.</item>
+        <item quantity="other">You still hold %1$d values: they stay in the plant until you release them.</item>
+    </plurals>
 </resources>

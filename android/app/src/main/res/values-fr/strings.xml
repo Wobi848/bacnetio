@@ -8,4 +8,13 @@
     <string name="failed">bacnetio ne démarre pas. Voir bacnetio.log dans les données de l’app.</string>
     <string name="saved">Enregistré dans Téléchargements : %1$s</string>
     <string name="save_failed">Échec de l’enregistrement : %1$s</string>
+    <string name="leave_title">Quitter bacnetio ?</string>
+    <string name="leave_text">bacnetio continue en arrière-plan, les enregistrements aussi. Arrêter le termine.</string>
+    <string name="leave">Quitter</string>
+    <string name="stay">Rester</string>
+    <plurals name="leave_held">
+        <item quantity="one">Vous maintenez encore une valeur : elle reste ainsi dans l’installation jusqu’à ce que vous la libériez.</item>
+        <item quantity="other">Vous maintenez encore %1$d valeurs : elles restent ainsi dans l’installation jusqu’à ce que vous les libériez.</item>
+        <item quantity="many">Vous maintenez encore %1$d valeurs : elles restent ainsi dans l’installation jusqu’à ce que vous les libériez.</item>
+    </plurals>
 </resources>

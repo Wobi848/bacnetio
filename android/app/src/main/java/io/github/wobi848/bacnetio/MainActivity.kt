@@ -3,6 +3,7 @@ package io.github.wobi848.bacnetio
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
 import android.content.res.Configuration
@@ -11,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.WindowInsets
+import android.window.OnBackInvokedDispatcher
 import android.view.WindowInsetsController
 import android.webkit.URLUtil
 import android.webkit.WebResourceRequest
@@ -18,6 +20,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import android.widget.Toast
+import org.json.JSONObject
+import org.json.JSONTokener
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -50,6 +54,9 @@ class MainActivity : Activity() {
         }
         web.loadData(getString(R.string.starting), "text/plain; charset=utf-8", null)
         setContentView(clearOfSystemBars(web))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) { back() }
+        }
         waitForBacnetio()
     }
 
@@ -110,7 +117,28 @@ class MainActivity : Activity() {
     }
 
     @Deprecated("Activity without AndroidX")
-    override fun onBackPressed() {
-        if (web.canGoBack()) web.goBack() else super.onBackPressed()
+    override fun onBackPressed() = back()
+
+    /** The back key steps back in the page (web/app.js, bacnetioBack); with no step left it asks. */
+    private fun back() {
+        web.evaluateJavascript("window.bacnetioBack ? window.bacnetioBack() : null") { result ->
+            val answer = runCatching { JSONObject(JSONTokener(result).nextValue() as String) }.getOrNull()
+            if (answer?.getBoolean("stepped") != true) askToLeave(answer?.getInt("held") ?: 0)
+        }
+    }
+
+    private fun askToLeave(held: Int) {
+        val text = getString(R.string.leave_text) +
+            if (held > 0) "\n\n" + resources.getQuantityString(R.plurals.leave_held, held, held) else ""
+        AlertDialog.Builder(this)
+            .setTitle(R.string.leave_title)
+            .setMessage(text)
+            .setPositiveButton(R.string.leave) { _, _ -> moveTaskToBack(true) }
+            .setNeutralButton(R.string.stop) { _, _ ->
+                startService(Intent(this, BacnetioService::class.java).setAction(BacnetioService.ACTION_STOP))
+                finishAndRemoveTask()
+            }
+            .setNegativeButton(R.string.stay, null)
+            .show()
     }
 }
