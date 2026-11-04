@@ -100,7 +100,9 @@ export function treeHtml(state) {
     routed.set(key, [...(routed.get(key) ?? []), device]);
   }
   const behind = [...routed].map(([, list]) => `<div class="node level-1 heading" role="presentation"><span class="label">${t("tree.router", { address: h(list[0].address), network: list[0].network })}</span></div>${list.map((device) => deviceHtml(state, device)).join("")}`).join("");
-  const root = nodeHtml(0, !state.device, 'data-act="tree-site"', h(searchScope(state) || t("tab.devices")), `<span class="count">${devices.length || ""}</span>`);
+  // looks like a button: the way back to the device list was hard to find as a plain line
+  const scope = searchScope(state);
+  const root = nodeHtml(0, !state.device, 'data-act="tree-site" role="button"', `${t("tree.allDevices")}${scope ? ` <span class="sub mono">${h(scope)}</span>` : ""}`, `<span class="count">${devices.length || ""}</span>`);
   const view = (name, label) => `<button type="button" data-act="tree-view" data-view="${name}" aria-pressed="${state.treeView === name}">${label}</button>`;
   const views = `<div class="tree-views"><span class="seg">${view("type", t("tree.byType"))}${view("plant", t("tree.plantView"))}</span></div>`;
   return `<nav class="tree" data-keep="tree" role="tree" aria-label="${t("tree.label")}">${views}${root}${direct.map((device) => deviceHtml(state, device)).join("")}${behind}</nav>`;

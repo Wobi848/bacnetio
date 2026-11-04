@@ -5,7 +5,7 @@ export default {
   locale: "de-CH",
   decimalComma: true,
   texts: {
-    areas: "Bereiche", "tab.devices": "Geräte", 
+    areas: "Bereiche", "tab.devices": "Geräte", "tree.allDevices": "Alle Geräte", 
     "tab.recording": "Aufzeichnung", "tab.log": "Von dir gehalten", "tab.settings": "Einstellungen",
     "col.device": "Gerät", "col.id": "ID", "col.address": "Adresse", "col.vendor": "Hersteller",
     "col.name": "Name", "col.type": "Typ", "col.value": "Wert", "col.state": "Zustand",
