@@ -30,7 +30,7 @@ import kotlin.concurrent.thread
 /** The bacnetio web UI in the whole window; bacnetio itself runs in BacnetioService. */
 class MainActivity : Activity() {
     private lateinit var web: WebView
-    private val home = "http://127.0.0.1:${BacnetioService.WEB_PORT}/"
+    private val home get() = "http://127.0.0.1:${BacnetioService.webPort}/"
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
