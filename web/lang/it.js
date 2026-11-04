@@ -224,6 +224,7 @@ export default {
     no_answer_subnet_too_large: "Nessun dispositivo ha risposto al broadcast Who-Is. Controllare scheda di rete, cavo e VLAN.",
     none_identified: "Nessun dispositivo è stato riconosciuto, ma alcuni indirizzi hanno risposto (vedi sotto).",
     broadcast_blocked: "Nessun dispositivo ha risposto al broadcast Who-Is, ma {direct} alle domande dirette. Molto probabilmente il firewall blocca le risposte ai broadcast, spesso senza diritti di amministratore. bacnetio lo aggira.",
+    broadcast_not_passed: "Nessun dispositivo ha risposto al broadcast Who-Is, ma {direct} alle domande dirette. Una VPN trasmette raramente i broadcast, perciò bacnetio interroga ogni indirizzo.",
     some_only_direct: "{direct} dispositivi su {total} hanno risposto solo alle domande dirette: le loro risposte ai broadcast non arrivano (firewall).",
     duplicate_id: "L’ID dispositivo {instance} risponde da {addresses}: due dispositivi condividono un ID. Finché non è corretto, i valori possono venire dal dispositivo sbagliato.",
     refused: "Questi indirizzi hanno risposto ma rifiutato la domanda diretta ({addresses}): c’è BACnet, ma i dispositivi rispondono solo a domande con il loro ID.",

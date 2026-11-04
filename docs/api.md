@@ -111,7 +111,8 @@ is also kept as a site of its own (see below); searching the same site again rep
   language translates by `code` and falls back to `text`. Codes: `link_local`, `port_in_use`
   (`reason`), `subnet_too_large` (`prefix_len`, `max_prefix_len`), `no_answer`,
   `no_answer_sweep_disabled`, `no_answer_subnet_too_large`, `none_identified`, `broadcast_blocked`
-  (`direct`), `some_only_direct` (`direct`, `total`), `duplicate_id` (`instance`, `addresses`),
+  (`direct`), `broadcast_not_passed` (`direct`; the same on a VPN or other virtual adapter),
+  `some_only_direct` (`direct`, `total`), `duplicate_id` (`instance`, `addresses`),
   `refused` (`addresses`), `silent_networks` (`networks`: a router reaches them, but no device
   there answered)
 - `refused`: addresses that speak BACnet but would not tell their device ID

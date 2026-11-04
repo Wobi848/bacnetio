@@ -236,6 +236,7 @@ export default {
     no_answer_subnet_too_large: "Kein Gerät hat auf den Who-Is-Broadcast geantwortet. Adapter, Kabel und VLAN prüfen.",
     none_identified: "Kein Gerät liess sich erkennen, aber einige Adressen haben geantwortet (siehe unten).",
     broadcast_blocked: "Kein Gerät hat auf den Who-Is-Broadcast geantwortet, aber {direct} auf direkte Fragen. Broadcast-Antworten blockiert sehr wahrscheinlich die Firewall, häufig ohne Administratorrechte. bacnetio umgeht das.",
+    broadcast_not_passed: "Kein Gerät hat auf den Who-Is-Broadcast geantwortet, aber {direct} auf direkte Fragen. Ein VPN gibt Broadcasts selten weiter, darum fragt bacnetio jede Adresse einzeln.",
     some_only_direct: "{direct} von {total} Geräten haben nur auf direkte Fragen geantwortet: Ihre Broadcast-Antworten kommen nicht an (Firewall).",
     duplicate_id: "Die Geräte-ID {instance} antwortet von {addresses}: Zwei Geräte teilen sich eine ID. Bis das behoben ist, können Werte vom falschen Gerät kommen.",
     refused: "Diese Adressen haben geantwortet, aber die direkte Frage abgelehnt ({addresses}): Da ist BACnet, aber die Geräte antworten nur auf Fragen mit ihrer Geräte-ID.",

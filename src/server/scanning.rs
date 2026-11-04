@@ -215,11 +215,7 @@ async fn scan_with(
         &|progress| state.set_scan(ScanStatus::Running(progress)),
     )
     .await?;
-    let context = diagnosis::Context {
-        sweep,
-        link_local: adapter.ip.is_link_local(),
-        port_unavailable: plan.port_unavailable,
-    };
+    let context = diagnosis::Context::new(sweep, adapter, plan.port_unavailable);
     let view = ScanView::new(&report, diagnosis::notes(&report, &context));
     *state.devices.lock().expect("devices lock") = report.devices;
     Ok(view)

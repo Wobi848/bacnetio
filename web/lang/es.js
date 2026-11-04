@@ -224,6 +224,7 @@ export default {
     no_answer_subnet_too_large: "Ningún dispositivo ha respondido al broadcast Who-Is. Comprobar el adaptador, el cable y la VLAN.",
     none_identified: "No se pudo reconocer ningún dispositivo, pero algunas direcciones respondieron (ver abajo).",
     broadcast_blocked: "Ningún dispositivo respondió al broadcast Who-Is, pero {direct} a preguntas directas. Muy probablemente el cortafuegos bloquea las respuestas a los broadcasts, a menudo sin derechos de administrador. bacnetio lo sortea.",
+    broadcast_not_passed: "Ningún dispositivo respondió al broadcast Who-Is, pero {direct} a preguntas directas. Una VPN rara vez transmite los broadcasts, por eso bacnetio pregunta a cada dirección.",
     some_only_direct: "{direct} de {total} dispositivos solo respondieron a preguntas directas: sus respuestas a los broadcasts no llegan (cortafuegos).",
     duplicate_id: "El ID de dispositivo {instance} responde desde {addresses}: dos dispositivos comparten un ID. Hasta corregirlo, los valores pueden venir del dispositivo equivocado.",
     refused: "Estas direcciones respondieron pero rechazaron la pregunta directa ({addresses}): hay BACnet, pero los dispositivos solo responden a preguntas con su ID.",

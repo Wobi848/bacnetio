@@ -224,6 +224,7 @@ export default {
     no_answer_subnet_too_large: "Aucun appareil n’a répondu au broadcast Who-Is. Vérifier l’adaptateur, le câble et le VLAN.",
     none_identified: "Aucun appareil n’a pu être identifié, mais quelques adresses ont répondu (voir ci-dessous).",
     broadcast_blocked: "Aucun appareil n’a répondu au broadcast Who-Is, mais {direct} aux questions directes. Le pare-feu bloque très probablement les réponses aux broadcasts, souvent sans droits d’administrateur. bacnetio contourne cela.",
+    broadcast_not_passed: "Aucun appareil n’a répondu au broadcast Who-Is, mais {direct} aux questions directes. Un VPN transmet rarement les broadcasts, c’est pourquoi bacnetio interroge chaque adresse.",
     some_only_direct: "{direct} appareils sur {total} n’ont répondu qu’aux questions directes : leurs réponses aux broadcasts n’arrivent pas (pare-feu).",
     duplicate_id: "L’ID d’appareil {instance} répond depuis {addresses} : deux appareils partagent un ID. Tant que ce n’est pas corrigé, des valeurs peuvent venir du mauvais appareil.",
     refused: "Ces adresses ont répondu mais refusé la question directe ({addresses}) : il y a du BACnet, mais les appareils ne répondent qu’aux questions avec leur ID d’appareil.",
