@@ -301,6 +301,16 @@ Open, in the maintainer's words where it helps. The larger ones are planned in
       fault. Then they come as an *extension*, off by default and switched on under *Settings*,
       since not everyone needs them ("braucht ja nicht jeder"). The code keeps each extension in a
       module of its own; a loader for third-party plugins only when a second extension asks for it.
+- [x] **Phone test through a VPN app, 4 November:** a DDC4000 found over the VPN by asking each
+      address (no broadcast passes). Wishes from it: a VPN chosen before mobile data, the note to
+      name the VPN instead of the firewall, the Android back key to step back and to ask before
+      leaving, and more room for the list on a phone ("der Oberteil nimmt zu viel Platz ein"): the
+      head folds to one line (site, devices, settings) and unfolds adapter, *Change* and the site
+      search on a tap; the tabs swipe in one line; watch and record sit beside the value.
+- [ ] **Drag to switch many at once**, as in Blender (4 November: "wenn man mit gedrückter
+      maustaste darüber fährt das man alle gleich markiert oder auswählt"): press on one switch,
+      such as watch or record in a row, and drag over others: they all take the state of the first.
+      Concept: `docs/concept-drag-toggle.md`, waiting for the maintainer.
 - Decided: the instance of other objects cannot be changed (devices rarely allow it, and
   references break). Revisit only for a concrete case.
 
