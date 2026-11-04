@@ -386,18 +386,37 @@ const MOVE_KEYS = { ArrowDown: 1, ArrowUp: -1, PageDown: PAGE_ROWS, PageUp: -PAG
 
 const typing = () => document.activeElement?.matches?.("input, select, textarea");
 
+/** Closes the menu, dialog, search or details on top; false when nothing was open. */
+function closeTopmost() {
+  if (state.menu) state.menu = null;
+  else if (state.leaving) state.leaving = false;
+  else if (state.renamingSite !== null) state.renamingSite = null;
+  else if (state.siteSearch || document.activeElement?.id === "site-search") {
+    state.siteSearch = "";
+    document.activeElement.blur();
+  }
+  else if (state.confirm) state.confirm = null;
+  else if (state.asking) state.asking = false;
+  else if (state.detailOpen) state.detailOpen = false;
+  else return false;
+  return true;
+}
+
+/**
+ * The Android back key: one step back, from the details to the device to the device list to the
+ * workspace. When there is no step left, the app asks whether to leave and warns of held values.
+ */
+window.bacnetioBack = () => {
+  if (closeTopmost()) render();
+  else if (state.area === "workspace" && state.device !== null) showSite();
+  else if (state.area !== "workspace") enter("workspace");
+  else return JSON.stringify({ stepped: false, held: state.held.length });
+  return JSON.stringify({ stepped: true, held: state.held.length });
+};
+
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
-    if (state.menu) state.menu = null;
-    else if (state.leaving) state.leaving = false;
-    else if (state.renamingSite !== null) state.renamingSite = null;
-    else if (state.siteSearch || document.activeElement?.id === "site-search") {
-      state.siteSearch = "";
-      document.activeElement.blur();
-    }
-    else if (state.confirm) state.confirm = null;
-    else if (state.asking) state.asking = false;
-    else state.detailOpen = false;
+    closeTopmost();
     render();
     return;
   }
