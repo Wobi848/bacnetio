@@ -30,7 +30,8 @@ const VIRTUAL_NAME_HINTS: &[&str] = &[
 const WIRELESS_NAME_HINTS: &[&str] = &["wlan", "wi-fi", "wifi", "wireless", "wlp", "wlo"];
 
 /// Name parts of mobile data: Android's `ccmni`/`rmnet`, `wwan` on Linux, Windows' "Cellular" or
-/// "Mobile Broadband". No plant is reached that way, so it never comes before Wi-Fi or a cable.
+/// "Mobile Broadband". No plant is reached that way, so it never comes before Wi-Fi, a cable or a
+/// VPN.
 const CELLULAR_NAME_HINTS: &[&str] = &["ccmni", "rmnet", "wwan", "cellular", "mobile broadband"];
 
 /// Smallest prefix length (largest subnet) still asked address by address: /22 has 1022 hosts.
@@ -217,7 +218,9 @@ impl Adapter {
         {
             score += 8;
         }
-        if !self.name_contains_any(WIRELESS_NAME_HINTS) {
+        if !self.name_contains_any(WIRELESS_NAME_HINTS)
+            && !self.name_contains_any(CELLULAR_NAME_HINTS)
+        {
             score += 4;
         }
         if !self.point_to_point {
@@ -319,6 +322,15 @@ mod tests {
         ];
         assert_eq!(pick_default(&adapters).unwrap().name, "wlan0");
         assert_eq!(adapters[0].kind(), AdapterKind::Wireless);
+    }
+
+    #[test]
+    fn default_prefers_vpn_over_mobile_data() {
+        // a phone away from the plant, reaching it through a VPN app
+        let mut vpn = adapter("tun0", [192, 168, 10, 222], 24);
+        vpn.point_to_point = true;
+        let adapters = vec![adapter("ccmni2", [100, 81, 242, 155], 8), vpn];
+        assert_eq!(pick_default(&adapters).unwrap().name, "tun0");
     }
 
     #[test]
