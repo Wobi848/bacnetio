@@ -14,6 +14,7 @@ All notable changes for users of bacnetio.
 
 ### Fixed
 
+- Android: when another app holds port 8081, bacnetio takes a free port and keeps it, instead of not starting or showing the other app's page.
 - Recording: *Poll* or *COV* and *Remove* sit in one line under the name; the switch lost its double line at the top.
 - On a phone the status line keeps what is running readable (*Reading values …*) and shortens the adapter instead.
 
