@@ -17,7 +17,7 @@ export default {
     assert.equal(await page.evaluate(() => document.documentElement.dataset.background), "graphite");
     assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), "rgb(19, 20, 22)");
     await page.reload();
-    await page.waitForSelector("#adapter");
+    await page.waitForSelector("#adapter", { state: "attached" });
     assert.equal(await page.textContent(".pagehead h1"), "Einstellungen");
     assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), "dark");
     assert.equal(await page.evaluate(() => document.documentElement.dataset.accent), "crimson");
@@ -28,7 +28,7 @@ export default {
     const menu = await page.$$eval("button[data-code]", (buttons) => buttons.map((button) => button.dataset.code));
     assert.deepEqual(menu, ["auto", "en", "de"]);
     await page.goto(`${base}/?lang=fr#/settings`);
-    await page.waitForSelector("#adapter");
+    await page.waitForSelector("#adapter", { state: "attached" });
     assert.equal(await page.textContent(".pagehead h1"), "Réglages");
   },
 };

@@ -99,6 +99,7 @@ const actions = {
   network: () => { state.menu = state.menu === "network" ? null : "network"; render(); document.getElementById("subnet")?.focus(); },
   "locate-menu": () => { state.menu = state.menu === "locate" ? null : "locate"; render(); document.getElementById("locate-address")?.focus(); },
   "close-menu": () => { state.menu = null; render(); },
+  "toggle-head": () => { state.headOpen = !state.headOpen; render(); },
   "focus-adapter": () => document.getElementById("adapter")?.focus(),
   go: (element) => enter(element.dataset.area),
   "tree-site": () => showSite(),

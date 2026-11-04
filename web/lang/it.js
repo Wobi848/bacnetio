@@ -121,6 +121,7 @@ export default {
     back: "Indietro", held: "{n} forzati",
     "start.lead": "bacnetio chiede alla rete chi c’è. Nell’impianto non viene modificato nulla.",
     "start.noAdapter": "Nessuna scheda di rete con indirizzo IPv4 collegata.",
+    "head.toggle": "Mostra o nascondi impianto, adattatore e ricerca",
     change: "Modificare", find: "Cercare dispositivi", searchAgain: "Cercare di nuovo",
     "phase.sweep": "Ogni indirizzo viene interrogato direttamente ({asked} di {total})",
     "col.objects": "Oggetti", "phase.objects": "Lettura delle liste oggetti dei dispositivi", "dev.objectsFailed": "non letta",

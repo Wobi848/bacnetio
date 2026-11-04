@@ -121,6 +121,7 @@ export default {
     back: "Atrás", held: "{n} forzados",
     "start.lead": "bacnetio pregunta a la red quién está. En la instalación no se cambia nada.",
     "start.noAdapter": "No hay ningún adaptador de red con dirección IPv4 conectado.",
+    "head.toggle": "Mostrar u ocultar la instalación, el adaptador y la búsqueda",
     change: "Cambiar", find: "Buscar dispositivos", searchAgain: "Buscar de nuevo",
     "phase.sweep": "Se pregunta directamente a cada dirección ({asked} de {total})",
     "col.objects": "Objetos", "phase.objects": "Leyendo las listas de objetos de los dispositivos", "dev.objectsFailed": "no leída",

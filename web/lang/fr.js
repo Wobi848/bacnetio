@@ -121,6 +121,7 @@ export default {
     back: "Retour", held: "{n} forcées",
     "start.lead": "bacnetio demande au réseau qui est là. Rien n’est modifié dans l’installation.",
     "start.noAdapter": "Aucun adaptateur réseau avec une adresse IPv4 n’est connecté.",
+    "head.toggle": "Afficher ou masquer le site, l’adaptateur et la recherche",
     change: "Modifier", find: "Rechercher des appareils", searchAgain: "Rechercher à nouveau",
     "phase.sweep": "Chaque adresse est interrogée directement ({asked} sur {total})",
     "col.objects": "Objets", "phase.objects": "Lecture des listes d’objets des appareils", "dev.objectsFailed": "non lue",

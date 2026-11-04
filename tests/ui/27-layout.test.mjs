@@ -56,7 +56,7 @@ export default {
         for (const area of ["workspace", "problems", "watch"]) {
           await page.goto(`${base}/#/${area}`);
           await page.reload();
-          await page.waitForSelector("#adapter");
+          await page.waitForSelector("#adapter", { state: "attached" });
           for (const problem of await problems(page)) found.push(`not searched, ${language}, ${width} px, ${area}: ${problem}`);
         }
       }
@@ -65,7 +65,7 @@ export default {
     await page.setViewportSize({ width: 1500, height: 900 });
     await page.goto(`${base}/#/workspace`);
     await page.reload();
-    await page.waitForSelector("#adapter");
+    await page.waitForSelector("#adapter", { state: "attached" });
     await searchInUi(page);
     await openDevice(page, "DDC4000_#21");
     await page.click(".row[data-point]:has-text('Zuluft_Temperatur')");
@@ -84,7 +84,7 @@ export default {
           for (const area of AREAS) {
             // a query of its own makes this one full load; a changed hash alone would not reload
             await page.goto(`${base}/?${language}-${theme}-${width}#/${area}`);
-            await page.waitForSelector("#adapter");
+            await page.waitForSelector("#adapter", { state: "attached" });
             await page.waitForTimeout(area === "points" ? 600 : 200);
             for (const problem of await problems(page)) found.push(`${language}, ${theme}, ${width} px, ${area}: ${problem}`);
           }

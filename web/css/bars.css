@@ -6,6 +6,9 @@
 
 .brand { display: inline-flex; align-items: center; gap: 9px; padding: 2px 2px 4px; font-weight: 750; font-size: 16px; letter-spacing: -.01em; text-decoration: none; color: var(--text); }
 .brand img { width: 24px; height: 24px; }
+/* the folded head is for narrow screens (layout.css); the sidebar shows everything */
+.head-toggle { display: none; }
+.head-more { display: contents; }
 .net { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .net select { width: 100%; font-weight: 600; text-overflow: ellipsis; }
 .net .conn { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }

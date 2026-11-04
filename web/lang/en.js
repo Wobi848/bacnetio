@@ -122,6 +122,7 @@ export default {
 
     "start.lead": "bacnetio asks the network who is there. Nothing in the plant is changed.",
     "start.noAdapter": "No network adapter with an IPv4 address is connected.",
+    "head.toggle": "Show or hide the site, adapter and site search",
     change: "Change", find: "Find devices", searchAgain: "Search again",
 
 
