@@ -2,6 +2,17 @@
 
 All notable changes for users of bacnetio.
 
+## Unreleased
+
+### Changed
+
+- A connected VPN is chosen before mobile data; Wi-Fi and a cable still come first.
+- When only direct questions found devices through a VPN, the note names the VPN instead of the firewall.
+
+### Fixed
+
+- On a phone the status line keeps what is running readable (*Reading values …*) and shortens the adapter instead.
+
 ## v0.1.1 (04.11.2026)
 
 ### Changed
