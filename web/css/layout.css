@@ -40,8 +40,12 @@
   .row.points > .type, .row.points > .desc, .row.points > .id { display: none; }
   .row.points > .chips { grid-column: 1 / -1; }
   .row.points > .chips:empty { display: none; }
-  .row.log { grid-template-columns: minmax(0, 1fr) auto; padding-block: 4px; }
+  /* the point on a line of its own, so time, what and result share the second line */
+  .row.log { grid-template-columns: auto minmax(0, 1fr) auto; padding-block: 4px; }
+  .row.log > .name { grid-column: 1 / -1; order: -1; }
   .row.problem { grid-template-columns: minmax(0, 1fr) auto; padding-block: 6px; row-gap: 2px; }
+  /* the device above, so the value stays beside its point */
+  .row.problem > :first-child { grid-column: 1 / -1; }
   .row.problem > .chips { grid-column: 1 / -1; justify-content: flex-start; }
   .row.problem > .chips:empty, .row.problem > span:empty { display: none; }
   .menu.dialog { position: fixed; left: 12px; right: 12px; top: 60px; min-width: 0; }
