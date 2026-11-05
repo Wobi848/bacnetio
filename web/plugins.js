@@ -59,5 +59,6 @@ export function pluginMarksHtml(state, device, type = null, instance = null) {
     (state.marks[plugin.id] ?? [])
       .filter((mark) => mark.device === device && (type === null ? mark.type === undefined : mark.type === type && mark.instance === instance))
       .map((mark) => ({ plugin, mark })));
-  return shown.map(({ plugin, mark }) => `<span class="chip mark" title="${h(plugin.name)}: ${h(mark.text)}">${h(plugin.name)}</span>`).join("");
+  return shown.map(({ plugin, mark }) =>
+    `<span class="chip mark${mark.state ? ` ${mark.state}` : ""}" title="${h(plugin.name)}: ${h(mark.text)}">${h(mark.label ?? plugin.name)}</span>`).join("");
 }

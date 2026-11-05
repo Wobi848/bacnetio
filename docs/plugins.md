@@ -82,9 +82,11 @@ await ask("mark", [
 ]);
 ```
 
-A mark without `type` and `instance` belongs to the device. bacnetio shows the plugin's name as a
-small badge beside the device in the device list and the tree, and beside the object in the
-point list; the text shows on hover. Each call replaces all marks of the plugin; `[]` clears
+A mark without `type` and `instance` belongs to the device. bacnetio shows a small badge beside
+the device in the device list and the tree, and beside the object in the point list; the text
+shows on hover. The badge says the plugin's name, or `label` when the mark gives one (up to 16
+characters, such as `"KBOB ✓"`); `state` `"ok"` makes it green, `"bad"` red, none leaves it
+neutral. Each call replaces all marks of the plugin; `[]` clears
 them. Switching the plugin off or removing it takes its marks away.
 
 ### Looking like bacnetio

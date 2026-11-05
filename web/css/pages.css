@@ -119,3 +119,6 @@ label.button:hover { background: var(--accent-soft); border-color: var(--accent)
 .card > .acts, .card .strip .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 /* what a plugin found, beside the name or among the chips */
 .chip.mark { margin-left: 6px; background: var(--warn-soft); color: var(--warn); }
+/* a plugin may say whether what it found is fine or not */
+.chip.mark.ok { background: var(--ok-soft); color: var(--ok); }
+.chip.mark.bad { background: var(--err-soft); color: var(--err); }
