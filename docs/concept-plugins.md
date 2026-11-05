@@ -60,6 +60,13 @@ pages, and so through the same queue (`src/precedence.rs`):
 | `properties(device, type, instance)` | all properties of one object, as the details read them |
 | `load()` / `save(data)` | a small store of the plugin's own, kept in the data folder beside the site |
 | `download(name, text)` | hand the user a file, such as a report as CSV |
+| `mark(marks)` | short marks on devices and objects that bacnetio shows in its own lists and details (see below) |
+
+**Marks** let a plugin point at what it found without a page of its own: a list of
+`{device, type?, instance?, text}`, shown as a small badge with the plugin's name in the device
+list, the tree, the point list and the details, the text on hover and in the details. A filter
+*Marked by …* shows only marked rows. Marks change only what bacnetio shows, never the plant; a
+plugin switched off or removed takes its marks with it.
 
 No writing, no commands to devices, no network beyond bacnetio. What a plugin needs beyond this
 comes as API version 2, and plugins of version 1 keep working.

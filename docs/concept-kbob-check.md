@@ -55,6 +55,9 @@ Said in the report, so nobody takes the check for more than it is:
 
 ## In the interface
 
+The aim: search the whole network, check every device, and see in bacnetio's own lists what does
+not meet KBOB.
+
 The plugin's page, in the sidebar once it is installed and on:
 
 - The devices of the search or the open site, each with its profile (AS-CH, MBE-CH) and
@@ -63,6 +66,9 @@ The plugin's page, in the sidebar once it is installed and on:
   rule.
 - **Export** the report as CSV, one row per device and rule, with the source of each rule.
 - The results are kept in the plugin's store, so they survive a restart.
+- Every rule not met becomes a **mark** (plugin API): the device in the device list and the tree,
+  the object in the point list, with the rule as text ("KBOB: no unit (5.3.4)"). With the filter
+  *Marked by KBOB check* the point list shows only what has to be fixed.
 
 ## Code
 
