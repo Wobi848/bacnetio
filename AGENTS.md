@@ -11,6 +11,12 @@ UI takes the system's language (English, German, French, Italian or Spanish).
 Local notes that only concern one person's setup go in `CLAUDE.local.md` or `AGENTS.local.md`;
 both are ignored by Git.
 
+## Skills
+Recurring tasks have project skills in `.claude/skills/`: `browser-tests`, `review`, `field-data`,
+`concept`, `new-text`, `simulator`, `pull-request`, `api-route`, `plugin`, and `builds` (only on
+the maintainer's explicit request). Keep them true when the commands, paths or rules they name
+change.
+
 ## Git and GitHub
 - Commits, branches, PRs, issues, tags, release notes, file names and identifiers in English.
 - No AI attribution: no `Co-Authored-By`, no "Generated with".
