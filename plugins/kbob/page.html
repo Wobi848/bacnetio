@@ -31,6 +31,16 @@
   .objects { margin: 4px 0 0; padding-left: 18px; font-size: 13px; }
   .limits { margin-top: 12px; }
   .option { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  /* a phone: each device as a block of its own instead of a table wider than the screen */
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    table, tbody, tr, td { display: block; width: auto; }
+    thead { display: none; }
+    tbody > tr:not(.details) { padding: 8px 0; border-top: 1px solid var(--line, #ddd); }
+    td { border: 0; padding: 4px 12px; }
+    td.acts { justify-content: flex-start; flex-wrap: wrap; }
+    .rule-head { flex-direction: column; gap: 2px; }
+  }
   .limits summary { cursor: pointer; color: var(--muted, #555); font-size: 12px; }
 </style>
 <p id="lead" class="muted"></p>
