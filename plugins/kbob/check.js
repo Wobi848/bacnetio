@@ -1,6 +1,7 @@
 // The KBOB check of one device (docs/concept-kbob-check.md): what bacnetio read goes in, the
 // findings per rule come out. No I/O, so the tests feed it devices that meet and break each rule.
 
+import { followsAks } from "./aks.js";
 import { ABBREVIATIONS, BIBBS, OBJECT_TYPES, PROPERTIES } from "./rules.js";
 
 const DEVICE = 8;
@@ -44,8 +45,24 @@ const BIBB_SERVICES = {
   "DM-OCD-B": ["create-object", "delete-object"],
 };
 
-export const RULES = ["revision", "objectTypes", "proprietary", "properties", "names", "units", "stateTexts", "notificationClass", "services"];
-const SOURCES = { revision: "4.1", objectTypes: "5.2.1, C1.1", proprietary: "4.4", properties: "5.3, C1.2", names: "5.3.3", units: "5.3.4", stateTexts: "5.3.6", notificationClass: "5.3.5", services: "6, C1.3" };
+/**
+ * The KBOB notification classes (recommendation, table 7): eight categories from NC1, NC32 … NC224,
+ * four classes each, two for trend data and status. Table 8: within a category, which transitions
+ * need acknowledging [TO-OFFNORMAL, TO-FAULT, TO-NORMAL], and the range of priorities.
+ */
+const CATEGORIES = [[1, 4, 1, 7], [32, 4, 32, 39], [64, 4, 64, 71], [96, 4, 96, 103], [128, 4, 128, 135], [160, 4, 160, 167], [192, 2, 192, 199], [224, 2, 224, 231]];
+const ACKNOWLEDGED = [[false, false, false], [false, true, false], [true, true, false], [true, true, true]];
+
+/** Table 8 for a class number, or null when it is no KBOB class. */
+export function kbobClass(number) {
+  const category = CATEGORIES.find(([first, count]) => number >= first && number < first + count);
+  if (!category) return null;
+  const [first, , lowest, highest] = category;
+  return { acknowledged: ACKNOWLEDGED[number - first], lowest, highest };
+}
+
+export const RULES = ["revision", "objectTypes", "proprietary", "properties", "names", "aks", "units", "stateTexts", "notificationClass", "kbobClasses", "services"];
+const SOURCES = { revision: "4.1", objectTypes: "5.2.1, C1.1", proprietary: "4.4", properties: "5.3, C1.2", names: "5.3.3", aks: "Leitfaden 3.2.2", units: "5.3.4", stateTexts: "5.3.6", notificationClass: "5.3.5", kbobClasses: "6.2, Tab. 7, 8", services: "6, C1.3" };
 export const sourceOf = (rule) => SOURCES[rule];
 
 const byName = (properties) => new Map((properties ?? []).map((property) => [property.property, property]));
@@ -79,8 +96,21 @@ function services(device, profile) {
   return { ok: !missing.length, found: missing };
 }
 
+/** A notification class object against tables 7 and 8: its number, acknowledgement and priorities. */
+function classFindings(object, properties) {
+  const kbob = kbobClass(object.instance);
+  if (!kbob) return [`NC${object.instance}`];
+  const what = [];
+  const acknowledged = properties.get("ack-required")?.bits;
+  if (acknowledged && kbob.acknowledged.some((wanted, index) => Boolean(acknowledged[index]) !== wanted)) what.push("ack-required");
+  const priority = properties.get("priority");
+  const priorities = (priority?.items ?? String(priority?.value ?? "").split(",")).map((entry) => Number(String(entry).trim()));
+  if (priority && priorities.some((value) => !(value >= kbob.lowest && value <= kbob.highest))) what.push("priority");
+  return what;
+}
+
 /** One object's findings: each a rule and what is wrong, for its mark and the report. */
-function objectFindings(object, profile, classes) {
+function objectFindings(object, profile, classes, options) {
   const findings = [];
   if (object.type >= FIRST_PROPRIETARY) findings.push({ rule: "proprietary", what: [String(object.type)] });
   if (!object.properties) return findings;
@@ -89,6 +119,11 @@ function objectFindings(object, profile, classes) {
   const missing = required.map(([name]) => name).filter((name) => !NOT_IN_ALL.includes(name) && !has(properties, name));
   if (missing.length) findings.push({ rule: "properties", what: missing });
   if (!text(properties, "object-name")) findings.push({ rule: "names", what: ["—"] });
+  else if (options.aks && !followsAks(object.type, text(properties, "object-name"))) findings.push({ rule: "aks", what: [text(properties, "object-name")] });
+  if (object.type === NOTIFICATION_CLASS) {
+    const wrong = classFindings(object, properties);
+    if (wrong.length) findings.push({ rule: "kbobClasses", what: wrong });
+  }
   if (ANALOG.includes(object.type) && (!text(properties, "units") || /^no.?units$/i.test(text(properties, "units")))) findings.push({ rule: "units", what: [] });
   if (BINARY.includes(object.type)) {
     const empty = ["active-text", "inactive-text"].filter((name) => !text(properties, name));
@@ -112,12 +147,12 @@ function objectFindings(object, profile, classes) {
  * the device object among them; `names` counts every object name across the devices checked, so a
  * name used twice anywhere is found (5.3.3).
  */
-export function checkDevice(device, profile, names = new Map()) {
+export function checkDevice(device, profile, names = new Map(), options = {}) {
   const own = device.objects.find((object) => object.type === DEVICE);
   const deviceProperties = byName(own?.properties);
   const classes = new Set(device.objects.filter((object) => object.type === NOTIFICATION_CLASS).map((object) => object.instance));
   const objects = device.objects.map((object) => {
-    const findings = objectFindings(object, profile, classes);
+    const findings = objectFindings(object, profile, classes, options);
     const name = String(object.name ?? "").trim();
     if (name && (names.get(name) ?? 0) > 1) findings.push({ rule: "names", what: [name] });
     return { type: object.type, instance: object.instance, label: label(object), findings };
@@ -135,9 +170,12 @@ export function checkDevice(device, profile, names = new Map()) {
     proprietary: objectRule("proprietary"),
     properties: objectRule("properties"),
     names: objectRule("names"),
+    // an example of the guide, not a rule: only when the user asks for it
+    ...(options.aks ? { aks: objectRule("aks") } : {}),
     units: objectRule("units"),
     stateTexts: objectRule("stateTexts"),
     notificationClass: objectRule("notificationClass"),
+    kbobClasses: objectRule("kbobClasses"),
     services: own ? services(deviceProperties, profile) : { ok: null },
   };
   // objects read in full and without findings, for their ✓ in bacnetio's lists

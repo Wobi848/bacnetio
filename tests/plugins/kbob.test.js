@@ -3,7 +3,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { checkDevice, countNames } from "../../plugins/kbob/check.js";
+import { followsAks, splitName } from "../../plugins/kbob/aks.js";
+import { checkDevice, countNames, kbobClass } from "../../plugins/kbob/check.js";
 import { PROPERTIES } from "../../plugins/kbob/rules.js";
 
 const ALL_BITS = (length) => Array.from({ length }, () => true);
@@ -31,10 +32,10 @@ function goodDevice(instance = 1) {
         "protocol-object-types-supported": { bits: ALL_BITS(64) },
         "protocol-services-supported": { bits: ALL_BITS(49) },
       }),
-      object(0, 1, `Outdoor ${instance}`, { units: { value: "°C" }, "event-enable": { bits: [true, false, false] }, "notification-class": { value: "5" } }),
+      object(0, 1, `Outdoor ${instance}`, { units: { value: "°C" }, "event-enable": { bits: [true, false, false] }, "notification-class": { value: "98" } }),
       object(3, 1, `Pump ${instance}`, { "active-text": { value: "On" }, "inactive-text": { value: "Off" } }),
       object(19, 1, `Mode ${instance}`, { "state-text": { value: "Off, Day, Night", items: ["Off", "Day", "Night"] } }),
-      object(15, 5, `Alarms ${instance}`),
+      object(15, 98, `Alarms ${instance}`, { "ack-required": { bits: [true, true, false] }, priority: { value: "100, 100, 100", items: ["100", "100", "100"] } }),
     ],
   };
 }
@@ -59,6 +60,8 @@ test("each rule finds what breaks it", () => {
     ["units", (device) => { device.objects[1].properties.find((p) => p.property === "units").value = "no-units"; }],
     ["stateTexts", (device) => { device.objects[2].properties.find((p) => p.property === "active-text").value = ""; }],
     ["notificationClass", (device) => { device.objects[1].properties.find((p) => p.property === "notification-class").value = "9"; }],
+    ["kbobClasses", (device) => { device.objects[4].properties.find((p) => p.property === "priority").items = ["100", "120", "100"]; }],
+    ["kbobClasses", (device) => { device.objects[4].properties.find((p) => p.property === "ack-required").bits = [false, false, false]; }],
   ];
   for (const [rule, breakIt] of cases) {
     const device = goodDevice();
@@ -90,4 +93,27 @@ test("objects not read leave their rules open instead of passing them", () => {
   const result = check(device);
   assert.equal(result.rules.properties.ok, null);
   assert.equal(result.rules.revision.ok, true);
+});
+
+test("KBOB notification classes after tables 7 and 8", () => {
+  assert.equal(kbobClass(5), null);
+  assert.deepEqual(kbobClass(1), { acknowledged: [false, false, false], lowest: 1, highest: 7 });
+  assert.deepEqual(kbobClass(98), { acknowledged: [true, true, false], lowest: 96, highest: 103 });
+  assert.deepEqual(kbobClass(225), { acknowledged: [false, true, false], lowest: 224, highest: 231 });
+  assert.equal(kbobClass(226), null);
+});
+
+test("object names after the AKS pattern of the KBOB guide, only when asked for", () => {
+  assert.ok(followsAks(0, "3022_HZ1_L13_M100_M0"));
+  assert.ok(followsAks(8, "3022_HZ1_L13_D001"), "a device ends with its APPARAT");
+  assert.ok(!followsAks(0, "3022_HZ1_L13_M100"), "a point needs its FUNKTION");
+  assert.ok(!followsAks(0, "Outdoor air temp"));
+  assert.ok(!followsAks(0, "3022_HZ1_I13_M100_M0"), "I is no BTA kind");
+  assert.ok(followsAks(15, "Alarms"), "notification classes go by number");
+  assert.deepEqual(splitName("3022_HZ1_L13_M100_S0").parts, { unit: "3022", object: "HZ1", system: "L13", device: "M100", function: "S0" });
+
+  const device = goodDevice();
+  assert.equal(check(device).rules.aks, undefined, "off unless asked");
+  const result = checkDevice(device, "AS-CH", countNames([device]), { aks: true });
+  assert.equal(result.rules.aks.ok, false);
 });
