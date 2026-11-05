@@ -50,7 +50,7 @@ fn check(manifest: &Manifest) -> Result<(), String> {
             .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-');
     if !id_ok {
         return Err(format!(
-            "the plugin id {id:?} must be up to {MOST_ID_CHARS} small letters, digits and dashes"
+            "the plugin id \"{id}\" must be up to {MOST_ID_CHARS} small letters, digits and dashes"
         ));
     }
     if manifest.name.trim().is_empty() || manifest.name.chars().count() > MOST_NAME_CHARS {
@@ -82,7 +82,13 @@ mod tests {
     use super::*;
 
     fn page(description: &str) -> String {
-        format!("<!doctype html><title>x</title>{DESCRIPTION_START}{description}</script><p>hi</p>")
+        [
+            "<!doctype html><title>x</title>",
+            DESCRIPTION_START,
+            description,
+            "</script><p>hi</p>",
+        ]
+        .concat()
     }
 
     #[test]
