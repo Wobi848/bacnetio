@@ -7,7 +7,9 @@ const eye = (name) => `.row[data-point]:has-text('${name}') button[data-act=quic
 const watched = (page) => page.$$eval("button[data-act=quick-watch][aria-pressed=true]", (buttons) => buttons.length);
 
 async function centre(page, selector) {
-  const box = await page.locator(selector).boundingBox();
+  const locator = page.locator(selector);
+  await locator.waitFor();
+  const box = await locator.boundingBox();
   return [box.x + box.width / 2, box.y + box.height / 2];
 }
 
