@@ -86,8 +86,8 @@ function figuresRow(item) {
   const found = figures(item.samples, item.stepped);
   const units = item.stepped ? "" : item.units ?? "";
   const stepped = item.stepped && found.onShare !== null ? `${Math.round(found.onShare * 100)} % · ${t("rec.changes", { n: found.changes })}` : "";
-  return `<tr><th scope="row"><span class="swatch" style="background:var(--series-${item.color})"></span>${h(item.label)} <button type="button" class="quiet" data-act="rec-remove" data-key="${item.key}">${t("rec.removeShort")}</button>
-    <div class="rec-meta">${modeHtml(item.point)}${lastMeasuredHtml(item.point)}</div></th>
+  return `<tr><th scope="row"><span class="swatch" style="background:var(--series-${item.color})"></span>${h(item.label)}
+    <div class="rec-meta">${modeHtml(item.point)}${lastMeasuredHtml(item.point)}<button type="button" class="quiet" data-act="rec-remove" data-key="${item.key}">${t("rec.removeShort")}</button></div></th>
     <td class="mono">${h(figureText(found.last, units))}</td><td class="mono">${h(figureText(found.low, units))}</td><td class="mono">${h(figureText(found.high, units))}</td>
     <td class="mono">${h(item.stepped ? stepped : figureText(found.mean, units))}</td><td class="mono">${found.count}${found.gaps ? ` <span class="chip warn">${t("rec.gaps", { n: found.gaps })}</span>` : ""}</td></tr>`;
 }
@@ -126,7 +126,8 @@ export function viewRecording(state) {
       title: t("tab.recording"),
       lead: t("rec.lead"),
       next: null,
-      html: `<div class="page"><div class="empty"><h2>${t("rec.emptyTitle")}</h2><p>${t("rec.emptyText")}</p></div></div>`,
+      // the same frame as the empty watch list and site problems
+      html: `<div class="split single"><section class="listwrap"><div class="rows"><div class="empty"><h2>${t("rec.emptyTitle")}</h2><p>${t("rec.emptyText")}</p></div></div></section></div>`,
     };
   }
   const count = Math.max(...points.map((point) => point.samples.length));

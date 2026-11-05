@@ -7,7 +7,7 @@ use serde::Serialize;
 
 use crate::connection::BACNET_PORT;
 
-use crate::interfaces::{Adapter, MIN_SWEEP_PREFIX_LEN, Subnet};
+use crate::interfaces::{Adapter, AdapterKind, MIN_SWEEP_PREFIX_LEN, Subnet};
 use crate::scan::ScanReport;
 
 /// How the subnet was asked address by address.
@@ -51,6 +51,19 @@ pub struct Context {
     pub link_local: bool,
     /// Why port 47808 could not be used.
     pub port_unavailable: Option<String>,
+    /// The adapter is a VPN or another virtual adapter, which seldom passes broadcasts on.
+    pub virtual_adapter: bool,
+}
+
+impl Context {
+    pub fn new(sweep: Sweep, adapter: &Adapter, port_unavailable: Option<String>) -> Self {
+        Self {
+            sweep,
+            link_local: adapter.ip.is_link_local(),
+            port_unavailable,
+            virtual_adapter: adapter.kind() == AdapterKind::Virtual,
+        }
+    }
 }
 
 /// A finding about the scan. Shown in words through `Display`; the UI translates it by its code.
@@ -70,6 +83,9 @@ pub enum Note {
     NoAnswerSubnetTooLarge,
     NoneIdentified,
     BroadcastBlocked {
+        direct: usize,
+    },
+    BroadcastNotPassed {
         direct: usize,
     },
     SomeOnlyDirect {
@@ -134,6 +150,11 @@ impl fmt::Display for Note {
                  directly. Broadcast answers are most likely blocked by the firewall, which is \
                  common without administrator rights. bacnetio works around it."
             ),
+            Note::BroadcastNotPassed { direct } => write!(
+                f,
+                "No device answered the Who-Is broadcast, but {direct} answered when asked \
+                 directly. A VPN seldom passes broadcasts on, so bacnetio asks every address."
+            ),
             Note::SomeOnlyDirect { direct, total } => write!(
                 f,
                 "{direct} of {total} devices answered only when asked directly: their broadcast \
@@ -189,6 +210,8 @@ pub fn notes(report: &ScanReport, context: &Context) -> Vec<Note> {
     let direct = report.devices.len() - answered_who_is;
     if report.devices.is_empty() {
         notes.push(nothing_found(context.sweep, report.refused.is_empty()));
+    } else if answered_who_is == 0 && context.virtual_adapter {
+        notes.push(Note::BroadcastNotPassed { direct });
     } else if answered_who_is == 0 {
         notes.push(Note::BroadcastBlocked { direct });
     } else if direct > 0 {
@@ -280,6 +303,7 @@ mod tests {
             sweep: Sweep::Done,
             link_local: false,
             port_unavailable: None,
+            virtual_adapter: false,
         }
     }
 
@@ -293,6 +317,21 @@ mod tests {
         assert_eq!(notes.len(), 1);
         assert!(matches!(notes[0], Note::BroadcastBlocked { direct: 2 }));
         assert!(notes[0].to_string().contains("firewall"));
+    }
+
+    #[test]
+    fn behind_a_vpn_the_vpn_is_named_not_the_firewall() {
+        let report = ScanReport {
+            devices: vec![device(1, false)],
+            ..ScanReport::default()
+        };
+        let context = Context {
+            virtual_adapter: true,
+            ..context()
+        };
+        let notes = notes(&report, &context);
+        assert!(matches!(notes[0], Note::BroadcastNotPassed { direct: 1 }));
+        assert!(notes[0].to_string().contains("VPN"));
     }
 
     #[test]

@@ -2,6 +2,27 @@
 
 All notable changes for users of bacnetio.
 
+## Unreleased
+
+### Changed
+
+- A connected VPN is chosen before mobile data; Wi-Fi and a cable still come first.
+- When only direct questions found devices through a VPN, the note names the VPN instead of the firewall.
+- On a phone the head folds to one line with the site and its devices; a tap unfolds the adapter, *Change* and the site search. The tabs swipe in one line, and watch and record sit beside the value, so a point takes one line and the list gets most of the screen.
+- In the point list, press on a watch or record switch and drag the mouse over other rows: they all take the same state, as in Blender. A plain click still switches one; touch screens scroll as before.
+- The top of the device tree is a button, *All devices*, so the way back to the device list is easy to find.
+- In the details *Properties* stands apart from *Watch* and *Record*, as a button that opens the properties below.
+- Android: the back key steps back (details, device, device list, workspace). With no step left it asks whether to leave bacnetio running in the background or to stop it, and warns of values still held.
+
+### Fixed
+
+- A changed adapter address, a VPN that comes up or a cable plugged in shows without restarting bacnetio; the chosen adapter stays chosen, also under its new address.
+- Recording: with nothing recorded the page looks like the empty watch list, without the darker background and the double indent.
+- Recording: a click on the page no longer gets lost when it falls into the page's regular refresh.
+- Android: when another app holds port 8081, bacnetio takes a free port and keeps it, instead of not starting or showing the other app's page.
+- Recording: *Poll* or *COV* and *Remove* sit in one line under the name; the switch lost its double line at the top.
+- On a phone the status line keeps what is running readable (*Reading values …*) and shortens the adapter instead.
+
 ## v0.1.1 (04.11.2026)
 
 ### Changed

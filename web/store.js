@@ -34,6 +34,8 @@ export const state = {
   /** Which menu is open: "network", "locate" or "export". */
   menu: null,
   scan: { state: "idle" },
+  /** On a narrow screen: the site, adapter and site search are unfolded. */
+  headOpen: false,
   deviceFilter: "",
   /** How the lists are sorted: { key, descending }, or null for the device's own order. */
   deviceSort: null,

@@ -174,7 +174,8 @@ export function detailHtml(state) {
     ${who}${direct}${writable ? writeHtml(state, object, stateTexts) : ""}
     <h3>${t("details")}</h3>
     <dl class="facts">${facts.map(([label, text]) => `<dt>${h(label)}</dt><dd>${h(text)}</dd>`).join("")}</dl>
-    <div class="actions"><span class="seg">${watch}${record}${toggle("technical", Boolean(state.technical), t("act.technical"), t(state.technical ? "hideTechnical" : "showTechnical"))}</span></div>
+    ${watch || record ? `<div class="actions"><span class="seg">${watch}${record}</span></div>` : ""}
+    <button type="button" class="quiet disclosure" data-act="technical" aria-expanded="${Boolean(state.technical)}" title="${t(state.technical ? "hideTechnical" : "showTechnical")}">${t("act.technical")}<span aria-hidden="true">${state.technical ? "▴" : "▾"}</span></button>
     ${propertiesHtml(state, object)}
   </aside>`;
 }

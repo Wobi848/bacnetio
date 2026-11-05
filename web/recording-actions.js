@@ -42,8 +42,11 @@ export function removeRecorded(key) {
 export async function pollRecording() {
   if (state.area === "recording" || state.recording?.running) {
     try {
-      state.recording = await api.recording();
-      if (state.area === "recording" && !state.onChart) render();
+      const recording = await api.recording();
+      // drawn anew only when something moved: a click that falls into a redraw is lost
+      const changed = recording.running || JSON.stringify(recording) !== JSON.stringify(state.recording);
+      state.recording = recording;
+      if (changed && state.area === "recording" && !state.onChart) render();
     } catch {
       // bacnetio was closed; the next round tries again
     }

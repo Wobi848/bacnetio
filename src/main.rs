@@ -236,11 +236,7 @@ async fn scan(
             networks.join(", ")
         );
     }
-    let context = diagnosis::Context {
-        sweep,
-        link_local: adapter.ip.is_link_local(),
-        port_unavailable: connection.port_unavailable.clone(),
-    };
+    let context = diagnosis::Context::new(sweep, &adapter, connection.port_unavailable.clone());
     for note in diagnosis::notes(&report, &context) {
         println!("Note: {note}");
     }

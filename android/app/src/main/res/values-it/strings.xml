@@ -8,4 +8,13 @@
     <string name="failed">bacnetio non si avvia. Vedere bacnetio.log nei dati dell’app.</string>
     <string name="saved">Salvato in Download: %1$s</string>
     <string name="save_failed">Salvataggio non riuscito: %1$s</string>
+    <string name="leave_title">Uscire da bacnetio?</string>
+    <string name="leave_text">bacnetio continua in background, anche le registrazioni. Terminare lo chiude.</string>
+    <string name="leave">Esci</string>
+    <string name="stay">Resta</string>
+    <plurals name="leave_held">
+        <item quantity="one">Mantieni ancora un valore: resta così nell’impianto finché non lo rilasci.</item>
+        <item quantity="other">Mantieni ancora %1$d valori: restano così nell’impianto finché non li rilasci.</item>
+        <item quantity="many">Mantieni ancora %1$d valori: restano così nell’impianto finché non li rilasci.</item>
+    </plurals>
 </resources>

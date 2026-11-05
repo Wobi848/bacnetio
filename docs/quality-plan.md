@@ -301,6 +301,22 @@ Open, in the maintainer's words where it helps. The larger ones are planned in
       fault. Then they come as an *extension*, off by default and switched on under *Settings*,
       since not everyone needs them ("braucht ja nicht jeder"). The code keeps each extension in a
       module of its own; a loader for third-party plugins only when a second extension asks for it.
+- [x] **Phone test through a VPN app, 4 November:** a DDC4000 found over the VPN by asking each
+      address (no broadcast passes). Wishes from it: a VPN chosen before mobile data, the note to
+      name the VPN instead of the firewall, the Android back key to step back and to ask before
+      leaving, and more room for the list on a phone ("der Oberteil nimmt zu viel Platz ein"): the
+      head folds to one line (site, devices, settings) and unfolds adapter, *Change* and the site
+      search on a tap; the tabs swipe in one line; watch and record sit beside the value.
+- [x] **Drag to switch many at once**, as in Blender (4 November: "wenn man mit gedrückter
+      maustaste darüber fährt das man alle gleich markiert oder auswählt"): press on one switch,
+      such as watch or record in a row, and drag over others: they all take the state of the first.
+      Concept: `docs/concept-drag-toggle.md`. Built for watch and record in the point list, mouse
+      only. Also: the top of the device tree as a button, *All devices* ("viel bin ich immer am
+      suchen").
+- [x] **A new adapter address shows without a restart** (5 November: "wenn ich meine IP von dem
+      adapter ändere während bacnetio offen ist sieht er die Änderung nicht"). The page reads the
+      adapters again every 5 seconds and when the window comes back; the chosen adapter stays
+      chosen, also under a new address.
 - Decided: the instance of other objects cannot be changed (devices rarely allow it, and
   references break). Revisit only for a concrete case.
 

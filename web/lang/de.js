@@ -5,7 +5,7 @@ export default {
   locale: "de-CH",
   decimalComma: true,
   texts: {
-    areas: "Bereiche", "tab.devices": "Geräte", 
+    areas: "Bereiche", "tab.devices": "Geräte", "tree.allDevices": "Alle Geräte", 
     "tab.recording": "Aufzeichnung", "tab.log": "Von dir gehalten", "tab.settings": "Einstellungen",
     "col.device": "Gerät", "col.id": "ID", "col.address": "Adresse", "col.vendor": "Hersteller",
     "col.name": "Name", "col.type": "Typ", "col.value": "Wert", "col.state": "Zustand",
@@ -122,6 +122,7 @@ export default {
 
     "start.lead": "bacnetio fragt im Netz, wer da ist. In der Anlage wird nichts verändert.",
     "start.noAdapter": "Kein Netzwerkadapter mit IPv4-Adresse verbunden.",
+    "head.toggle": "Anlage, Adapter und Anlagensuche ein- oder ausblenden",
     change: "Ändern", find: "Geräte finden", searchAgain: "Erneut suchen",
 
 
@@ -236,6 +237,7 @@ export default {
     no_answer_subnet_too_large: "Kein Gerät hat auf den Who-Is-Broadcast geantwortet. Adapter, Kabel und VLAN prüfen.",
     none_identified: "Kein Gerät liess sich erkennen, aber einige Adressen haben geantwortet (siehe unten).",
     broadcast_blocked: "Kein Gerät hat auf den Who-Is-Broadcast geantwortet, aber {direct} auf direkte Fragen. Broadcast-Antworten blockiert sehr wahrscheinlich die Firewall, häufig ohne Administratorrechte. bacnetio umgeht das.",
+    broadcast_not_passed: "Kein Gerät hat auf den Who-Is-Broadcast geantwortet, aber {direct} auf direkte Fragen. Ein VPN gibt Broadcasts selten weiter, darum fragt bacnetio jede Adresse einzeln.",
     some_only_direct: "{direct} von {total} Geräten haben nur auf direkte Fragen geantwortet: Ihre Broadcast-Antworten kommen nicht an (Firewall).",
     duplicate_id: "Die Geräte-ID {instance} antwortet von {addresses}: Zwei Geräte teilen sich eine ID. Bis das behoben ist, können Werte vom falschen Gerät kommen.",
     refused: "Diese Adressen haben geantwortet, aber die direkte Frage abgelehnt ({addresses}): Da ist BACnet, aber die Geräte antworten nur auf Fragen mit ihrer Geräte-ID.",

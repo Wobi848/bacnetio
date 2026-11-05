@@ -32,6 +32,13 @@ export const isBinary = (point) => BINARY.includes(point.type);
 export const isWord = (point) => isBinary(point) || MULTISTATE.includes(point.type);
 export const pointKey = (point) => `${point.type}:${point.instance}`;
 
+/** The adapter to keep when the list is read again: the same address, else the same adapter with a new address, else the system's choice. */
+export function chooseAdapter(adapters, wanted) {
+  return adapters.find((adapter) => adapter.ip === wanted?.ip)
+    ?? adapters.find((adapter) => adapter.name === wanted?.name)
+    ?? adapters.find((adapter) => adapter.default) ?? adapters[0] ?? null;
+}
+
 /** Types whose present value is a number or a state: these can be watched and recorded. */
 export const RECORDABLE = [0, 1, 2, 3, 4, 5, 13, 14, 19];
 

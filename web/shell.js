@@ -99,9 +99,12 @@ export function sideHtml(state) {
   const listed = ["workspace", "problems", "watch", "recording", "log"];
   const areas = listed.map((area, index) => tab(state, area, index + 1)).join("");
   const settingsCurrent = state.area === "settings" ? ' aria-current="page"' : "";
-  return `<a class="brand" href="#/workspace"><img src="icon.svg" alt="">bacnetio</a>
-    ${siteLink(state)}
+  const open = headOpen(state);
+  return `<a class="brand" href="#/workspace"><img src="icon.svg" alt=""><span class="brand-name">bacnetio</span></a>
+    ${headToggle(state, open)}
     ${updateNoteHtml(state)}
+    <div class="head-more${open ? " open" : ""}" id="head-more">
+    ${siteLink(state)}
     <div class="net">
       ${adapterField}
       <div class="conn menu-host">${connection(state)}
@@ -110,9 +113,22 @@ export function sideHtml(state) {
       ${searchesOpenSite(state) ? "" : `<div class="where mono">${h(searchScope(state))}</div>`}
     </div>
     <label class="site-search"><input id="site-search" type="search" placeholder="${t("search.site")}" aria-keyshortcuts="/" value="${h(state.siteSearch)}" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
+    </div>
     <nav class="tabs" aria-label="${t("areas")}">${areas}</nav>
     <a class="quiet settings-link" href="#/settings" data-area="settings"${settingsCurrent} title="${t("tab.settings")} (${listed.length + 1})">${SETTINGS_ICON}<span class="side-label">${t("tab.settings")}</span></a>
     ${resizeHandle("side")}`;
+}
+
+/** On a narrow screen the site, adapter and site search fold away until needed; before the first search they stay open. */
+function headOpen(state) {
+  return state.headOpen || state.scan.state === "idle" || Boolean(state.siteSearch) || state.menu === "network";
+}
+
+/** The folded head in one line: the site and how many devices answered. Only shown on a narrow screen. */
+function headToggle(state, open) {
+  const site = openSiteOf(state);
+  const name = site ? siteTitle(site) : searchScope(state);
+  return `<button type="button" class="quiet head-toggle" data-act="toggle-head" aria-controls="head-more" aria-expanded="${open}" title="${t("head.toggle")}"><span class="cut">${h(name)}</span>${connection(state)}<span class="caret" aria-hidden="true">${open ? "▴" : "▾"}</span></button>`;
 }
 
 /** Title, one sentence and the one next step: every page says where you are. */

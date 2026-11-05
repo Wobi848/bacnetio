@@ -96,7 +96,9 @@ label.button:hover { background: var(--accent-soft); border-color: var(--accent)
 .series-head h2 { text-transform: none; letter-spacing: 0; color: var(--text); font-size: 13px; overflow-wrap: anywhere; }
 .rec-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0 2px; font-weight: 400; }
 .rec-mode { display: inline-flex; align-items: center; gap: 6px; }
-.rec-mode .seg button { height: 24px; padding: 0 8px; font-size: 12px; }
+.rec-mode .seg button, .rec-meta > button { height: 24px; padding: 0 8px; font-size: 12px; }
+/* two buttons that never wrap: only the line between them, none above */
+.rec-mode .seg button { box-shadow: -1px 0 0 var(--line-strong); }
 .measured { color: var(--muted); font-size: 12px; border-radius: 4px; padding: 0 4px; }
 /* a new measurement flashes once, so a flat line still shows that bacnetio measures */
 .measured.fresh { animation: measured 1.2s ease-out; }

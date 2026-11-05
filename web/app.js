@@ -1,6 +1,7 @@
 // Navigation and the wiring of clicks, typing and keys to actions. The areas are addressed by the
 // hash (#/devices), so the browser's back button and a reload keep the place.
 
+import { loadAdapters, watchAdapters } from "./adapter-actions.js";
 import { api } from "./api.js";
 import { readBbmdTables } from "./bbmd-actions.js";
 import { compareTime, hideCompareCrosshair, hideCrosshair, showCompareCrosshair, showCrosshair } from "./chart.js";
@@ -12,6 +13,7 @@ import { toggleLiveList } from "./live-list.js";
 import { loadMemory, loadPropertyNames, loadTreeView, loadWatch, saveMemory, savePropertyNames, saveTreeView } from "./memory.js";
 import { installColumns } from "./columns.js";
 import { installPanels } from "./panels.js";
+import { installDragToggle } from "./drag-toggle.js";
 import { editDay, editProperty, releaseHeld, releaseHere, releaseOther, selectPoint, setClock, showTechnical, writeDay, writeProperty, writeValue } from "./object-actions.js";
 import { pollRecording, recordHere, recordPoint, recordingRequest, removeRecorded, setRecordMode } from "./recording-actions.js";
 import { setAccent, setBackground, setTheme } from "./settings.js";
@@ -99,6 +101,7 @@ const actions = {
   network: () => { state.menu = state.menu === "network" ? null : "network"; render(); document.getElementById("subnet")?.focus(); },
   "locate-menu": () => { state.menu = state.menu === "locate" ? null : "locate"; render(); document.getElementById("locate-address")?.focus(); },
   "close-menu": () => { state.menu = null; render(); },
+  "toggle-head": () => { state.headOpen = !state.headOpen; render(); },
   "focus-adapter": () => document.getElementById("adapter")?.focus(),
   go: (element) => enter(element.dataset.area),
   "tree-site": () => showSite(),
@@ -386,18 +389,37 @@ const MOVE_KEYS = { ArrowDown: 1, ArrowUp: -1, PageDown: PAGE_ROWS, PageUp: -PAG
 
 const typing = () => document.activeElement?.matches?.("input, select, textarea");
 
+/** Closes the menu, dialog, search or details on top; false when nothing was open. */
+function closeTopmost() {
+  if (state.menu) state.menu = null;
+  else if (state.leaving) state.leaving = false;
+  else if (state.renamingSite !== null) state.renamingSite = null;
+  else if (state.siteSearch || document.activeElement?.id === "site-search") {
+    state.siteSearch = "";
+    document.activeElement.blur();
+  }
+  else if (state.confirm) state.confirm = null;
+  else if (state.asking) state.asking = false;
+  else if (state.detailOpen) state.detailOpen = false;
+  else return false;
+  return true;
+}
+
+/**
+ * The Android back key: one step back, from the details to the device to the device list to the
+ * workspace. When there is no step left, the app asks whether to leave and warns of held values.
+ */
+window.bacnetioBack = () => {
+  if (closeTopmost()) render();
+  else if (state.area === "workspace" && state.device !== null) showSite();
+  else if (state.area !== "workspace") enter("workspace");
+  else return JSON.stringify({ stepped: false, held: state.held.length });
+  return JSON.stringify({ stepped: true, held: state.held.length });
+};
+
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
-    if (state.menu) state.menu = null;
-    else if (state.leaving) state.leaving = false;
-    else if (state.renamingSite !== null) state.renamingSite = null;
-    else if (state.siteSearch || document.activeElement?.id === "site-search") {
-      state.siteSearch = "";
-      document.activeElement.blur();
-    }
-    else if (state.confirm) state.confirm = null;
-    else if (state.asking) state.asking = false;
-    else state.detailOpen = false;
+    closeTopmost();
     render();
     return;
   }
@@ -496,11 +518,10 @@ async function start() {
   state.area = areaOfHash(location.hash);
   installPanels();
   installColumns();
+  installDragToggle();
   render();
   try {
-    state.adapters = await api.adapters();
-    state.adapter = state.adapters.find((adapter) => adapter.ip === memory.adapterIp)
-      ?? state.adapters.find((adapter) => adapter.default) ?? state.adapters[0] ?? null;
+    await loadAdapters({ ip: memory.adapterIp });
     state.scan = await api.scan();
   } catch (error) {
     state.error = error.message;
@@ -524,6 +545,7 @@ async function start() {
   ]).catch((error) => { state.error = error.message; });
   render();
   pollRecording();
+  watchAdapters();
   checkForUpdate();
 }
 

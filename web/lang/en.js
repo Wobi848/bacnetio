@@ -5,7 +5,7 @@ export default {
   locale: "en-GB",
   decimalComma: false,
   texts: {
-    areas: "Areas", "tab.devices": "Devices", 
+    areas: "Areas", "tab.devices": "Devices", "tree.allDevices": "All devices", 
     "tab.recording": "Recording", "tab.log": "Held by you", "tab.settings": "Settings",
     "col.device": "Device", "col.id": "ID", "col.address": "Address", "col.vendor": "Vendor",
     "col.name": "Name", "col.type": "Type", "col.value": "Value", "col.state": "State",
@@ -122,6 +122,7 @@ export default {
 
     "start.lead": "bacnetio asks the network who is there. Nothing in the plant is changed.",
     "start.noAdapter": "No network adapter with an IPv4 address is connected.",
+    "head.toggle": "Show or hide the site, adapter and site search",
     change: "Change", find: "Find devices", searchAgain: "Search again",
 
 

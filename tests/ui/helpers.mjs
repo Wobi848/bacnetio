@@ -19,7 +19,8 @@ export async function open(page, base, { language = "en", area = "overview", the
     }
   }, [language, SEARCH, theme]);
   await page.goto(`${base}/#/${area}`);
-  await page.waitForSelector("#adapter");
+  // on a narrow screen the adapter sits in the folded head, present but hidden
+  await page.waitForSelector("#adapter", { state: "attached" });
 }
 
 /** Searches through the API, as the UI would, and waits until it is done. */

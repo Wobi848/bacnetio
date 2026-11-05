@@ -9,7 +9,7 @@ const chartModule = await import("../../web/chart.js");
 const { axisTexts, linePath, scale } = chartModule;
 const { viewRecording } = await import("../../web/recording.js");
 const { viewDevices } = await import("../../web/devices.js");
-const { deviceMaker, stateWord } = await import("../../web/format.js");
+const { chooseAdapter, deviceMaker, stateWord } = await import("../../web/format.js");
 const { groupPoints } = await import("../../web/grouping.js");
 const { viewPoints } = await import("../../web/points.js");
 const { nextSort, sortRows } = await import("../../web/sorting.js");
@@ -564,4 +564,14 @@ test("chart axes: time marks at round times, states instead of numbers", async (
   assert.deepEqual(valueLevels(null, 5, 5), { low: 4, high: 6, levels: [4, 6], labels: ["4", "6"] });
   assert.equal(valueLabel("binary", 1), "active");
   assert.equal(valueLabel(null, 21.456, "°C"), "21.46 °C");
+});
+
+test("an adapter read again keeps its place, also with a new address", () => {
+  const cable = { name: "eth0", ip: "10.0.0.2", default: true };
+  const vpn = { name: "tun0", ip: "192.168.10.222", default: false };
+  assert.equal(chooseAdapter([cable, vpn], { ip: "192.168.10.222" }), vpn);
+  assert.equal(chooseAdapter([cable, { ...vpn, ip: "192.168.10.5" }], vpn).ip, "192.168.10.5");
+  // gone: the system's choice
+  assert.equal(chooseAdapter([cable], vpn), cable);
+  assert.equal(chooseAdapter([], vpn), null);
 });
