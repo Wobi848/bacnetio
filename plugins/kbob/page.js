@@ -84,7 +84,7 @@ async function check(instances) {
   for (const device of read) {
     kept.devices[device.instance] = {
       at: Date.now(),
-      result: checkDevice(device, profileOf(device.instance), counted),
+      result: checkDevice(device, profileOf(device.instance), counted, { aks: Boolean(kept.aks) }),
       names: device.objects.map((object) => object.name).filter(Boolean),
     };
   }
@@ -136,7 +136,7 @@ function report() {
     const entry = kept.devices[device.instance];
     if (!entry?.result) continue;
     const base = [device.instance, device.name, entry.result.profile, new Date(entry.at).toISOString()];
-    for (const rule of RULES) {
+    for (const rule of RULES.filter((name) => entry.result.rules[name])) {
       const state = entry.result.rules[rule];
       const word = state.ok === true ? "met" : state.ok === false ? "not met" : "not checkable";
       const deviceFinding = DEVICE_RULES.includes(rule) && state.found?.length ? state.found.join(", ") : "";
@@ -178,7 +178,7 @@ function deviceRow(device) {
   const reading = busy?.instance === device.instance ? `<span class="muted">${progress}</span>` : summary(entry);
   const expandable = Boolean(entry?.result);
   const expanded = expandable && open.has(device.instance);
-  const details = expanded ? `<tr class="details"><td colspan="4"><ul class="rules">${RULES.map((rule) => ruleRow(rule, entry.result.rules[rule], entry.result.objects)).join("")}</ul></td></tr>` : "";
+  const details = expanded ? `<tr class="details"><td colspan="4"><ul class="rules">${RULES.filter((rule) => entry.result.rules[rule]).map((rule) => ruleRow(rule, entry.result.rules[rule], entry.result.objects)).join("")}</ul></td></tr>` : "";
   return `<tr>
     <td><b>${h(device.name ?? `#${device.instance}`)}</b> <span class="muted mono">#${device.instance}</span></td>
     <td><select data-act="profile" data-device="${device.instance}"${busy ? " disabled" : ""}>${profiles}</select></td>
@@ -198,6 +198,8 @@ function render() {
       <button data-act="report"${anyResult && !busy ? "" : " disabled"}>${t("report")}</button>
       <button data-act="clear"${anyResult && !busy ? "" : " disabled"}>${t("clear")}</button>
     </div>
+    <label class="option"><input type="checkbox" data-act="aks"${kept.aks ? " checked" : ""}${busy ? " disabled" : ""}> ${t("aks")}</label>
+    <p class="muted small">${t("aksNote")}</p>
     <table><thead><tr><th>${t("device")}</th><th>${t("profile")}</th><th>${t("result")}</th><th></th></tr></thead>
     <tbody>${devices.map(deviceRow).join("")}</tbody></table>
     <p class="muted small">${t("namesNote")}</p>
@@ -221,6 +223,11 @@ document.addEventListener("click", async (event) => {
 });
 
 document.addEventListener("change", async (event) => {
+  if (event.target.dataset.act === "aks") {
+    kept.aks = event.target.checked;
+    await ask("save", kept);
+    return;
+  }
   if (event.target.dataset.act !== "profile") return;
   kept.profiles[event.target.dataset.device] = event.target.value;
   await ask("save", kept);
