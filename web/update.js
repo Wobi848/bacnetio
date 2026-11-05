@@ -25,11 +25,12 @@ function lastResult() {
   }
 }
 
-/** Asks the server unless a check of the last day is kept, or `now` is set by the user. */
+/** Asks the server unless a check of the last day by this version is kept, or `now` is set by the user. */
 export async function checkForUpdate(now = false) {
   if (!updateCheckOn()) return;
   const kept = lastResult();
-  if (!now && kept && Date.now() - kept.at < DAY_MS) {
+  // after an update the kept answer is the old version's: it would offer the version now running
+  if (!now && kept && kept.current === state.version && Date.now() - kept.at < DAY_MS) {
     state.update = kept;
     render();
     return;
@@ -38,9 +39,9 @@ export async function checkForUpdate(now = false) {
   render();
   try {
     const answer = await api.update();
-    state.update = { at: Date.now(), newer: answer.newer, version: answer.latest?.version ?? null, url: answer.latest?.url ?? null };
+    state.update = { at: Date.now(), current: state.version, newer: answer.newer, version: answer.latest?.version ?? null, url: answer.latest?.url ?? null };
   } catch (error) {
-    state.update = { at: Date.now(), error: error.message };
+    state.update = { at: Date.now(), current: state.version, error: error.message };
   }
   keep(RESULT_KEY, JSON.stringify(state.update));
   render();

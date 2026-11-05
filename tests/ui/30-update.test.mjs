@@ -24,6 +24,16 @@ export default {
     await page.waitForSelector(".update-note");
     assert.equal(asked, 1);
 
+    // after an update the kept answer is the old version's: asked again, and no note for the
+    // version now running
+    await page.route("**/api/info", (route) => route.fulfill({ json: { version: "9.0.0" } }));
+    answer = { json: { current: "9.0.0", latest: { version: "9.0.0", url: RELEASE }, newer: false } };
+    await page.reload();
+    await page.waitForFunction(() => /newest version/.test(document.querySelector(".update-status")?.textContent ?? ""));
+    assert.equal(asked, 2);
+    assert.equal(await page.locator(".update-note").count(), 0);
+    await page.unroute("**/api/info");
+
     // on request it asks again; GitHub unreachable says so, and the note goes
     answer = { status: 502, json: { error: "no connection to GitHub" } };
     await page.click("button[data-act=update-now]");
