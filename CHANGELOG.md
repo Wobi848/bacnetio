@@ -2,6 +2,12 @@
 
 All notable changes for users of bacnetio.
 
+## Unreleased
+
+### Fixed
+
+- After an update the note no longer offers the version now running: the kept answer of the check counts only for the version that asked.
+
 ## v0.1.2 (05.11.2026)
 
 ### Changed
