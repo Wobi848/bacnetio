@@ -22,7 +22,7 @@ const baseState = () => ({
   recView: "cards", recWindow: null, recZoom: null, recColors: {}, allRows: false, pointTypes: [], pointSort: null, deviceSort: null, winners: {}, node: null, watch: [], sites: [], sitePoints: {}, treeOpen: {}, structure: {},
   area: "devices", held: [], recording: null, scan: { state: "idle" }, objectNames: {}, menu: null,
   settings: { bbmd: "", port: "47808", locate: "", idFrom: "", idTo: "", subnet: "" }, adapter: { name: "Ethernet", ip: "10.0.0.2", prefix_len: 24 },
-  bbmd: {}, bbmdReading: null,
+  bbmd: {}, bbmdReading: null, plugins: [], marks: {},
   deviceFilter: "", selectedDevice: null, deviceFacts: null, filter: "", pointView: "all", groupsOpen: {}, reference: null,
   selectedPoint: null, object: null, pointNotes: [], error: null, writeUnlocked: false, asking: false,
 });
@@ -376,7 +376,7 @@ test("every message the server sends for a wrong request has a translation", asy
   const refusals = (await Promise.all((await rustSources()).map(text))).join("\n");
   const messages = [...refusals.matchAll(/ApiError::(?:bad_request|conflict|device)\(\s*(?:format!\(\s*)?"((?:[^"\\]|\\.)*)"/gs)].map((match) => match[1]);
   // these modules check what was typed and hand their sentence to ApiError unchanged
-  const checks = ["src/write.rs", "src/connection.rs", "src/interfaces.rs", "src/record.rs"];
+  const checks = ["src/write.rs", "src/connection.rs", "src/interfaces.rs", "src/record.rs", "src/plugin.rs"];
   const checked = (await Promise.all(checks.map(text))).join("\n");
   messages.push(...[...checked.matchAll(/(?:Err|bail!|format!)\(\s*"((?:[^"\\]|\\.)*)"/gs)].map((match) => match[1]));
   assert.ok(messages.length > 40, `found ${messages.length}`);

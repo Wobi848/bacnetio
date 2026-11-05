@@ -1,0 +1,66 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Test plugin</title>
+<script type="application/json" id="bacnetio-plugin">
+{ "id": "test", "name": "Test plugin", "version": "1.0.0", "api": 1, "description": "Asks every question of plugin API 1" }
+</script>
+<style>body { font: 14px system-ui; color: var(--text); background: var(--bg); }</style>
+<h1>Test plugin</h1>
+<script>
+// the bridge to bacnetio, as docs/plugins.md shows it
+let next = 0;
+const waiting = new Map();
+addEventListener("message", (event) => {
+  if (event.source !== parent) return;
+  const { call, result, error } = event.data ?? {};
+  const asked = waiting.get(call);
+  if (!asked) return;
+  waiting.delete(call);
+  if (error) asked.reject(new Error(error));
+  else asked.resolve(result);
+});
+const ask = (method, ...args) => new Promise((resolve, reject) => {
+  const call = ++next;
+  waiting.set(call, { resolve, reject });
+  parent.postMessage({ call, method, args }, "*");
+});
+const out = (id, text) => {
+  const line = document.createElement("p");
+  line.id = id;
+  line.textContent = text;
+  document.body.append(line);
+};
+
+(async () => {
+  const context = await ask("context");
+  out("language", context.language);
+  out("accent", context.tokens["--accent"] ? "given" : "missing");
+  const devices = await ask("devices");
+  out("devices", String(devices.length));
+  const ahu = devices.find((device) => device.name === "AHU-01");
+  const objects = await ask("objects", ahu.instance);
+  out("objects", String(objects.length));
+  const first = objects.find((object) => object.name === "Outdoor air temp");
+  const properties = await ask("properties", ahu.instance, first.type, first.instance);
+  out("properties", properties.length > 5 ? "read" : "few");
+  await ask("save", { seen: devices.length });
+  out("kept", JSON.stringify(await ask("load")));
+  out("marked", String(await ask("mark", [
+    { device: ahu.instance, text: "Device note" },
+    { device: ahu.instance, type: first.type, instance: first.instance, text: "Object note" },
+  ])));
+  try {
+    await fetch("/api/held");
+    out("server", "reached");
+  } catch {
+    out("server", "blocked");
+  }
+  try {
+    await ask("write", ahu.instance, first.type, first.instance, "1");
+    out("write", "answered");
+  } catch (error) {
+    out("write", error.message);
+  }
+  out("done", "yes");
+})().catch((error) => out("failed", error.message));
+</script>
