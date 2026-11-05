@@ -423,10 +423,14 @@ read again after the write.
 `POST /api/devices/{instance}/objects/{type}/{instance}/release`
 
 ```json
-{ "priority": 8 }
+{ "priority": 8, "only_mine": true }
 ```
 
 Frees the slot (writes NULL), so the next lower priority or the relinquish default takes over.
+With `only_mine` (as the list of held values sends it) the slot is read first and released only
+while it still holds what bacnetio wrote; otherwise `409`, e.g. `priority 8 holds 60 % now, not
+what bacnetio wrote: another system wrote over it, so it was not released`, and the value drops
+out of the held values. Without it the slot is released as it is.
 
 A refused write gives `502` with the device's reason, e.g. `the device refused: write access
 denied`. Every attempt, refused or not, lands in the log.
