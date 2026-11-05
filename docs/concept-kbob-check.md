@@ -5,6 +5,9 @@ recommendation on BACnet; on 5 November the public documents were found and the 
 for. It comes as the first **plugin** (`docs/concept-plugins.md`): installed apart from
 bacnetio, as the maintainer wants.
 
+Built on 5 November 2026: `plugins/kbob/` (rules from C1 in `rules.js`, the check in `check.js`,
+the page), built into one file by `plugins/build.mjs`.
+
 ## Sources
 
 KBOB, *Gebäudetechnik und Gebäudeautomation*,

@@ -98,6 +98,13 @@ for (const [name, value] of Object.entries(tokens)) document.documentElement.sty
 
 and use `var(--text)`, `var(--bg)`, `var(--accent)` in the style.
 
+## Plugins of this project
+
+They live under `plugins/<id>/`: `page.html` with the description, and its scripts as modules
+(`<script src="check.js"></script>`), so the logic can be tested with `node --test`
+(`tests/plugins/`). `node plugins/build.mjs [folder]` puts each into its single file
+(`target/plugins/` by default); every release carries them beside the programs.
+
 ## What a plugin cannot do
 
 - write to devices, give commands, release values;
