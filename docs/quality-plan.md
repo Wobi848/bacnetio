@@ -300,6 +300,11 @@ Open, in the maintainer's words where it helps. The larger ones are planned in
       fault. Then they come as an *extension*, off by default and switched on under *Settings*,
       since not everyone needs them ("braucht ja nicht jeder"). The code keeps each extension in a
       module of its own; a loader for third-party plugins only when a second extension asks for it.
+      Sources for the KBOB check (5 November, public, not kept in the repo):
+      https://www.kbob.admin.ch/de/gebaeudetechnik-und-gebaeudeautomation, above all the
+      recommendation and guide *BACnet Anwendung* V2.0 and appendix C1, the checklist of object
+      types, properties and BIBBs per profile (MBE-CH, AS-CH). Most of C1 can be checked by reading
+      a device, without writing.
 - [x] **Phone test through a VPN app, 4 November:** a DDC4000 found over the VPN by asking each
       address (no broadcast passes). Wishes from it: a VPN chosen before mobile data, the note to
       name the VPN instead of the firewall, the Android back key to step back and to ask before
