@@ -7,8 +7,9 @@ import { ABBREVIATIONS, BIBBS, OBJECT_TYPES, PROPERTIES } from "./rules.js";
 const DEVICE = 8;
 const NOTIFICATION_CLASS = 15;
 const ANALOG = [0, 1, 2];
-const BINARY = [3, 4, 5];
-const MULTISTATE = [13, 14, 19];
+/** 5.3.6 names binary and multi-state inputs and values for state texts, not outputs. */
+const BINARY = [3, 5];
+const MULTISTATE = [13, 19];
 /** Object types from here on belong to a vendor (BACnet: 128 and above). */
 const FIRST_PROPRIETARY = 128;
 /** A read of all properties never lists Property_List itself (BACnet standard): it cannot be told. */
@@ -133,7 +134,8 @@ function objectFindings(object, profile, classes, options) {
     const wrong = classFindings(object, properties);
     if (wrong.length) findings.push({ rule: "kbobClasses", what: wrong });
   }
-  if (ANALOG.includes(object.type) && (!text(properties, "units") || /^no.?units$/i.test(text(properties, "units")))) findings.push({ rule: "units", what: [] });
+  // 5.3.4 asks for a BACnetEngineeringUnit; no-units is one of them, so only a missing unit counts
+  if (ANALOG.includes(object.type) && !text(properties, "units")) findings.push({ rule: "units", what: [] });
   if (BINARY.includes(object.type)) {
     const empty = ["active-text", "inactive-text"].filter((name) => !text(properties, name));
     if (empty.length) findings.push({ rule: "stateTexts", what: empty });

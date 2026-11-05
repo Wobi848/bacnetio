@@ -11,7 +11,6 @@ const DEVICE_KINDS = "BDEFGHIKMPQRSTUXYZ";
 const FUNCTION_KINDS = "DZSMYHWTUKRN";
 // own names: the build puts every file of the plugin into one scope (plugins/build.mjs)
 const DEVICE_OBJECT = 8;
-const CLASS_OBJECT = 15;
 
 /** The blocks of a name, what is left over, and what does not fit. */
 export function splitName(name) {
@@ -34,17 +33,20 @@ export function splitName(name) {
 }
 
 /**
- * The FUNKTION each object type stands for: the object types of the building automation functions
- * (recommendation, 7.2) with the letters of the guide's table 2. A meter or measured value is an AV
- * there (Zähl-/Messwert), so an AV may carry Z or M besides W.
+ * The FUNKTION each object type stands for, from the letters of the guide's table 2 (physical
+ * inputs and outputs: D messages, Z meter values, S switching, M measured values, Y positioning;
+ * virtual points: H digital, W analog; T trend logs, U schedules, K calendars, R loops,
+ * N notification classes) and the object types the recommendation gives its functions (7.2: a
+ * meter or measured value as an AV). Event Enrollment, Program, Event Log, Positive Integer Value
+ * and File have no letter of their own there, so their FUNKTION is not checked.
  */
 const FUNCTIONS_OF_TYPE = {
-  0: "M", 1: "Y", 2: "WZM", 3: "D", 4: "S", 5: "H", 6: "K", 9: "H", 12: "R", 13: "D", 14: "S",
-  16: "H", 17: "U", 19: "H", 20: "T", 25: "T", 48: "W",
+  0: "MZ", 1: "Y", 2: "WZM", 3: "D", 4: "S", 5: "H", 6: "K", 12: "R", 13: "D", 14: "S",
+  15: "N", 17: "U", 19: "H", 20: "T",
 };
 
 /** Whether an object's name follows the pattern: object, BTA and, for a device its APPARAT, for any
- * other object its FUNKTION, nothing left over. Notification classes are named by number, not so. */
+ * other object its FUNKTION, nothing left over. */
 export function followsAks(type, name) {
   return aksProblem(type, name) === null;
 }
@@ -54,7 +56,6 @@ export function followsAks(type, name) {
  * pattern, or { letter, expected } when its FUNKTION does not fit its object type.
  */
 export function aksProblem(type, name) {
-  if (type === CLASS_OBJECT) return null;
   const { parts, rest, problems } = splitName(name);
   const complete = parts.object && parts.system && (type === DEVICE_OBJECT ? parts.device : parts.function);
   if (!complete || rest.length || problems.length) return { pattern: true };

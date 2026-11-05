@@ -57,7 +57,7 @@ test("each rule finds what breaks it", () => {
     ["services", (device) => { device.objects[0].properties.find((p) => p.property === "protocol-services-supported").bits[14] = false; }],
     ["proprietary", (device) => { device.objects.push({ type: 130, instance: 1, name: "Vendor thing", properties: [prop("object-name", "Vendor thing")] }); }],
     ["properties", (device) => { device.objects[1].properties = device.objects[1].properties.filter((p) => p.property !== "device-type"); }],
-    ["units", (device) => { device.objects[1].properties.find((p) => p.property === "units").value = "no-units"; }],
+    ["units", (device) => { device.objects[1].properties.find((p) => p.property === "units").value = ""; }],
     ["stateTexts", (device) => { device.objects[2].properties.find((p) => p.property === "active-text").value = ""; }],
     ["notificationClass", (device) => { device.objects[1].properties.find((p) => p.property === "notification-class").value = "9"; }],
     ["kbobClasses", (device) => { device.objects[4].properties.find((p) => p.property === "priority").items = ["100", "120", "100"]; }],
@@ -106,7 +106,7 @@ test("KBOB notification classes after tables 7 and 8", () => {
 test("object names after the AKS pattern of the KBOB guide, only when asked for", () => {
   assert.ok(followsAks(0, "3022_HZ1_L13_M100_M0"));
   // the FUNKTION fits the object type (recommendation 7.2, guide table 2)
-  assert.deepEqual(aksProblem(0, "3022_HZ1_L13_M100_S0"), { letter: "S", expected: "M" }, "a switching command is no analog input");
+  assert.deepEqual(aksProblem(0, "3022_HZ1_L13_M100_S0"), { letter: "S", expected: "M/Z" }, "a switching command is no analog input");
   assert.equal(aksProblem(2, "3022_HZ1_L13_P100_Z1"), null, "a meter value is an AV");
   assert.equal(aksProblem(4, "3022_HZ1_L13_M100_S0"), null);
   assert.deepEqual(aksProblem(3, "3022_HZ1_L13_M100_S0"), { letter: "S", expected: "D" });
@@ -114,7 +114,10 @@ test("object names after the AKS pattern of the KBOB guide, only when asked for"
   assert.ok(!followsAks(0, "3022_HZ1_L13_M100"), "a point needs its FUNKTION");
   assert.ok(!followsAks(0, "Outdoor air temp"));
   assert.ok(!followsAks(0, "3022_HZ1_I13_M100_M0"), "I is no BTA kind");
-  assert.ok(followsAks(15, "Alarms"), "notification classes go by number");
+  assert.ok(!followsAks(15, "Alarms"), "notification classes are named too (guide 3.2.2, N)");
+  assert.ok(followsAks(15, "3022_HZ1_L13_I001_N1"));
+  assert.equal(aksProblem(0, "3022_HZ1_L13_P100_Z1"), null, "a meter value may be an AI");
+  assert.equal(aksProblem(9, "3022_HZ1_L13_I100_H1"), null, "Event Enrollment has no letter of its own");
   assert.deepEqual(splitName("3022_HZ1_L13_M100_S0").parts, { unit: "3022", object: "HZ1", system: "L13", device: "M100", function: "S0" });
 
   const device = goodDevice();
@@ -131,4 +134,11 @@ test("only the rules chosen are checked and marked", () => {
   assert.deepEqual(Object.keys(without.rules), ["revision", "properties"]);
   assert.deepEqual(without.objects, [], "no finding of a rule left out");
   assert.equal(without.passed.length, 5);
+});
+
+test("only what the recommendation asks counts: no-units is a unit, outputs need no state texts", () => {
+  const device = goodDevice();
+  device.objects[1].properties.find((p) => p.property === "units").value = "no-units";
+  device.objects.push(object(4, 1, "Fan 1", { "active-text": { value: "" }, "inactive-text": { value: "" } }));
+  assert.deepEqual(failing(check(device)), []);
 });
