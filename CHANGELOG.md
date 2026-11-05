@@ -4,6 +4,10 @@ All notable changes for users of bacnetio.
 
 ## Unreleased
 
+### Changed
+
+- The note of a new version is filled green, so it catches the eye.
+
 ### Fixed
 
 - After an update the note no longer offers the version now running: the kept answer of the check counts only for the version that asked.

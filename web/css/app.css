@@ -112,6 +112,7 @@ button.chip { height: 22px; border: 0; cursor: pointer; }
 .site-link[aria-current="page"] { border-color: var(--accent); background: var(--accent-soft); }
 
 /* A newer release is out: a link to its page, below the site */
-.update-note { display: block; padding: 8px 10px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent-soft); color: var(--text); font-weight: 600; text-decoration: none; }
-.update-note:hover { background: var(--sunken); }
+/* filled green, apart from the blue of the chosen area: it has to catch the eye */
+.update-note { display: block; padding: 8px 10px; border: 1px solid var(--ok); border-radius: 10px; background: var(--ok); color: var(--surface); font-weight: 700; text-decoration: none; }
+.update-note:hover { filter: brightness(1.1); }
 .update-status .mono { display: block; overflow-wrap: anywhere; }
