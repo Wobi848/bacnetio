@@ -1,7 +1,7 @@
 // The plugin's page: the devices with their profile, the check one after the other, the results
 // per rule, the marks in bacnetio's lists and the report. Talks to bacnetio only through `ask`.
 
-import { RULES, checkDevice, countNames, sourceOf } from "./check.js";
+import { RULES, checkDevice, countNames, defaultRules, sourceOf } from "./check.js";
 import { PROFILES, SOURCE } from "./rules.js";
 import { TEXTS } from "./texts.js";
 
@@ -84,7 +84,7 @@ async function check(instances) {
   for (const device of read) {
     kept.devices[device.instance] = {
       at: Date.now(),
-      result: checkDevice(device, profileOf(device.instance), counted, { aks: Boolean(kept.aks) }),
+      result: checkDevice(device, profileOf(device.instance), counted, { rules: kept.rules }),
       names: device.objects.map((object) => object.name).filter(Boolean),
     };
   }
@@ -174,6 +174,15 @@ function ruleRow(rule, state, objects) {
   return `<li class="rule"><div class="rule-head"><span>${h(t(`rules.${rule}`))} <span class="muted">(${sourceOf(rule)})</span></span>${word}</div>${found}${failing.length ? `<ul class="objects">${list}${more}</ul>` : ""}</li>`;
 }
 
+/** Which rules a check takes; AKS is off until chosen, as it is an example of the guide. */
+let chooserOpen = false;
+function chooserHtml() {
+  const items = RULES.map((rule) => `<li><label class="option"><input type="checkbox" data-act="rule" data-rule="${rule}"${kept.rules.includes(rule) ? " checked" : ""}${busy ? " disabled" : ""}>
+    ${h(t(`rules.${rule}`))} <span class="muted">(${sourceOf(rule)})</span></label>${rule === "aks" ? `<p class="muted small">${t("aksNote")}</p>` : ""}</li>`).join("");
+  return `<details class="chooser"${chooserOpen ? " open" : ""}><summary>${t("chooseRules", { n: kept.rules.length, total: RULES.length })}</summary>
+    <ul class="choices">${items}</ul><p class="muted small">${t("chooseNote")}</p></details>`;
+}
+
 function deviceRow(device) {
   const entry = kept.devices[device.instance];
   const profiles = PROFILES.map((profile) => `<option${profile === profileOf(device.instance) ? " selected" : ""}>${profile}</option>`).join("");
@@ -201,8 +210,7 @@ function render() {
       <button data-act="report"${anyResult && !busy ? "" : " disabled"}>${t("report")}</button>
       <button data-act="clear"${anyResult && !busy ? "" : " disabled"}>${t("clear")}</button>
     </div>
-    <label class="option"><input type="checkbox" data-act="aks"${kept.aks ? " checked" : ""}${busy ? " disabled" : ""}> ${t("aks")}</label>
-    <p class="muted small">${t("aksNote")}</p>
+    ${chooserHtml()}
     <table><thead><tr><th>${t("device")}</th><th>${t("profile")}</th><th>${t("result")}</th><th></th></tr></thead>
     <tbody>${devices.map(deviceRow).join("")}</tbody></table>
     <p class="muted small">${t("namesNote")}</p>
@@ -226,9 +234,12 @@ document.addEventListener("click", async (event) => {
 });
 
 document.addEventListener("change", async (event) => {
-  if (event.target.dataset.act === "aks") {
-    kept.aks = event.target.checked;
+  if (event.target.dataset.act === "rule") {
+    const rule = event.target.dataset.rule;
+    kept.rules = RULES.filter((name) => (name === rule ? event.target.checked : kept.rules.includes(name)));
+    chooserOpen = true;
     await ask("save", kept);
+    render();
     return;
   }
   if (event.target.dataset.act !== "profile") return;
@@ -244,6 +255,9 @@ async function start() {
   locale = context.language === "de" ? "de-CH" : "en-GB";
   document.getElementById("lead").textContent = t("lead");
   kept = { profiles: {}, devices: {}, ...(await ask("load") ?? {}) };
+  // the rules chosen; before there was a choice, only AKS could be switched on
+  kept.rules ??= kept.aks ? [...defaultRules(), "aks"] : defaultRules();
+  delete kept.aks;
   devices = await ask("devices");
   render();
   await ask("mark", marks());

@@ -114,6 +114,16 @@ test("object names after the AKS pattern of the KBOB guide, only when asked for"
 
   const device = goodDevice();
   assert.equal(check(device).rules.aks, undefined, "off unless asked");
-  const result = checkDevice(device, "AS-CH", countNames([device]), { aks: true });
+  const result = checkDevice(device, "AS-CH", countNames([device]), { rules: ["names", "aks"] });
   assert.equal(result.rules.aks.ok, false);
+});
+
+test("only the rules chosen are checked and marked", () => {
+  const device = goodDevice();
+  device.objects[1].properties.find((p) => p.property === "units").value = "";
+  assert.deepEqual(failing(check(device)), ["units"]);
+  const without = checkDevice(device, "AS-CH", countNames([device]), { rules: ["revision", "properties"] });
+  assert.deepEqual(Object.keys(without.rules), ["revision", "properties"]);
+  assert.deepEqual(without.objects, [], "no finding of a rule left out");
+  assert.equal(without.passed.length, 5);
 });

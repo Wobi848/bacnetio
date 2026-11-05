@@ -33,7 +33,10 @@ export default {
     await page.click(".tabs a:has-text('KBOB')");
     const plugin = page.frameLocator("iframe.plugin-frame");
     // the AKS names of the guide's example on top of the rules
-    await plugin.locator("input[data-act=aks]").check();
+    await plugin.locator("details.chooser summary").click();
+    assert.match(await plugin.locator("details.chooser summary").textContent(), /10 of 11/);
+    await plugin.locator("input[data-act=rule][data-rule=aks]").check();
+    assert.match(await plugin.locator("details.chooser summary").textContent(), /11 of 11/);
     await plugin.locator("button[data-act=check-all]").click();
     // both devices checked, one after the other; meanwhile the check can be stopped
     await plugin.locator("button[data-act=stop]").waitFor();

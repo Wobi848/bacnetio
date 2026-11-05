@@ -31,8 +31,9 @@ export const TEXTS = {
     notChecked_title: "Not checked by this plugin",
     notChecked_list: "whether properties can be written (W in C1.2) · dynamic creation and deletion (DC/DD) · minimum string lengths (5.3.1) · client BIBBs (-A) and BIBBs no service shows · Property_List (a read of all properties never lists it) · the building automation functions of chapter 7 · the owner's naming concept · BTL certification",
     namesNote: "Names are compared across the devices checked; check all devices for a complete comparison.",
-    aks: "Also check object names against the AKS pattern",
-    aksNote: "The pattern NNNN_AAX_ANN_ANNN_AN (e.g. 3022_HZ1_L13_M100_S0) is the example of the KBOB guide 3.2.2, after the BBL directive; the owner sets the binding scheme. Takes effect at the next check.",
+    chooseRules: "Rules to check: {n} of {total}",
+    chooseNote: "Takes effect at the next check.",
+    aksNote: "The pattern NNNN_AAX_ANN_ANNN_AN (e.g. 3022_HZ1_L13_M100_S0) is the example of the KBOB guide 3.2.2, after the BBL directive; the owner sets the binding scheme.",
     rules: {
       revision: "BACnet protocol version 1, revision 14 or newer",
       objectTypes: "Object types the profile requires are supported",
@@ -94,8 +95,9 @@ export const TEXTS = {
     notChecked_title: "Von diesem Plugin nicht geprüft",
     notChecked_list: "ob Properties schreibbar sind (W in C1.2) · dynamisches Erstellen und Löschen (DC/DD) · minimale Zeichenlängen (5.3.1) · Client-BIBBs (-A) und BIBBs, die kein Dienst zeigt · Property_List (ein Lesen aller Properties liefert sie nie) · die GA-Funktionen aus Kapitel 7 · das Bezeichnungskonzept des Bauherrn · BTL-Zertifizierung",
     namesNote: "Namen werden über die geprüften Geräte verglichen; für einen vollständigen Vergleich alle Geräte prüfen.",
-    aks: "Objektnamen auch gegen das AKS-Muster prüfen",
-    aksNote: "Das Muster NNNN_AAX_ANN_ANNN_AN (z. B. 3022_HZ1_L13_M100_S0) ist das Beispiel des KBOB-Leitfadens 3.2.2, nach der Weisung des BBL; verbindlich ist das Konzept des Bauherrn. Gilt ab der nächsten Prüfung.",
+    chooseRules: "Zu prüfende Regeln: {n} von {total}",
+    chooseNote: "Gilt ab der nächsten Prüfung.",
+    aksNote: "Das Muster NNNN_AAX_ANN_ANNN_AN (z. B. 3022_HZ1_L13_M100_S0) ist das Beispiel des KBOB-Leitfadens 3.2.2, nach der Weisung des BBL; verbindlich ist das Konzept des Bauherrn.",
     rules: {
       revision: "BACnet-Protokoll Version 1, Revision 14 oder neuer",
       objectTypes: "Vom Profil verlangte Objekttypen werden unterstützt",

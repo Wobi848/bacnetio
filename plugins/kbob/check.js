@@ -61,6 +61,10 @@ export function kbobClass(number) {
   return { acknowledged: ACKNOWLEDGED[number - first], lowest, highest };
 }
 
+/** Rules a check leaves out unless the user picks them: AKS is an example of the guide, no rule. */
+export const OFF_BY_DEFAULT = ["aks"];
+export const defaultRules = () => RULES.filter((rule) => !OFF_BY_DEFAULT.includes(rule));
+
 export const RULES = ["revision", "objectTypes", "proprietary", "properties", "names", "aks", "units", "stateTexts", "notificationClass", "kbobClasses", "services"];
 const SOURCES = { revision: "4.1", objectTypes: "5.2.1, C1.1", proprietary: "4.4", properties: "5.3, C1.2", names: "5.3.3", aks: "Leitfaden 3.2.2", units: "5.3.4", stateTexts: "5.3.6", notificationClass: "5.3.5", kbobClasses: "6.2, Tab. 7, 8", services: "6, C1.3" };
 export const sourceOf = (rule) => SOURCES[rule];
@@ -119,7 +123,7 @@ function objectFindings(object, profile, classes, options) {
   const missing = required.map(([name]) => name).filter((name) => !NOT_IN_ALL.includes(name) && !has(properties, name));
   if (missing.length) findings.push({ rule: "properties", what: missing });
   if (!text(properties, "object-name")) findings.push({ rule: "names", what: ["—"] });
-  else if (options.aks && !followsAks(object.type, text(properties, "object-name"))) findings.push({ rule: "aks", what: [text(properties, "object-name")] });
+  else if (options.rules.includes("aks") && !followsAks(object.type, text(properties, "object-name"))) findings.push({ rule: "aks", what: [text(properties, "object-name")] });
   if (object.type === NOTIFICATION_CLASS) {
     const wrong = classFindings(object, properties);
     if (wrong.length) findings.push({ rule: "kbobClasses", what: wrong });
@@ -143,11 +147,12 @@ function objectFindings(object, profile, classes, options) {
 }
 
 /**
- * The check of one device. `device` is { instance, objects: [{ type, instance, name, properties }] },
+ * The check of one device, by the rules in `options.rules` (all but AKS unless given). `device` is { instance, objects: [{ type, instance, name, properties }] },
  * the device object among them; `names` counts every object name across the devices checked, so a
  * name used twice anywhere is found (5.3.3).
  */
-export function checkDevice(device, profile, names = new Map(), options = {}) {
+export function checkDevice(device, profile, names = new Map(), given = {}) {
+  const options = { rules: defaultRules(), ...given };
   const own = device.objects.find((object) => object.type === DEVICE);
   const deviceProperties = byName(own?.properties);
   const classes = new Set(device.objects.filter((object) => object.type === NOTIFICATION_CLASS).map((object) => object.instance));
@@ -155,7 +160,8 @@ export function checkDevice(device, profile, names = new Map(), options = {}) {
     const findings = objectFindings(object, profile, classes, options);
     const name = String(object.name ?? "").trim();
     if (name && (names.get(name) ?? 0) > 1) findings.push({ rule: "names", what: [name] });
-    return { type: object.type, instance: object.instance, label: label(object), findings };
+    const chosen = findings.filter((finding) => options.rules.includes(finding.rule));
+    return { type: object.type, instance: object.instance, label: label(object), findings: chosen };
   });
   const perRule = (rule) => objects.filter((object) => object.findings.some((finding) => finding.rule === rule));
   const objectRule = (rule) => {
@@ -164,20 +170,20 @@ export function checkDevice(device, profile, names = new Map(), options = {}) {
     if (failing.length) return { ok: false, objects: failing.length };
     return unread && rule !== "proprietary" ? { ok: null } : { ok: true };
   };
-  const rules = {
+  const all = {
     revision: own ? revision(deviceProperties) : { ok: null },
     objectTypes: own ? objectTypes(deviceProperties, profile) : { ok: null },
     proprietary: objectRule("proprietary"),
     properties: objectRule("properties"),
     names: objectRule("names"),
-    // an example of the guide, not a rule: only when the user asks for it
-    ...(options.aks ? { aks: objectRule("aks") } : {}),
+    aks: objectRule("aks"),
     units: objectRule("units"),
     stateTexts: objectRule("stateTexts"),
     notificationClass: objectRule("notificationClass"),
     kbobClasses: objectRule("kbobClasses"),
     services: own ? services(deviceProperties, profile) : { ok: null },
   };
+  const rules = Object.fromEntries(Object.entries(all).filter(([rule]) => options.rules.includes(rule)));
   // objects read in full and without findings, for their ✓ in bacnetio's lists
   const passed = device.objects.filter((object, index) => object.properties && !objects[index].findings.length)
     .map((object) => [object.type, object.instance]);
