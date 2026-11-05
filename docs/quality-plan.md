@@ -304,7 +304,8 @@ Open, in the maintainer's words where it helps. The larger ones are planned in
       https://www.kbob.admin.ch/de/gebaeudetechnik-und-gebaeudeautomation, above all the
       recommendation and guide *BACnet Anwendung* V2.0 and appendix C1, the checklist of object
       types, properties and BIBBs per profile (MBE-CH, AS-CH). Most of C1 can be checked by reading
-      a device, without writing.
+      a device, without writing. Asked for on 5 November despite the rule above; concept:
+      `docs/concept-kbob-check.md`, waiting for the maintainer.
 - [x] **Phone test through a VPN app, 4 November:** a DDC4000 found over the VPN by asking each
       address (no broadcast passes). Wishes from it: a VPN chosen before mobile data, the note to
       name the VPN instead of the firewall, the Android back key to step back and to ask before
