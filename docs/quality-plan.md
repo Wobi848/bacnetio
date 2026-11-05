@@ -250,10 +250,9 @@ Open, in the maintainer's words where it helps. The larger ones are planned in
       already changed (*unknown-object*) until bacnetio was restarted.
 - [x] A search starts with an empty device table; a write goes to the address shown in the
       details (`scan::aim_at`), not to whichever device with that ID the client heard first.
-- [ ] **Duplicate IDs throughout:** reading, the point list, watch list and recording still go by
-      ID, so with duplicates they show one of the devices only. Address such devices by network
-      and MAC everywhere, and let the list open each of them. Concept first. Concept:
-      `docs/concept-duplicate-ids.md`, waiting for the maintainer.
+- Decided 5 November: **duplicate IDs are not worked with throughout.** A shared ID is a fault in
+      the plant; bacnetio names it and helps to give new IDs. The plan for working with them stays
+      in `docs/concept-duplicate-ids.md` in case it is ever needed.
 - [x] The unlock question stuck out of narrow details (button text did not break).
 - [x] **Details wait for the list on MS/TP** ("da muss ich immer warten bis er alle objekte
       gelesen hat"): the client lets one request at a time through a router to one network, and
