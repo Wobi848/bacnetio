@@ -23,7 +23,8 @@ export function pluginTabsHtml(state) {
 export function viewPlugin(state) {
   const plugin = pluginOfArea(state);
   if (!plugin) return { title: t("plugins.title"), lead: "", next: null, html: `<div class="split single"><section class="listwrap"><div class="rows"><div class="empty"><p>${t("plugins.gone")}</p></div></div></section></div>` };
-  return { title: plugin.name, lead: plugin.description, next: null, html: "" };
+  // the plugin's page says what it does in the interface's language; its description is one language
+  return { title: plugin.name, lead: "", next: null, html: "" };
 }
 
 function pluginRow(state, plugin) {
