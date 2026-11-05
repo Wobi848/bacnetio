@@ -118,7 +118,18 @@ for (const test of tests.filter((candidate) => candidate.name.includes(filter) |
   const started = Date.now();
   try {
     if (test.setup) await test.setup(server.api);
-    await test.run({ page, api: server.api, base: server.base, context, restart: server.restart });
+    // a second bacnetio with a folder of its own stands for another system on the same plant
+    const others = [];
+    const another = async () => {
+      const other = await startServer(port++);
+      others.push(other);
+      return other;
+    };
+    try {
+      await test.run({ page, api: server.api, base: server.base, context, restart: server.restart, another });
+    } finally {
+      for (const other of others) other.stop();
+    }
     if (errors.length) throw new Error(`errors in the browser: ${errors.join(" | ")}`);
     console.log(`✓ ${test.name} (${((Date.now() - started) / 1000).toFixed(1)} s)`);
   } catch (error) {
