@@ -42,6 +42,12 @@ bacnetio never writes for this check. Each rule names its place in the recommend
 | 7 | Binary and multi-state objects carry state texts | Active_Text, Inactive_Text, State_Text | 5.3.6 |
 | 8 | Objects that report events name a notification class | Event_Enable, Notification_Class | 5.3.5 |
 | 9 | The services behind the profile's server BIBBs (-B) are supported, where one service stands for one BIBB | Device: Protocol_Services_Supported | 6, C1.3 |
+| 10 | Notification classes are KBOB classes (NC1–4, 32–35 … 224–225), with Ack_Required and priorities as table 8 gives | Notification Class objects | 6.2, tables 7 and 8 |
+| 11 | Object names follow the AKS pattern NNNN_AAX_ANN_ANNN_AN; only when switched on, since the guide gives it as an example and the owner decides | Object_Name | guide 3.2.2 |
+
+Rules 10 and 11 were added on 5 November 2026 from the maintainer's own GA tool, which already
+checked EDE files for them; checked against the recommendation (tables 7 and 8) and the guide
+(3.2.2) before they were taken over.
 
 Each rule ends as **met**, **not met** (with what is missing) or **not checkable** (the device did
 not answer, or the rule needs something bacnetio cannot read).
