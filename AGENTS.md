@@ -27,13 +27,17 @@ both are ignored by Git.
 
 ## Before saying "done"
 - Run everything CI runs, plus the browser tests: `cargo fmt --check`, `cargo test`,
-  `cargo clippy --all-targets -- -D warnings`, `node --test tests/web/*.test.js` and the browser tests in
-  `tests/ui/` (see its README) in Chromium, Firefox and WebKit.
+  `cargo clippy --all-targets -- -D warnings`, `node --test tests/web/*.test.js tests/plugins/*.test.js`
+  and the browser tests in `tests/ui/` (see its README) in Chromium, Firefox and WebKit.
 - Say what could not be checked (real devices, real networks, other browsers).
 - Never say "done" while known points are open. Name them and work through them; do not stop at
   "the next step would be".
 - Bigger changes: concept in `docs/` first, then code.
 - User-facing changes go in `CHANGELOG.md` under "Unreleased".
+- Docs change in the same pull request as the code: what a user sees in `README.md` (Usage), the
+  web API in `docs/api.md`, the plugin API in `docs/plugins.md`, a concept's state in its
+  `docs/concept-*.md`. `tests/docs.rs` fails when a route of the API or a simulator in `examples/`
+  is not described.
 
 ## Never lose a function
 - Before replacing or removing something, list every function of the old version and show each one
