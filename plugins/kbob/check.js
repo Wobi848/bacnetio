@@ -1,7 +1,7 @@
 // The KBOB check of one device (docs/concept-kbob-check.md): what bacnetio read goes in, the
 // findings per rule come out. No I/O, so the tests feed it devices that meet and break each rule.
 
-import { followsAks } from "./aks.js";
+import { aksProblem } from "./aks.js";
 import { ABBREVIATIONS, BIBBS, OBJECT_TYPES, PROPERTIES } from "./rules.js";
 
 const DEVICE = 8;
@@ -123,7 +123,12 @@ function objectFindings(object, profile, classes, options) {
   const missing = required.map(([name]) => name).filter((name) => !NOT_IN_ALL.includes(name) && !has(properties, name));
   if (missing.length) findings.push({ rule: "properties", what: missing });
   if (!text(properties, "object-name")) findings.push({ rule: "names", what: ["—"] });
-  else if (options.rules.includes("aks") && !followsAks(object.type, text(properties, "object-name"))) findings.push({ rule: "aks", what: [text(properties, "object-name")] });
+  else if (options.rules.includes("aks")) {
+    const name = text(properties, "object-name");
+    const problem = aksProblem(object.type, name);
+    if (problem?.pattern) findings.push({ rule: "aks", what: [name] });
+    else if (problem) findings.push({ rule: "aks", what: [name], letter: problem.letter, expected: problem.expected });
+  }
   if (object.type === NOTIFICATION_CLASS) {
     const wrong = classFindings(object, properties);
     if (wrong.length) findings.push({ rule: "kbobClasses", what: wrong });

@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { followsAks, splitName } from "../../plugins/kbob/aks.js";
+import { aksProblem, followsAks, splitName } from "../../plugins/kbob/aks.js";
 import { checkDevice, countNames, kbobClass } from "../../plugins/kbob/check.js";
 import { PROPERTIES } from "../../plugins/kbob/rules.js";
 
@@ -105,6 +105,11 @@ test("KBOB notification classes after tables 7 and 8", () => {
 
 test("object names after the AKS pattern of the KBOB guide, only when asked for", () => {
   assert.ok(followsAks(0, "3022_HZ1_L13_M100_M0"));
+  // the FUNKTION fits the object type (recommendation 7.2, guide table 2)
+  assert.deepEqual(aksProblem(0, "3022_HZ1_L13_M100_S0"), { letter: "S", expected: "M" }, "a switching command is no analog input");
+  assert.equal(aksProblem(2, "3022_HZ1_L13_P100_Z1"), null, "a meter value is an AV");
+  assert.equal(aksProblem(4, "3022_HZ1_L13_M100_S0"), null);
+  assert.deepEqual(aksProblem(3, "3022_HZ1_L13_M100_S0"), { letter: "S", expected: "D" });
   assert.ok(followsAks(8, "3022_HZ1_L13_D001"), "a device ends with its APPARAT");
   assert.ok(!followsAks(0, "3022_HZ1_L13_M100"), "a point needs its FUNKTION");
   assert.ok(!followsAks(0, "Outdoor air temp"));

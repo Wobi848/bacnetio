@@ -99,6 +99,7 @@ async function save() {
 }
 
 function findingText(finding) {
+  if (finding.letter) return t("findings.aksType", { what: finding.what.join(", "), letter: finding.letter, expected: finding.expected });
   return t(`findings.${finding.rule}`, { what: finding.what.join(", ") });
 }
 
@@ -145,7 +146,7 @@ function report() {
       rows.push([...head, word(state), "", deviceFinding]);
       for (const object of entry.result.objects) {
         for (const finding of object.findings.filter((candidate) => candidate.rule === rule)) {
-          rows.push([...head, t("ruleNotMet"), object.label, finding.what.join(", ")]);
+          rows.push([...head, t("ruleNotMet"), object.label, finding.letter ? findingText(finding) : finding.what.join(", ")]);
         }
       }
     }
