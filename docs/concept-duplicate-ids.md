@@ -4,7 +4,7 @@ Field visit 3 November 2026: seven Danfoss NovoCon behind a router on MS/TP netw
 answered as device 4194303. The maintainer gave them new IDs one by one. Since then (branch
 `duplicate-ids`) a search starts afresh and a write goes to the address the details show
 (`scan::aim_at`). Everything else still goes by the ID alone. This concept is about the rest.
-It is to be shown to the maintainer before it is built.
+Shown to the maintainer; not built (see *Decision*).
 
 ## Why it matters
 
@@ -60,7 +60,7 @@ COV.
 
 ## Decision
 
-Not built. A shared ID is a fault in the plant that has to be fixed anyway, and most building
+Not built (agreed with the maintainer on 5 November 2026). A shared ID is a fault in the plant that has to be fixed anyway, and most building
 management systems cannot cope with it either. bacnetio reports it as an error (the scan
 diagnosis names the ID and every address) and helps to fix it: find the devices and give each a
 new ID. This concept stays as the plan in case working with duplicates is ever needed.
