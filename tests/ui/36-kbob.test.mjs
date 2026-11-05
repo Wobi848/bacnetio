@@ -32,13 +32,15 @@ export default {
     await page.setInputFiles("#plugin-file", path.join(out, "kbob.bacnetio-plugin.html"));
     await page.click(".tabs a:has-text('KBOB')");
     const plugin = page.frameLocator("iframe.plugin-frame");
+    // the AKS names of the guide's example on top of the rules
+    await plugin.locator("input[data-act=aks]").check();
     await plugin.locator("button[data-act=check-all]").click();
     // both devices checked, one after the other; meanwhile the check can be stopped
     await plugin.locator("button[data-act=stop]").waitFor();
     await plugin.locator("button[data-act=check-all]").waitFor({ timeout: 120000 });
     const results = await plugin.locator("tbody tr td:nth-child(3)").allTextContents();
     assert.equal(results.length, 3, results.join(" | "));
-    assert.match(await plugin.locator("tr:has-text('KBOB-AS-01') td:nth-child(3)").textContent(), /^all rules met/);
+    assert.match(await plugin.locator("tr:has-text('3022_LU1_L01_D001') td:nth-child(3)").textContent(), /^all rules met/);
     assert.match(await plugin.locator("tr:has-text('AHU-01') td:nth-child(3)").textContent(), /rules not met/);
 
     // the simulated AHU lacks properties the profile asks of an analog input
@@ -46,6 +48,7 @@ export default {
     const properties = plugin.locator("li.rule:has-text('Each object has the properties')");
     assert.match(await properties.textContent(), /not met/);
     assert.match(await properties.textContent(), /AI 2.*device-type/s);
+    assert.match(await plugin.locator("li.rule:has-text('AKS pattern')").textContent(), /not met.*Outdoor air temp/s);
 
     // the marks in bacnetio's own lists
     await page.click(".tabs a[data-area=workspace]");
@@ -53,7 +56,7 @@ export default {
     const mark = page.locator(".row[data-point]:has-text('Outdoor air temp') .chip.mark.bad");
     assert.equal(await mark.textContent(), "KBOB ✗");
     assert.match(await mark.getAttribute("title"), /KBOB: missing: .*device-type.* \(5\.3, C1\.2\)/);
-    assert.equal(await page.textContent(".node[data-act=tree-device]:has-text('KBOB-AS-01') .chip.mark.ok"), "KBOB ✓");
+    assert.equal(await page.textContent(".node[data-act=tree-device]:has-text('3022_LU1_L01_D001') .chip.mark.ok"), "KBOB ✓");
 
     // started with bacnetio: after a reload the marks are there without opening the plugin
     await page.reload();

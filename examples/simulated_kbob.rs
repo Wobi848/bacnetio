@@ -22,6 +22,8 @@ use bacnet_types::primitives::{Date, ObjectIdentifier, PropertyValue, Time};
 
 const PORT: u16 = 47808;
 const INSTANCE: u32 = 1100;
+/// Names after the AKS example of the KBOB guide 3.2.2: unit 3022, ventilation plant LU1, level 1.
+const NAME: &str = "3022_LU1_L01_D001";
 
 /// An object with the properties the library leaves out; they read as given, writes go inside.
 struct Hull<O> {
@@ -143,7 +145,7 @@ fn device_more() -> Vec<(PropertyIdentifier, PropertyValue)> {
         (PropertyIdentifier::LOCATION, text("Simulated plant room")),
         (
             PropertyIdentifier::DESCRIPTION,
-            text("Automation station that meets KBOB AS-CH"),
+            text("KBOB-AS-01, an automation station that meets KBOB AS-CH"),
         ),
         (
             PropertyIdentifier::TIME_SYNCHRONIZATION_RECIPIENTS,
@@ -231,16 +233,16 @@ fn binary(device_type: &str, output: bool) -> Vec<(PropertyIdentifier, PropertyV
 
 fn objects() -> Vec<Box<dyn BACnetObject>> {
     let celsius = EngineeringUnits::DEGREES_CELSIUS;
-    let mut temp = AnalogInputObject::new(1, "AS01_Supply_Temp", celsius).unwrap();
+    let mut temp = AnalogInputObject::new(1, "3022_LU1_L01_B101_M1", celsius).unwrap();
     temp.set_present_value(21.0);
     let mut valve =
-        AnalogOutputObject::new(1, "AS01_Heating_Valve", EngineeringUnits::PERCENT).unwrap();
+        AnalogOutputObject::new(1, "3022_LU1_L01_Y101_Y1", EngineeringUnits::PERCENT).unwrap();
     valve.set_relinquish_default(0.0).unwrap();
-    let mut setpoint = AnalogValueObject::new(1, "AS01_Supply_Setpoint", celsius).unwrap();
+    let mut setpoint = AnalogValueObject::new(1, "3022_LU1_L01_I101_W1", celsius).unwrap();
     setpoint.set_relinquish_default(20.0).unwrap();
-    let alarm = BinaryInputObject::new(1, "AS01_Filter_Alarm").unwrap();
-    let fan = BinaryOutputObject::new(1, "AS01_Supply_Fan").unwrap();
-    let mut mode = MultiStateValueObject::new(1, "AS01_Operating_Mode", 3).unwrap();
+    let alarm = BinaryInputObject::new(1, "3022_LU1_L01_S101_D1").unwrap();
+    let fan = BinaryOutputObject::new(1, "3022_LU1_L01_M101_S1").unwrap();
+    let mut mode = MultiStateValueObject::new(1, "3022_LU1_L01_I102_H1", 3).unwrap();
     for (index, state) in ["Off", "Day", "Night"].into_iter().enumerate() {
         mode.write_property(
             PropertyIdentifier::STATE_TEXT,
@@ -312,7 +314,7 @@ async fn main() {
         .unwrap_or(PORT);
     let identity = DeviceIdentity::new(INSTANCE, 42)
         .unwrap()
-        .with_name("KBOB-AS-01")
+        .with_name(NAME)
         .with_segmentation(Segmentation::BOTH);
     let server = BACnetServer::bip_builder()
         .interface(interface)
@@ -325,7 +327,7 @@ async fn main() {
         .build()
         .await
         .expect("cannot start the simulated device");
-    println!("Simulated device {INSTANCE} \"KBOB-AS-01\" on {interface}:{port}. Ctrl+C to stop.");
+    println!("Simulated device {INSTANCE} \"{NAME}\" on {interface}:{port}. Ctrl+C to stop.");
     let _keep = server;
     std::future::pending::<()>().await;
 }
