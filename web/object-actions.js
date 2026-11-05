@@ -211,7 +211,8 @@ export async function releaseHeld(entries) {
   for (const entry of entries) {
     try {
       if (entry.action === "property") await api.writeProperty(entry.device, entry.type, entry.instance, { property_id: OUT_OF_SERVICE_PROPERTY, data_type: "boolean", value: "false" });
-      else await api.release(entry.device, entry.type, entry.instance, entry.priority);
+      // days may have passed: the server releases only while the slot still holds our value
+      else await api.release(entry.device, entry.type, entry.instance, entry.priority, true);
     } catch (error) {
       toast(`${entry.object}: ${error.message}`, true);
     }

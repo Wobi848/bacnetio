@@ -81,8 +81,8 @@ export const api = {
   properties: (device, type, instance) => call("GET", `${objectPath(device, type, instance)}/properties`),
   write: (device, type, instance, value, priority) =>
     call("POST", `${objectPath(device, type, instance)}/write`, { value, priority }),
-  release: (device, type, instance, priority) =>
-    call("POST", `${objectPath(device, type, instance)}/release`, { priority }),
+  release: (device, type, instance, priority, onlyMine = false) =>
+    call("POST", `${objectPath(device, type, instance)}/release`, { priority, only_mine: onlyMine }),
   held: () => call("GET", "/api/held"),
   log: () => call("GET", "/api/log"),
   recording: () => call("GET", "/api/recording"),

@@ -14,10 +14,18 @@ export function entryLabel(state, entry) {
   return `${owner} · ${name ?? objectText(entry)}`;
 }
 
+/** When it was written: a value held for days may no longer fit the plant. */
+function heldSince(entry) {
+  const time = new Date(entry.time * 1000);
+  const today = time.toDateString() === new Date().toDateString();
+  const clock = time.toLocaleTimeString(currentLocale(), { hour: "2-digit", minute: "2-digit" });
+  return today ? clock : `${time.toLocaleDateString(currentLocale())} ${clock}`;
+}
+
 function heldRows(state) {
   if (!state.held.length) return `<div class="empty"><p>${t("nothingHeld")}</p></div>`;
   return state.held.map((entry, index) => `<div class="row log"><span class="mono">${entry.priority ? `${t("priority")} ${entry.priority}` : t("chip.outOfService")}</span>
-    <span class="name">${h(entryLabel(state, entry))}</span><span class="mono">${h(entry.priority ? valueWord(entry.value) : "")}</span>
+    <span class="name">${h(entryLabel(state, entry))}<span class="sub">${t("held.since", { time: heldSince(entry) })}</span></span><span class="mono">${h(entry.priority ? valueWord(entry.value) : "")}</span>
     <button type="button" class="quiet" data-act="release-held" data-index="${index}">${t("release")}</button></div>`).join("");
 }
 
