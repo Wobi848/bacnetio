@@ -317,6 +317,11 @@ Open, in the maintainer's words where it helps. The larger ones are planned in
       adapter ändere während bacnetio offen ist sieht er die Änderung nicht"). The page reads the
       adapters again every 5 seconds and when the window comes back; the chosen adapter stays
       chosen, also under a new address.
+- [x] **One bacnetio at a time** (5 November: started twice, it ran on 8081 and on 65268). A second
+      start opens the running one in the browser and ends; both would write the same files, and
+      the second, without BACnet port 47808, finds fewer devices. Per data folder, and only for a
+      start that opens the browser (not the Android app, not the tests). Two networks at once would
+      be a feature of one bacnetio, later and only if asked.
 - Decided: the instance of other objects cannot be changed (devices rarely allow it, and
   references break). Revisit only for a concrete case.
 

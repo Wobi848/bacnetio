@@ -13,6 +13,7 @@ All notable changes for users of bacnetio.
 - The top of the device tree is a button, *All devices*, so the way back to the device list is easy to find.
 - In the details *Properties* stands apart from *Watch* and *Record*, as a button that opens the properties below.
 - Android: the back key steps back (details, device, device list, workspace). With no step left it asks whether to leave bacnetio running in the background or to stop it, and warns of values still held.
+- Starting bacnetio a second time opens the one already running in the browser, instead of a second bacnetio that would write the same files and find fewer devices.
 
 ### Fixed
 

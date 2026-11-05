@@ -10,6 +10,7 @@ mod reading;
 mod recording;
 mod references;
 mod remembered;
+mod running;
 mod scanning;
 mod session;
 mod site;
@@ -149,15 +150,25 @@ pub fn router(state: Shared) -> Router {
 }
 
 /// Serves until the process ends. Takes the next free port if `port` is taken. The write log is
-/// kept in `data_dir`; without one, it lasts only as long as the process.
+/// kept in `data_dir`; without one, it lasts only as long as the process. Started to open the
+/// browser while a bacnetio already serves `data_dir`, it opens that one and ends (running.rs).
 pub async fn serve(
     port: u16,
     open_in_browser: bool,
     data_dir: Option<PathBuf>,
     loopback: bool,
 ) -> anyhow::Result<()> {
-    let mut state = match data_dir {
-        Some(dir) => AppState::with_data_dir(dir)?,
+    if open_in_browser
+        && let Some(dir) = &data_dir
+        && let Some(running) = running::already_running(dir).await
+    {
+        let url = local_url(running);
+        println!("bacnetio is already running at {url}; opening it there.");
+        open_browser(&url);
+        return Ok(());
+    }
+    let mut state = match &data_dir {
+        Some(dir) => AppState::with_data_dir(dir.clone())?,
         None => AppState::default(),
     };
     state.loopback = loopback;
@@ -168,6 +179,10 @@ pub async fn serve(
             .context("cannot open a local web server port")?,
     };
     let address = listener.local_addr()?;
+    if let Some(dir) = &data_dir {
+        running::remember(dir, address)
+            .with_context(|| format!("cannot write to {}", dir.display()))?;
+    }
     state.web_address = Some(address);
     let url = local_url(address);
     println!("bacnetio is running at {url}");
