@@ -15,7 +15,7 @@ import { installColumns } from "./columns.js";
 import { installPanels } from "./panels.js";
 import { installDragToggle } from "./drag-toggle.js";
 import { editDay, editProperty, releaseHeld, releaseHere, releaseOther, selectPoint, setClock, showTechnical, writeDay, writeProperty, writeValue } from "./object-actions.js";
-import { installPlugin, installPluginBridge, loadPlugins, removePlugin, switchPlugin } from "./plugin-actions.js";
+import { installPlugin, installPluginBridge, loadPlugins, pluginsMayAsk, removePlugin, switchPlugin } from "./plugin-actions.js";
 import { pollRecording, recordHere, recordPoint, recordingRequest, removeRecorded, setRecordMode } from "./recording-actions.js";
 import { setAccent, setBackground, setTheme } from "./settings.js";
 import { nextSort } from "./sorting.js";
@@ -539,6 +539,7 @@ async function start() {
   } catch (error) {
     state.error = error.message;
   }
+  pluginsMayAsk();
   render();
   if (state.scan.state === "running") pollScan();
   const known = state.scan.devices?.some((device) => device.instance === memory.device);

@@ -31,6 +31,11 @@ export default {
     assert.equal(await frame.locator("#write").textContent(), "unknown question write");
     assert.ok(await page.isHidden("#work"));
 
+    // a reload on the plugin's page starts it at once; it still gets the devices, not an empty list
+    await page.reload();
+    await page.frameLocator("iframe.plugin-frame").locator("#done").waitFor({ timeout: 30000 });
+    assert.ok(Number(await page.frameLocator("iframe.plugin-frame").locator("#devices").textContent()) > 1);
+
     // the marks show in bacnetio's own lists
     await page.click(".tabs a[data-area=workspace]");
     await page.waitForSelector(".node[data-act=tree-device]:has-text('AHU-01') .chip.mark");

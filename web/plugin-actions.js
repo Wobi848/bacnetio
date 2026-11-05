@@ -132,9 +132,15 @@ const QUESTIONS = {
   mark: (id, [marks]) => setMarks(id, marks),
 };
 
+/** A plugin opened by a reload starts at once; it gets answers once bacnetio has its own state back. */
+let markReady;
+const ready = new Promise((resolve) => { markReady = resolve; });
+export const pluginsMayAsk = () => markReady();
+
 async function answer(event) {
   const id = pluginOfWindow(event.source);
   if (!id) return;
+  await ready;
   const { call, method, args } = event.data ?? {};
   const reply = (message) => event.source.postMessage({ call, ...message }, "*");
   const question = Object.hasOwn(QUESTIONS, method) ? QUESTIONS[method] : null;
