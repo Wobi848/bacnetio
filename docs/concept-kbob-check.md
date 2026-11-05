@@ -2,8 +2,8 @@
 
 The maintainer asked on 1 November 2026 for a check of a plant against the Swiss KBOB
 recommendation on BACnet; on 5 November the public documents were found and the work was asked
-for. It comes as an *extension*: off by default, switched on under *Settings* (quality plan,
-"Basics first, then extras").
+for. It comes as the first **plugin** (`docs/concept-plugins.md`): installed apart from
+bacnetio, as the maintainer wants.
 
 ## Sources
 
@@ -55,25 +55,22 @@ Said in the report, so nobody takes the check for more than it is:
 
 ## In the interface
 
-- **Settings → Extensions:** *KBOB check*, off. Off, nothing of it shows.
-- **Device details:** a section *KBOB check* with the profile (AS-CH, MBE-CH) and a button
-  *Check against KBOB*. The result shows as a list of the rules: met, not met, not checkable, with
-  what is missing, folded per rule.
-- **Site:** *Check all devices against KBOB*, one after the other, as *Read all devices* does.
-  A table of devices by rules met and not met.
-- **Export:** the report as CSV, one row per device and rule, with the source of each rule.
-- Reading goes through the same queue as the point list, so the details keep their precedence
-  (`src/precedence.rs`).
+The plugin's page, in the sidebar once it is installed and on:
+
+- The devices of the search or the open site, each with its profile (AS-CH, MBE-CH) and
+  **Check against KBOB**; above them **Check all devices**, one after the other.
+- A device's result: the rules as met, not met, not checkable, with what is missing, folded per
+  rule.
+- **Export** the report as CSV, one row per device and rule, with the source of each rule.
+- The results are kept in the plugin's store, so they survive a restart.
 
 ## Code
 
-- `src/kbob/`: the rules table (from C1, V2.0) and the check, without I/O: it takes what was read
-  and gives the report. Tests feed it devices that meet and break each rule.
-- Server: one endpoint to check a device, one for the site; the report kept with the site, so it
-  survives a restart.
-- Web: a module of its own, loaded only when the extension is on.
+- `plugins/kbob/`: the rules table (from C1, V2.0), the check and its page. The check takes what
+  was read and gives the report, without I/O; tests feed it devices that meet and break each rule.
+- It reads only through the plugin API, version 1.
 - The simulated plant gets one device that meets AS-CH and one that does not.
-- New texts in every language (`docs/concept-languages.md`).
+- Texts in every language the interface has.
 
 ## Open, for the maintainer
 
