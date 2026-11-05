@@ -6,11 +6,14 @@ const ROWS = ["Room temp 2.01", "Room temp 2.02", "Room temp 2.03"];
 const eye = (name) => `.row[data-point]:has-text('${name}') button[data-act=quick-watch]`;
 const watched = (page) => page.$$eval("button[data-act=quick-watch][aria-pressed=true]", (buttons) => buttons.length);
 
+// the list draws anew as values come in; a row caught in between has no box, so ask again
 async function centre(page, selector) {
   const locator = page.locator(selector);
-  await locator.waitFor();
-  const box = await locator.boundingBox();
-  return [box.x + box.width / 2, box.y + box.height / 2];
+  for (;;) {
+    await locator.waitFor();
+    const box = await locator.boundingBox();
+    if (box) return [box.x + box.width / 2, box.y + box.height / 2];
+  }
 }
 
 export default {
