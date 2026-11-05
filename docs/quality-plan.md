@@ -313,6 +313,10 @@ Open, in the maintainer's words where it helps. The larger ones are planned in
       Concept: `docs/concept-drag-toggle.md`. Built for watch and record in the point list, mouse
       only. Also: the top of the device tree as a button, *All devices* ("viel bin ich immer am
       suchen").
+- [x] **A new adapter address shows without a restart** (5 November: "wenn ich meine IP von dem
+      adapter ändere während bacnetio offen ist sieht er die Änderung nicht"). The page reads the
+      adapters again every 5 seconds and when the window comes back; the chosen adapter stays
+      chosen, also under a new address.
 - Decided: the instance of other objects cannot be changed (devices rarely allow it, and
   references break). Revisit only for a concrete case.
 

@@ -16,6 +16,8 @@ All notable changes for users of bacnetio.
 
 ### Fixed
 
+- A changed adapter address, a VPN that comes up or a cable plugged in shows without restarting bacnetio; the chosen adapter stays chosen, also under its new address.
+- Recording: a click on the page no longer gets lost when it falls into the page's regular refresh.
 - Android: when another app holds port 8081, bacnetio takes a free port and keeps it, instead of not starting or showing the other app's page.
 - Recording: *Poll* or *COV* and *Remove* sit in one line under the name; the switch lost its double line at the top.
 - On a phone the status line keeps what is running readable (*Reading values …*) and shortens the adapter instead.
