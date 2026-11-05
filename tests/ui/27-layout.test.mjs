@@ -54,8 +54,8 @@ export default {
       for (const width of WIDTHS) {
         await page.setViewportSize({ width, height: 800 });
         for (const area of ["workspace", "problems", "watch"]) {
-          await page.goto(`${base}/#/${area}`);
-          await page.reload();
+          // one full load, as below: a goto with a new hash and a reload made WebKit fail now and then
+          await page.goto(`${base}/?${language}-${width}#/${area}`);
           await page.waitForSelector("#adapter", { state: "attached" });
           for (const problem of await problems(page)) found.push(`not searched, ${language}, ${width} px, ${area}: ${problem}`);
         }
@@ -63,8 +63,7 @@ export default {
     }
     await page.evaluate(() => localStorage.setItem("bacnetio.language", "en"));
     await page.setViewportSize({ width: 1500, height: 900 });
-    await page.goto(`${base}/#/workspace`);
-    await page.reload();
+    await page.goto(`${base}/?searched#/workspace`);
     await page.waitForSelector("#adapter", { state: "attached" });
     await searchInUi(page);
     await openDevice(page, "DDC4000_#21");
