@@ -1,6 +1,7 @@
 // Navigation and the wiring of clicks, typing and keys to actions. The areas are addressed by the
 // hash (#/devices), so the browser's back button and a reload keep the place.
 
+import { loadAdapters, watchAdapters } from "./adapter-actions.js";
 import { api } from "./api.js";
 import { readBbmdTables } from "./bbmd-actions.js";
 import { compareTime, hideCompareCrosshair, hideCrosshair, showCompareCrosshair, showCrosshair } from "./chart.js";
@@ -520,9 +521,7 @@ async function start() {
   installDragToggle();
   render();
   try {
-    state.adapters = await api.adapters();
-    state.adapter = state.adapters.find((adapter) => adapter.ip === memory.adapterIp)
-      ?? state.adapters.find((adapter) => adapter.default) ?? state.adapters[0] ?? null;
+    await loadAdapters({ ip: memory.adapterIp });
     state.scan = await api.scan();
   } catch (error) {
     state.error = error.message;
@@ -546,6 +545,7 @@ async function start() {
   ]).catch((error) => { state.error = error.message; });
   render();
   pollRecording();
+  watchAdapters();
   checkForUpdate();
 }
 
