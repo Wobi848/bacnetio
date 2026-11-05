@@ -126,7 +126,8 @@ export function viewRecording(state) {
       title: t("tab.recording"),
       lead: t("rec.lead"),
       next: null,
-      html: `<div class="page"><div class="empty"><h2>${t("rec.emptyTitle")}</h2><p>${t("rec.emptyText")}</p></div></div>`,
+      // the same frame as the empty watch list and site problems
+      html: `<div class="split single"><section class="listwrap"><div class="rows"><div class="empty"><h2>${t("rec.emptyTitle")}</h2><p>${t("rec.emptyText")}</p></div></div></section></div>`,
     };
   }
   const count = Math.max(...points.map((point) => point.samples.length));
