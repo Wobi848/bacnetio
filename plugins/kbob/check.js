@@ -140,7 +140,10 @@ export function checkDevice(device, profile, names = new Map()) {
     notificationClass: objectRule("notificationClass"),
     services: own ? services(deviceProperties, profile) : { ok: null },
   };
-  return { profile, rules, objects: objects.filter((object) => object.findings.length) };
+  // objects read in full and without findings, for their ✓ in bacnetio's lists
+  const passed = device.objects.filter((object, index) => object.properties && !objects[index].findings.length)
+    .map((object) => [object.type, object.instance]);
+  return { profile, rules, objects: objects.filter((object) => object.findings.length), passed };
 }
 
 /** How often each object name occurs across the devices given. */

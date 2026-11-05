@@ -46,6 +46,7 @@ test("a device that meets the profile has no findings", () => {
   const result = check(goodDevice());
   assert.deepEqual(failing(result), []);
   assert.deepEqual(result.objects, []);
+  assert.equal(result.passed.length, 5, "every object read in full counts as met");
 });
 
 test("each rule finds what breaks it", () => {

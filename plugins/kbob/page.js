@@ -102,18 +102,28 @@ function findingText(finding) {
   return t(`findings.${finding.rule}`, { what: finding.what.join(", ") });
 }
 
-/** Every finding as a mark in bacnetio's lists: the device, and each object with its findings. */
+const MET = { label: "KBOB ✓", state: "ok" };
+const NOT_MET = { label: "KBOB ✗", state: "bad" };
+const OPEN = { label: "KBOB ?" };
+
+/** The result in bacnetio's lists: ✗ with what is wrong, ✓ where all is met, on devices and objects. */
 function marks() {
   const all = [];
   for (const [instance, entry] of Object.entries(kept.devices)) {
     const result = entry.result;
     if (!result) continue;
     const device = Number(instance);
-    const notMet = Object.values(result.rules).filter((rule) => rule.ok === false).length;
-    if (notMet) all.push({ device, text: t("markDevice", { n: notMet }) });
+    const rules = Object.values(result.rules);
+    const notMet = rules.filter((rule) => rule.ok === false).length;
+    const open = rules.filter((rule) => rule.ok === null).length;
+    if (notMet) all.push({ device, ...NOT_MET, text: t("markDevice", { n: notMet }) });
+    else all.push({ device, ...(open ? OPEN : MET), text: t(open ? "markOpen" : "markMet") });
     for (const object of result.objects) {
       const what = object.findings.map((finding) => `${findingText(finding)} (${sourceOf(finding.rule)})`).join("; ");
-      all.push({ device, type: object.type, instance: object.instance, text: t("mark", { what }) });
+      all.push({ device, type: object.type, instance: object.instance, ...NOT_MET, text: t("mark", { what }) });
+    }
+    for (const [type, objectInstance] of result.passed ?? []) {
+      all.push({ device, type, instance: objectInstance, ...MET, text: t("markMet") });
     }
   }
   return all;
@@ -170,10 +180,10 @@ function deviceRow(device) {
   const expanded = expandable && open.has(device.instance);
   const details = expanded ? `<tr class="details"><td colspan="4"><ul class="rules">${RULES.map((rule) => ruleRow(rule, entry.result.rules[rule], entry.result.objects)).join("")}</ul></td></tr>` : "";
   return `<tr>
-    <td>${expandable ? `<button class="plain" data-act="toggle" data-device="${device.instance}" aria-expanded="${expanded}">${expanded ? "▾" : "▸"}</button>` : ""}<b>${h(device.name ?? `#${device.instance}`)}</b> <span class="muted mono">#${device.instance}</span></td>
+    <td><b>${h(device.name ?? `#${device.instance}`)}</b> <span class="muted mono">#${device.instance}</span></td>
     <td><select data-act="profile" data-device="${device.instance}"${busy ? " disabled" : ""}>${profiles}</select></td>
     <td>${reading}${entry?.at && !busy ? ` <span class="muted">· ${t("checkedAt", { time: new Date(entry.at).toLocaleString(locale) })}</span>` : ""}</td>
-    <td><button data-act="check" data-device="${device.instance}"${busy ? " disabled" : ""}>${entry ? t("checkAgain") : t("check")}</button></td></tr>${details}`;
+    <td class="acts">${expandable ? `<button data-act="toggle" data-device="${device.instance}" aria-expanded="${expanded}">${expanded ? t("hideDetails") : t("details")}</button>` : ""}<button data-act="check" data-device="${device.instance}"${busy ? " disabled" : ""}>${entry ? t("checkAgain") : t("check")}</button></td></tr>${details}`;
 }
 
 function render() {
