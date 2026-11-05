@@ -99,8 +99,7 @@ Nothing in bacnetio moves into a plugin; the KBOB check is new.
 4. `docs/plugins.md` for plugin authors.
 5. Then the KBOB check as the first plugin.
 
-## Open, for the maintainer
+## Decided
 
-1. One file per plugin, installed through *Settings → Extensions*: right?
-2. Read-only in version 1: right? (Writing by a plugin would need a second, explicit permission
-   per plugin.)
+5 November 2026, with the maintainer: one file per plugin, installed through *Settings →
+Extensions*; read-only in API version 1; plugins mark what they find in bacnetio's lists.

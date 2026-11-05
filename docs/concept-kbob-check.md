@@ -78,10 +78,8 @@ The plugin's page, in the sidebar once it is installed and on:
 - The simulated plant gets one device that meets AS-CH and one that does not.
 - Texts in every language the interface has.
 
-## Open, for the maintainer
+## Decided
 
-1. AS-CH as the default for every device: right?
-2. Rule 4 on every object (one Property_List per object, slow on MS/TP) or on one object per type?
-   Proposal: every object, because the plant is checked once and the report must be complete.
-3. Rules 6 to 8 as errors or as hints? Proposal: errors, since the recommendation says *must*,
-   except 8, which applies only where events are used.
+5 November 2026, with the maintainer: a plugin; every device checked as AS-CH unless the user picks
+MBE-CH; rule 4 on every object, since the report must be complete; rules 6 and 7 count as not met,
+rule 8 only where an object reports events.
