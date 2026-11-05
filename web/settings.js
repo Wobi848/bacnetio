@@ -2,6 +2,7 @@
 
 import { h } from "./html.js";
 import { LANGUAGES, languageChoice, t } from "./i18n.js";
+import { pluginsCardHtml } from "./plugins.js";
 
 const THEMES = ["auto", "light", "dark"];
 const THEME_KEY = "bacnetio.theme";
@@ -122,6 +123,7 @@ export function viewSettings(state) {
         <h2>${t("set.accent")}</h2><span class="choices">${accents}</span>
         <h2>${t("set.background")}</h2>${backgroundsHtml("light")}${backgroundsHtml("dark")}</section>
       ${updateCardHtml(state)}
+      ${pluginsCardHtml(state)}
       <section class="card"><h2>${t("set.keys")}</h2><dl class="facts">${keys}</dl></section>
     </div></div>`,
   };

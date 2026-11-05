@@ -4,6 +4,7 @@
 import { DEVICE_TYPE, deviceName, isFault, isHeldEntry, isOverridden, ownObjects } from "./format.js";
 import { groupPoints, typeShort } from "./grouping.js";
 import { h } from "./html.js";
+import { pluginMarksHtml } from "./plugins.js";
 import { objectTypeName, t } from "./i18n.js";
 import { searchScope } from "./shell.js";
 import { OUTSIDE, nodePoints, outsidePoints, plantNodes } from "./structure.js";
@@ -87,7 +88,7 @@ function deviceHtml(state, device) {
     : `<span class="arrow"></span>`;
   const count = ownObjects(device.objects?.total) ?? null;
   const row = `<div class="node level-1${isOpen && !state.node ? " active" : ""}" role="treeitem" aria-selected="${isOpen && !state.node}" data-act="tree-device" data-device="${device.instance}">
-    ${arrow}<span class="label">${h(deviceName(device))}</span><span class="end">${marksHtml(state, device, points)}${count === null ? "" : `<span class="count">${count}</span>`}</span></div>`;
+    ${arrow}<span class="label">${h(deviceName(device))}</span><span class="end">${pluginMarksHtml(state, device.instance)}${marksHtml(state, device, points)}${count === null ? "" : `<span class="count">${count}</span>`}</span></div>`;
   return row + (expanded ? childrenHtml(state, device, points) : "");
 }
 

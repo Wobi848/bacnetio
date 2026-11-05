@@ -4,6 +4,7 @@ import { h } from "./html.js";
 import { t } from "./i18n.js";
 import { deviceCount } from "./format.js";
 import { resizeHandle } from "./panels.js";
+import { pluginTabsHtml } from "./plugins.js";
 import { siteProblems } from "./problems.js";
 import { openSiteOf, siteTitle } from "./sites.js";
 
@@ -114,7 +115,7 @@ export function sideHtml(state) {
     </div>
     <label class="site-search"><input id="site-search" type="search" placeholder="${t("search.site")}" aria-keyshortcuts="/" value="${h(state.siteSearch)}" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
     </div>
-    <nav class="tabs" aria-label="${t("areas")}">${areas}</nav>
+    <nav class="tabs" aria-label="${t("areas")}">${areas}${pluginTabsHtml(state)}</nav>
     <a class="quiet settings-link" href="#/settings" data-area="settings"${settingsCurrent} title="${t("tab.settings")} (${listed.length + 1})">${SETTINGS_ICON}<span class="side-label">${t("tab.settings")}</span></a>
     ${resizeHandle("side")}`;
 }

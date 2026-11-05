@@ -15,6 +15,7 @@ import { installColumns } from "./columns.js";
 import { installPanels } from "./panels.js";
 import { installDragToggle } from "./drag-toggle.js";
 import { editDay, editProperty, releaseHeld, releaseHere, releaseOther, selectPoint, setClock, showTechnical, writeDay, writeProperty, writeValue } from "./object-actions.js";
+import { installPlugin, installPluginBridge, loadPlugins, removePlugin, switchPlugin } from "./plugin-actions.js";
 import { pollRecording, recordHere, recordPoint, recordingRequest, removeRecorded, setRecordMode } from "./recording-actions.js";
 import { setAccent, setBackground, setTheme } from "./settings.js";
 import { nextSort } from "./sorting.js";
@@ -288,6 +289,12 @@ const actions = {
   theme: (element) => { setTheme(element.dataset.theme); render(); },
   "update-check": (element) => setUpdateCheck(element.dataset.on === "true"),
   "update-now": () => checkForUpdate(true),
+  "plugin-switch": (element) => switchPlugin(element.dataset.id, element.dataset.on === "true"),
+  "plugin-remove": (element) => { state.pluginRemoving = element.dataset.id; render(); },
+  "plugin-remove-yes": (element) => removePlugin(element.dataset.id),
+  "plugin-remove-no": () => { state.pluginRemoving = null; render(); },
+  "plugin-replace-yes": () => installPlugin(state.pluginReplacing.page, true),
+  "plugin-replace-no": () => { state.pluginReplacing = null; render(); },
   accent: (element) => { setAccent(element.dataset.accent); render(); },
   background: (element) => { setBackground(element.dataset.scheme, element.dataset.background); render(); },
 };
@@ -332,6 +339,10 @@ document.addEventListener("submit", (event) => {
 });
 
 document.addEventListener("change", (event) => {
+  if (event.target.id === "plugin-file") {
+    if (event.target.files[0]) installPlugin(event.target.files[0]);
+    return;
+  }
   if (event.target.id === "site-file") {
     if (event.target.files[0]) {
       forgetDeviceReads();
@@ -519,6 +530,8 @@ async function start() {
   installPanels();
   installColumns();
   installDragToggle();
+  installPluginBridge();
+  await loadPlugins();
   render();
   try {
     await loadAdapters({ ip: memory.adapterIp });

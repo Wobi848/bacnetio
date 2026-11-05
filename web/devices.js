@@ -4,6 +4,7 @@
 import { bbmdHtml } from "./bbmd.js";
 import { deviceCount, deviceMaker, deviceName, errorStrip, noteStrip, ownObjects } from "./format.js";
 import { h } from "./html.js";
+import { pluginMarksHtml } from "./plugins.js";
 import { currentLocale, errorText, eventStateText, objectText, t } from "./i18n.js";
 import { listBorders } from "./panels.js";
 import { searchScope } from "./shell.js";
@@ -77,7 +78,7 @@ function rowHtml(state, device) {
   const where = station ? `<span class="mono cut" title="${t("behindRouter", { address: h(device.address) })} · ${station}">${station}</span>` : `<span class="mono cut">${h(device.address)}</span>`;
   const active = state.selectedDevice === device.instance ? " active" : "";
   return `<div class="row devices${active}" data-device="${device.instance}" role="option" aria-selected="${Boolean(active)}">
-    <span class="name">${h(deviceName(device))}</span><span class="mono">#${device.instance}</span>
+    <span class="name">${h(deviceName(device))}${pluginMarksHtml(state, device.instance)}</span><span class="mono">#${device.instance}</span>
     ${where}<span class="cut">${h(deviceMaker(device) || t("unknownVendor"))}</span>
     <span class="mono objects"><span class="label">${t("col.objects")}: </span>${objectsCell(device)}</span></div>`;
 }

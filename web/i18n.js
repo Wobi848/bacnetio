@@ -83,6 +83,18 @@ const ERROR_PATTERNS = [
   [/^no network adapter with an IPv4 address is connected$/, "noIpv4"],
   [/^a recording holds at most (\d+) points$/, "recordMost"],
   [/^cannot send the registration to the BBMD at (\S+)$/, "bbmdLocal"],
+  [/^plugins need a data folder$/, "pluginNoFolder"],
+  [/^no plugin (\S+) is installed$/, "pluginMissing"],
+  [/^plugin (.+) (\S+) is installed already$/, "pluginInstalled"],
+  [/^plugin (\S+) is switched off$/, "pluginOff"],
+  [/^not a bacnetio plugin: the description is missing$/, "pluginNoDescription"],
+  [/^not a bacnetio plugin: the description is not closed$/, "pluginOpenDescription"],
+  [/^the plugin's description cannot be read: (.*)$/, "pluginUnreadable"],
+  [/^the plugin id (.*) must be up to (\d+) small letters, digits and dashes$/, "pluginId"],
+  [/^the plugin's name must be 1 to (\d+) characters$/, "pluginName"],
+  [/^the plugin's version must be 1 to (\d+) characters$/, "pluginVersion"],
+  [/^the plugin's description must be at most (\d+) characters$/, "pluginDescription"],
+  [/^the plugin needs plugin API version (\d+); this bacnetio has version (\d+)$/, "pluginApi"],
 ];
 
 function stored() {
