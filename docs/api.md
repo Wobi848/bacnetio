@@ -503,3 +503,24 @@ number. All write requests below answer with this same object.
 - `GET /api/recording.csv?offset_min=60`: CSV for Excel, one row per sampling round, one column
   per point. `offset_min` is the viewer's offset from UTC (`-new Date().getTimezoneOffset()`), so
   times are local.
+
+## Plugins
+
+Plugins (docs/concept-plugins.md, docs/plugins.md) are kept in the data folder under `plugins/`.
+Without a data folder every request answers `409` `plugins need a data folder`.
+
+- `GET /api/plugins`: `[{ "id": "kbob", "name": "KBOB check", "version": "1.0.0", "api": 1, "description": "…", "on": true }]`,
+  by name.
+- `POST /api/plugins` with the plugin file as the body (`text/html`, up to 8 MB): install and
+  switch on; answers the plugin as above. `400` when the file is not a plugin bacnetio can run
+  (description missing or wrong, other API version), `409` `plugin KBOB check 1.0.0 is installed
+  already` when the id is taken. `POST /api/plugins?replace=true` replaces it.
+- `POST /api/plugins/{id}/switch` `{ "on": false }`: switch off or on.
+- `POST /api/plugins/{id}/remove`: remove the plugin and its store.
+- `GET /api/plugins/{id}/page`: the plugin's page for its frame, with the policy
+  `sandbox allow-scripts; default-src 'none'; …`: it runs its own script and reaches nothing.
+  `409` while switched off.
+- `GET /api/plugins/{id}/store` and `POST` with JSON (up to 1 MB): the plugin's own store,
+  `null` until it saved something.
+
+`404` `no plugin … is installed` for an unknown id.
