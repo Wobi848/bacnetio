@@ -15,9 +15,7 @@ fn described(route: &str, docs: &str) -> bool {
             };
             rest = if part.starts_with('{') {
                 // a placeholder: any name in braces, or a number given as an example
-                let end = after
-                    .find(|c: char| c == '/' || c == '`' || c == ' ' || c == '?')
-                    .unwrap_or(after.len());
+                let end = after.find(['/', '`', ' ', '?']).unwrap_or(after.len());
                 &after[end..]
             } else {
                 match after.strip_prefix(part) {
