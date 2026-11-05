@@ -36,7 +36,8 @@ export default {
     await plugin.locator("details.chooser summary").click();
     assert.match(await plugin.locator("details.chooser summary").textContent(), /10 of 11/);
     await plugin.locator("input[data-act=rule][data-rule=aks]").check();
-    assert.match(await plugin.locator("details.chooser summary").textContent(), /11 of 11/);
+    // the choice is saved first, then the count is drawn anew
+    await plugin.locator("details.chooser summary:has-text('11 of 11')").waitFor();
     await plugin.locator("button[data-act=check-all]").click();
     // both devices checked, one after the other; meanwhile the check can be stopped
     await plugin.locator("button[data-act=stop]").waitFor();
