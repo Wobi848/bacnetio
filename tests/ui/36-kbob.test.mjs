@@ -1,12 +1,13 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { assert, open, openDevice, searchInUi } from "./helpers.mjs";
+import { SIM_PORT, assert, open, openDevice, searchInUi } from "./helpers.mjs";
 
 // The KBOB plugin, built as it is released: checks every device of the search by reading only,
-// says per rule what is met, marks what is not in bacnetio's lists and keeps it over a reload.
+// says per rule what is met, marks met and not met in bacnetio's lists and keeps it over a reload.
+// Beside the plant a third simulator meets the profile AS-CH in full.
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 export default {
@@ -14,8 +15,19 @@ export default {
   async run({ page, base }) {
     const out = fs.mkdtempSync(path.join(os.tmpdir(), "bacnetio-plugins-"));
     execFileSync(process.execPath, [path.join(root, "plugins/build.mjs"), out]);
+    const exe = process.platform === "win32" ? ".exe" : "";
+    const meetsAll = spawn(path.join(root, `target/debug/examples/simulated_kbob${exe}`), ["127.0.0.4", String(SIM_PORT)], { stdio: "ignore" });
+    try {
+      await this.check(page, base, out);
+    } finally {
+      meetsAll.kill();
+      fs.rmSync(out, { recursive: true, force: true });
+    }
+  },
+
+  async check(page, base, out) {
     await open(page, base, { area: "workspace" });
-    await searchInUi(page);
+    await searchInUi(page, 3);
     await page.click("a.settings-link");
     await page.setInputFiles("#plugin-file", path.join(out, "kbob.bacnetio-plugin.html"));
     await page.click(".tabs a:has-text('KBOB')");
@@ -25,8 +37,9 @@ export default {
     await plugin.locator("button[data-act=stop]").waitFor();
     await plugin.locator("button[data-act=check-all]").waitFor({ timeout: 120000 });
     const results = await plugin.locator("tbody tr td:nth-child(3)").allTextContents();
-    assert.equal(results.length, 2, results.join(" | "));
-    for (const result of results) assert.match(result, /rules not met|all rules met/, result);
+    assert.equal(results.length, 3, results.join(" | "));
+    assert.match(await plugin.locator("tr:has-text('KBOB-AS-01') td:nth-child(3)").textContent(), /^all rules met/);
+    assert.match(await plugin.locator("tr:has-text('AHU-01') td:nth-child(3)").textContent(), /rules not met/);
 
     // the simulated AHU lacks properties the profile asks of an analog input
     await plugin.locator("tr:has-text('AHU-01') button[data-act=toggle]").click();
@@ -37,9 +50,14 @@ export default {
     // the marks in bacnetio's own lists
     await page.click(".tabs a[data-area=workspace]");
     await openDevice(page, "AHU-01");
-    const mark = page.locator(".row[data-point]:has-text('Outdoor air temp') .chip.mark");
-    assert.equal(await mark.textContent(), "KBOB");
+    const mark = page.locator(".row[data-point]:has-text('Outdoor air temp') .chip.mark.bad");
+    assert.equal(await mark.textContent(), "KBOB ✗");
     assert.match(await mark.getAttribute("title"), /KBOB: missing: .*device-type.* \(5\.3, C1\.2\)/);
+    assert.equal(await page.textContent(".node[data-act=tree-device]:has-text('KBOB-AS-01') .chip.mark.ok"), "KBOB ✓");
+
+    // started with bacnetio: after a reload the marks are there without opening the plugin
+    await page.reload();
+    await page.waitForSelector(".node[data-act=tree-device]:has-text('AHU-01') .chip.mark.bad");
 
     // kept over a reload, and the report as CSV
     await page.click(".tabs a:has-text('KBOB')");
@@ -50,6 +68,5 @@ export default {
     const report = fs.readFileSync(await download.path(), "utf8");
     assert.match(report.split("\r\n")[0], /"device";"name";"profile";"checked";"rule";"source";"result";"object";"finding"/);
     assert.match(report, /"1001";"AHU-01";"AS-CH";[^\n]*"properties";"5\.3, C1\.2";"not met";"AI 2"/);
-    fs.rmSync(out, { recursive: true, force: true });
   },
 };
