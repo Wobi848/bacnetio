@@ -135,7 +135,8 @@ function headToggle(state, open) {
 /** Title, one sentence and the one next step: every page says where you are. */
 export function nextbarHtml(view) {
   const next = view.next ? `<button type="button" id="next" data-act="${view.next.act}"${view.next.data ?? ""}>${h(view.next.label)}</button>` : "";
-  return `<div class="pagehead"><h1>${h(view.title)}</h1><p class="lead">${view.lead ?? ""}</p></div>${next}`;
+  const also = view.also ? `<button type="button" class="quiet" data-act="${view.also.act}">${h(view.also.label)}</button>` : "";
+  return `<div class="pagehead"><h1>${h(view.title)}</h1><p class="lead">${view.lead ?? ""}</p></div>${also ? `<span class="next-acts">${also}${next}</span>` : next}`;
 }
 
 function activity(state) {

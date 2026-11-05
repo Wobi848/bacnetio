@@ -47,6 +47,7 @@
 .pagehead { flex: 1 1 320px; min-width: 0; }
 .pagehead h1 { font-size: 22px; line-height: 1.25; font-weight: 700; letter-spacing: -.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pagehead p { margin-top: 2px; color: var(--muted); }
+.next-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 #next { flex: 0 1 auto; max-width: 100%; height: auto; min-height: 36px; padding: 5px 16px; white-space: normal; text-align: left; }
 
 /* ---------------------------------------------------------------- Status bar */

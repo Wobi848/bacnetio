@@ -20,7 +20,13 @@ export function nextStep(state) {
   return { act: "find", label: state.scan.state === "idle" ? t("find") : t("searchAgain") };
 }
 
+/** While values are held, releasing them is the next step, but a new search stays at hand beside it. */
+function searchBeside(state) {
+  if (!state.held.length || state.scan.state === "running") return null;
+  return { act: "find", label: state.scan.state === "idle" ? t("find") : t("searchAgain") };
+}
+
 export function viewWorkspace(state) {
   const inner = state.device ? viewPoints(state) : viewDevices(state);
-  return { ...inner, next: nextStep(state), html: `<div class="workspace">${treeHtml(state)}${inner.html}</div>` };
+  return { ...inner, next: nextStep(state), also: searchBeside(state), html: `<div class="workspace">${treeHtml(state)}${inner.html}</div>` };
 }
