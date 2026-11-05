@@ -198,6 +198,10 @@ pub async fn change_instance(
 #[derive(Deserialize)]
 pub struct ReleaseRequest {
     priority: u8,
+    /// Release only while the slot still holds what bacnetio wrote: the list of held values asks
+    /// so, since days may have passed and another system may own the slot by now.
+    #[serde(default)]
+    only_mine: bool,
 }
 
 pub async fn release(
@@ -207,7 +211,37 @@ pub async fn release(
 ) -> Result<Json<ObjectView>, ApiError> {
     let object = object_id(object_type, instance)?;
     let priority = checked_priority(request.priority)?;
+    if request.only_mine {
+        still_mine(&state, device, object, priority).await?;
+    }
     perform(&state, device, object, Some(priority), Action::Release).await
+}
+
+/// Reads the slot from the device now: releasing a slot another system has written over would take
+/// its value away. A slot taken over drops out of the held values on the way (`object_view`).
+async fn still_mine(
+    state: &Shared,
+    device: u32,
+    object: ObjectIdentifier,
+    priority: u8,
+) -> Result<(), ApiError> {
+    let view = object_view(state, device, object).await?;
+    let slot = view
+        .priority_array
+        .as_ref()
+        .and_then(|slots| slots.iter().find(|slot| slot.priority == priority))
+        .ok_or_else(|| {
+            ApiError::conflict("the priority array cannot be read, so the value was not released")
+        })?;
+    match (&slot.value, slot.mine) {
+        (_, true) => Ok(()),
+        (Some(value), false) => Err(ApiError::conflict(format!(
+            "priority {priority} holds {value} now, not what bacnetio wrote: another system wrote over it, so it was not released"
+        ))),
+        (None, false) => Err(ApiError::conflict(format!(
+            "priority {priority} is free now: another system released it already"
+        ))),
+    }
 }
 
 /// Performs and journals the action, then reads the object again to show its effect.
