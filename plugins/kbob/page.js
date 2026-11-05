@@ -129,26 +129,29 @@ function marks() {
   return all;
 }
 
+/** The report for people, as the owner gets it: in the interface's language, for Excel. */
 function report() {
   const quote = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
-  const rows = [["device", "name", "profile", "checked", "rule", "source", "result", "object", "finding"]];
+  const word = (state) => (state.ok === true ? t("ruleMet") : state.ok === false ? t("ruleNotMet") : t("ruleOpen"));
+  const rows = [["device", "name", "profile", "checked", "rule", "source", "result", "object", "finding"].map((key) => t(`csv.${key}`))];
   for (const device of devices) {
     const entry = kept.devices[device.instance];
     if (!entry?.result) continue;
-    const base = [device.instance, device.name, entry.result.profile, new Date(entry.at).toISOString()];
+    const base = [device.instance, device.name, entry.result.profile, new Date(entry.at).toLocaleString(locale)];
     for (const rule of RULES.filter((name) => entry.result.rules[name])) {
       const state = entry.result.rules[rule];
-      const word = state.ok === true ? "met" : state.ok === false ? "not met" : "not checkable";
+      const head = [...base, t(`rules.${rule}`), sourceOf(rule)];
       const deviceFinding = DEVICE_RULES.includes(rule) && state.found?.length ? state.found.join(", ") : "";
-      rows.push([...base, rule, sourceOf(rule), word, "", deviceFinding]);
+      rows.push([...head, word(state), "", deviceFinding]);
       for (const object of entry.result.objects) {
         for (const finding of object.findings.filter((candidate) => candidate.rule === rule)) {
-          rows.push([...base, rule, sourceOf(rule), "not met", object.label, finding.what.join(", ")]);
+          rows.push([...head, t("ruleNotMet"), object.label, finding.what.join(", ")]);
         }
       }
     }
   }
-  ask("download", "kbob-report.csv", `${rows.map((row) => row.map(quote).join(";")).join("\r\n")}\r\n`);
+  // the mark at the start lets Excel read the umlauts
+  ask("download", "kbob-report.csv", `\uFEFF${rows.map((row) => row.map(quote).join(";")).join("\r\n")}\r\n`);
 }
 
 function summary(entry) {

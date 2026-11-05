@@ -55,7 +55,7 @@ export default {
     await openDevice(page, "AHU-01");
     const mark = page.locator(".row[data-point]:has-text('Outdoor air temp') .chip.mark.bad");
     assert.equal(await mark.textContent(), "KBOB ✗");
-    assert.match(await mark.getAttribute("title"), /KBOB: missing: .*device-type.* \(5\.3, C1\.2\)/);
+    assert.match(await mark.getAttribute("title"), /^KBOB: missing: .*device-type.* \(5\.3, C1\.2\)/);
     assert.equal(await page.textContent(".node[data-act=tree-device]:has-text('3022_LU1_L01_D001') .chip.mark.ok"), "KBOB ✓");
 
     // started with bacnetio: after a reload the marks are there without opening the plugin
@@ -69,7 +69,8 @@ export default {
     const [download] = await Promise.all([page.waitForEvent("download"), plugin.locator("button[data-act=report]").click()]);
     assert.equal(download.suggestedFilename(), "kbob-report.csv");
     const report = fs.readFileSync(await download.path(), "utf8");
-    assert.match(report.split("\r\n")[0], /"device";"name";"profile";"checked";"rule";"source";"result";"object";"finding"/);
-    assert.match(report, /"1001";"AHU-01";"AS-CH";[^\n]*"properties";"5\.3, C1\.2";"not met";"AI 2"/);
+    assert.ok(report.startsWith("\uFEFF"), "Excel reads the umlauts");
+    assert.equal(report.split("\r\n")[0], '\uFEFF"Device";"Name";"Profile";"Checked";"Rule";"Source (KBOB)";"Result";"Object";"Finding"');
+    assert.match(report, /"1001";"AHU-01";"AS-CH";[^\n]*"Each object has the properties its type requires";"5\.3, C1\.2";"not met";"AI 2"/);
   },
 };
