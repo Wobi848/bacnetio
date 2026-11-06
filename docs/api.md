@@ -516,11 +516,11 @@ number. All write requests below answer with this same object.
 Plugins (docs/concept-plugins.md, docs/plugins.md) are kept in the data folder under `plugins/`.
 Without a data folder every request answers `409` `plugins need a data folder`.
 
-- `GET /api/plugins`: `[{ "id": "kbob", "name": "KBOB check", "version": "1.0.0", "api": 1, "description": "…", "on": true }]`,
+- `GET /api/plugins`: `[{ "id": "check", "name": "Site check", "version": "1.0.0", "api": 1, "description": "…", "on": true }]`,
   by name.
 - `POST /api/plugins` with the plugin file as the body (`text/html`, up to 8 MB): install and
   switch on; answers the plugin as above. `400` when the file is not a plugin bacnetio can run
-  (description missing or wrong, other API version), `409` `plugin KBOB check 1.0.0 is installed
+  (description missing or wrong, other API version), `409` `plugin Site check 1.0.0 is installed
   already` when the id is taken. `POST /api/plugins?replace=true` replaces it.
 - `POST /api/plugins/{id}/switch` `{ "on": false }`: switch off or on.
 - `POST /api/plugins/{id}/remove`: remove the plugin and its store.

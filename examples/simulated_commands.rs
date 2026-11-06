@@ -1,10 +1,9 @@
 //! A simulated controller whose outputs are held at several priorities at once, to try the
-//! priority grid and the KBOB check of table 10 without a plant:
+//! priority grid without a plant:
 //! `cargo run --example simulated_commands -- <IP of an adapter> [port]`.
 //!
-//! Some commands sit where KBOB gives the priority a use (8 manual from the MBE, 16 automatic,
-//! 2 fire control, 14 time programs, 6 minimum on/off, 12 central functions), some at priorities
-//! KBOB leaves free (9, 13). One schedule writes at 14 as KBOB asks, one at 16.
+//! Commands sit at priorities BACnet names (2, 6, 8) and at others (9, 12, 13, 14, 16); one
+//! schedule writes at 14, one at 16.
 
 use std::net::Ipv4Addr;
 
@@ -56,14 +55,14 @@ fn objects() -> Vec<Box<dyn BACnetObject>> {
     );
     let mut cooling = AnalogOutputObject::new(2, "Cooling valve", percent).unwrap();
     cooling.set_relinquish_default(0.0).unwrap();
-    // priority 9 is free in KBOB table 10: allowed only by agreement with the owner
+    // priority 9, which BACnet gives no name
     hold(&mut cooling, &[(9, PropertyValue::Real(30.0))]);
     let mut fan = BinaryOutputObject::new(1, "Supply fan").unwrap();
     hold(&mut fan, &[(2, INACTIVE), (14, ACTIVE)]);
     let mut pump = BinaryOutputObject::new(2, "Heating pump").unwrap();
     hold(&mut pump, &[(6, ACTIVE), (16, INACTIVE)]);
     let mut night = BinaryValueObject::new(1, "Night mode").unwrap();
-    // priority 13 is free in KBOB table 10 as well
+    // priority 13: no name either
     hold(&mut night, &[(13, ACTIVE)]);
     let mut setpoint =
         AnalogValueObject::new(1, "Room setpoint", EngineeringUnits::DEGREES_CELSIUS).unwrap();
@@ -71,7 +70,7 @@ fn objects() -> Vec<Box<dyn BACnetObject>> {
     hold(&mut setpoint, &[(12, PropertyValue::Real(21.0))]);
     let mut office = ScheduleObject::new(1, "Office hours", INACTIVE).unwrap();
     office.set_priority_for_writing(14).unwrap();
-    // the library's default, 16: KBOB asks 14 for time programs
+    // the library's default, 16; the other schedule writes at 14
     let cleaning = ScheduleObject::new(2, "Cleaning light", INACTIVE).unwrap();
     vec![
         Box::new(heating),

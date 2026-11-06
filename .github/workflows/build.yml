@@ -27,7 +27,7 @@ jobs:
       - run: cargo fmt --check
       - run: cargo test
       - run: cargo clippy --all-targets -- -D warnings
-      - run: node --test tests/web/*.test.js tests/plugins/*.test.js
+      - run: node --test tests/web/*.test.js
         shell: bash
 
   # Operate the interface in a browser (tests/ui) against the simulators, in all three engines:
@@ -119,25 +119,9 @@ jobs:
           name: bacnetio-android
           path: dist/*
 
-  # the plugins of this project, each as its one file beside the programs (docs/plugins.md)
-  plugins:
-    needs: test
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-      - run: node plugins/build.mjs dist
-      - uses: actions/upload-artifact@v7
-        with:
-          name: bacnetio-plugins
-          path: dist/*
-
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build, android, plugins]
+    needs: [build, android]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/download-artifact@v8

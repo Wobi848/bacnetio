@@ -41,9 +41,7 @@ light and dark theme, the system's language (English or German), keys `1`–`6`,
 - **Sites**: each site searched is kept, named by you, opened again, saved to and read from a file.
 - **Extensions**: plugins installed from one file each under *Settings → Extensions*; each gets a
   page in the sidebar and can mark devices and points in the lists. A plugin reads only, it can
-  never write to the plant. The first one is the **KBOB check** (`kbob.bacnetio-plugin.html` in each
-  release): devices against the Swiss KBOB recommendation *BACnet Anwendung*, marked *KBOB ✓* or
-  *KBOB ✗* with what is missing. Writing a plugin: [docs/plugins.md](docs/plugins.md).
+  never write to the plant. Writing a plugin: [docs/plugins.md](docs/plugins.md).
 
 A reload keeps the area, the search result, the open device and the search settings. A changed
 adapter address, a VPN coming up or a cable plugged in shows without a restart. Starting bacnetio
@@ -55,9 +53,7 @@ uses is described in [docs/api.md](docs/api.md).
 
 To try it without a plant: `cargo run --example simulated_plant -- <IP>` starts a simulated device
 on that address; `simulated_controller` is one named by paths with about a hundred points, and
-`simulated_kbob` an automation station that meets the KBOB profile AS-CH in full, and
-`simulated_commands` a controller whose outputs are held at several priorities, some of them free
-in KBOB table 10. They have to run
+`simulated_commands` a controller whose outputs are held at several priorities. They have to run
 on another machine or network namespace than bacnetio, because two programs on one host cannot
 both use port 47808 properly; the browser tests run them on loopback addresses with port 47809.
 

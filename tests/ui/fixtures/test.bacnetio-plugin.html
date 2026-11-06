@@ -46,9 +46,22 @@ const out = (id, text) => {
   await ask("save", { seen: devices.length });
   out("kept", JSON.stringify(await ask("load")));
   out("marked", String(await ask("mark", [
-    { device: ahu.instance, text: "Device note" },
-    { device: ahu.instance, type: first.type, instance: first.instance, text: "Object note" },
+    { device: ahu.instance, text: "Device note", label: "Test ✓", state: "ok" },
+    { device: ahu.instance, type: first.type, instance: first.instance, text: "Object note", state: "bad" },
   ])));
+  out("named", String(await ask("priorities", { 8: "Manual test", 9: "Free test" })));
+  // a later search: bacnetio says the devices changed, the plugin asks again
+  addEventListener("message", async (event) => {
+    if (event.source !== parent || event.data?.event !== "devices") return;
+    const devices = await ask("devices");
+    document.getElementById("heard")?.remove();
+    out("heard", String(devices.length));
+  });
+  const report = document.createElement("button");
+  report.id = "report";
+  report.textContent = "Report";
+  report.onclick = () => ask("download", "test-report.csv", "Device;Note\r\n1001;Device note\r\n");
+  document.body.append(report);
   try {
     await fetch("/api/held");
     out("server", "reached");

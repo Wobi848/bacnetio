@@ -17,7 +17,7 @@ worktrees:
 
 ```sh
 git worktree add ../bacnetio-demo <branch>      # or switch that worktree when asked
-cd ../bacnetio-demo && cargo build --all-targets && node plugins/build.mjs
+cd ../bacnetio-demo && cargo build --all-targets
 ```
 
 ## Start
@@ -27,9 +27,8 @@ Outside `unshare`, so the maintainer's browser reaches it; on loopback, so nothi
 ```sh
 target/debug/examples/simulated_plant 127.0.0.2 47809 &      # AHU-01
 target/debug/examples/simulated_controller 127.0.0.3 47809 & # DDC4000_#21, path names
-target/debug/examples/simulated_kbob 127.0.0.4 47809 &       # meets KBOB AS-CH
+target/debug/examples/simulated_commands 127.0.0.4 47809 &   # outputs held at several priorities
 target/debug/bacnetio --no-browser --test-loopback --web-port 18081 --data-dir <scratchpad>/live/data &
-cp target/plugins/*.bacnetio-plugin.html ~/Downloads/
 ```
 
 Run each as a background task and keep its id, to stop exactly that one later (never `pkill -f`).

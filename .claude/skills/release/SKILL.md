@@ -39,7 +39,7 @@ publishes for everyone; ask first when anything is unclear.
    gh release edit vX.Y.Z --notes-file <scratchpad>/notes.md
    ```
 5. Check the files: `gh release view vX.Y.Z --json assets -q '.assets[].name'`: the Windows exe,
-   the Linux program, the Android APK and every plugin (`kbob.bacnetio-plugin.html`).
+   the Linux program and the Android APK.
 
 ## After
 
