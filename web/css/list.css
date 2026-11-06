@@ -18,6 +18,10 @@
 /* hover only tints: the strong colour of other buttons would hide the counts and the chosen one */
 .seg button:not([aria-pressed="true"]):hover { background: var(--sunken); color: var(--text); }
 .seg button[aria-pressed="true"]:hover { background: var(--accent-soft); color: var(--accent-strong); }
+/* the outer buttons follow the row's round corners, so the chosen one's frame is not cut off */
+.seg button:first-child { border-radius: 7px 0 0 7px; }
+.seg button:last-child { border-radius: 0 7px 7px 0; }
+.seg button:only-child { border-radius: 7px; }
 .seg button[aria-pressed="true"] .n { color: inherit; }
 .seg .n { font-weight: 700; }
 .seg .n.err { color: var(--err); }
