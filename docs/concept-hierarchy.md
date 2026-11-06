@@ -129,6 +129,10 @@ state column and the space before *Remove* take the width. Then: the name takes 
 state column only as wide as a chip, the view not filled (A). *Remove* stays a tool button on every
 row. Nothing moves.
 
+Site problems and watch list built on 6 November 2026 (branch `hierarchy-problems`): the
+sentence ends with what a click does; the name column takes 3 parts of the free width, the state
+column 200 px (problems) and 150 px (watch list), as wide as a state chip.
+
 ### 5. Recording
 
 | Level | Today | Then |
