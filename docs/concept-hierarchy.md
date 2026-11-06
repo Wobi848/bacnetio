@@ -1,0 +1,185 @@
+# Concept: a clear order on every page
+
+Status: proposal, 6 November 2026. Built only after the maintainer has approved it, one page per
+branch, starting with the point list.
+
+## Why
+
+The maintainer: "Today everything looks the same and you do not know where to look." bacnetio is a
+work tool; on every page the eye has to find at once what to do next and what the data say.
+
+The rule comes from the maintainer's design system (*Hierarchy*, *PageHead*, *ListRow*): every page
+has three levels, and only one may shout.
+
+1. **The next step:** one filled accent button in the page head, beside one sentence that says what
+   to do here. No next step, no filled button.
+2. **The data:** the largest and boldest thing on the page. Names in weight 600, descriptions in
+   `muted`, values in `mono` right-aligned with their unit, the chosen row `accent-soft`.
+3. **The tools:** quiet (`.quiet`), one toolbar row, the rare ones behind *More …*.
+
+State chips only where a state is not normal. No function goes away; no control becomes paler,
+borderless or a bare symbol (AGENTS.md). Where the design system asks a control to become quieter,
+this concept names it, so the maintainer approves each one.
+
+What `concept-design.md` already built stays: the three kinds of button, the one toolbar row with
+*More …*, the details as a third column from 1200 px, the sidebar with one adapter line, the tables
+of problems and watch list, charts by state, the backgrounds.
+
+## How it was looked at
+
+Screenshots of every page (devices, data points, site problems, watch list, recording, held by
+you, settings), light and dark, at 390, 1366 and 1920 px, in German, 42 in all: four simulators
+(`simulated_plant`, `simulated_controller`, `simulated_kbob`, `simulated_commands`), one point on the
+watch list, one in the recording, one value held. State of `main` with the open pull requests
+#19, #21 and #22. The pictures were shown to the maintainer; they are not in the repo.
+
+## Across all pages
+
+**A. Accent fills compete with the next step.** Besides the one next step, these are filled in the
+accent colour today: the chosen segment of every segmented row (*All 22*, *By type*, *10 s*,
+*All* of the time range, *Compare*, the chosen language, theme, accent and backgrounds, *On*), the
+current area in the sidebar, *Look now* in the settings, and on the recording page a second *Start
+recording* in the note. On the point list three filled blocks sit in one view (next step, *By type*,
+*All 22*); on the recording page five.
+
+Then: the next step is the only filled button. A chosen segment stays clearly chosen: `accent-soft`
+ground, `accent` border and label in weight 600, the others as now. This differs from the design
+system's *SegmentedControl* (chosen = filled), so it is question 1 below. The sidebar keeps its
+current item as it is (it is navigation, not a step on the page).
+
+**B. The page head says facts instead of what to do.** Points: "rusty-bacnet · #1001 ·
+127.0.0.2:47809"; recording: "Stopped · 0 values". Then: one sentence that says what to do, with the
+count in it ("22 points, 1 held by you. Choose one to see its details."). The device facts stay in
+the details, where they are already.
+
+**C. A second button in the page head.** Since #19 *Search again* stands as a tool button beside
+*Release the held value*, as the maintainer wished on 5 November. The design system allows no other
+button in the page head. Question 2.
+
+**D. Chips for normal states.** The change log shows a green *done* on every row. Then: no chip when
+the write went through; *refused* and *failed* keep theirs. The point list, problems and watch list
+already show chips only for states that are not normal.
+
+**E. Values.** In *Held by you* the value stands in the middle of the row without its unit
+("42,5"). Then: `mono`, right-aligned, with the unit, as in the point list.
+
+**F. Group heads as loud as the data.** *Inputs*, *Outputs* … are set like point names (600, same
+size). Then: group heads in `table-head` style (11.5 px capitals, `muted`) on `sunken`, with their
+count and chips; the point names are then the boldest thing in the list.
+
+**G. Phone (390 px).** On the point list the page head takes two lines (two buttons), the tools
+five rows (back, search, views on two lines, *Object types*, *Read again · Live values · More …*):
+the first point starts at half the screen. Then: the next step alone in the head as the design
+system says (question 2), back and search in one row, the views in one row that scrolls sideways
+inside itself with their counts, the tools in one row (*Object types* behind *More …* on a phone
+only). The first point starts in the upper third.
+
+## Page by page
+
+### 1. Data points (built first)
+
+| Level | Today | Then |
+|---|---|---|
+| Next step | *Release the held value* (filled) and *Search again* (tool); else *Search again* filled | unchanged, but alone filled (A) |
+| Sentence | device vendor, ID, address | "22 points, 1 held by you. Choose one to see its details." (B) |
+| Data | names 600 like group heads; two state chips and the row icons wrap a row onto two lines (*Heating valve* at 1920 px: *Held by you*, icons below) | group heads quiet (F); chips and the two row icons in one line, the chip column as wide as its longest chip, rows keep one height |
+| Tools | at 1366 px two rows: search and views, then *Object types* alone on the left and *Read again · Live values · More …* on the right; *By type · Plant* and *All 22* filled | views not filled (A); *Object types* moves to the right group: *Object types · Read again · Live values · More …*, one quiet row |
+| Details | device facts until a point is chosen | unchanged |
+
+Nothing moves out of the page; *Object types* changes its place in the toolbar only (and goes
+behind *More …* on a phone). Rows of `concept.md` 3.3 touched: "Search points; filter …", "Live
+values in the list", "Read the device again" (place unchanged), "Open or close all groups".
+
+### 2. Devices
+
+| Level | Today | Then |
+|---|---|---|
+| Next step | *Search again* filled | unchanged |
+| Sentence | "4 devices in 127.0.0.0/29. Choose one to see its data points." | unchanged, it already says what to do |
+| Data | names cut off at 1366 px (*DDC4000_#…*, *Commands-…*) while vendor takes a wide column; the tree repeats the names in the same weight | the name column takes the room first, vendor and object count give way; the tree's names in weight 500, the chosen one 600 on `accent-soft` |
+| Notes | two orange strips above the list, also the one that says bacnetio worked around the problem | a note that bacnetio solved by itself (no answer to broadcast, devices asked directly) as an info strip (`.info`), orange only where the user must act |
+| Tools | *Device by IP …*, *Export …* | unchanged (quiet) |
+
+### 3. Site problems
+
+The page closest to the rule: device in `muted`, name 600, value right-aligned, a chip only for what
+is wrong, *Read all devices* as the one next step. Then: the chosen view not filled (A); the
+sentence ends with what to do: "… Choose one to open it in its device." Nothing moves.
+
+### 4. Watch list
+
+No next step, so no filled button: right. The name is cut off (*…Bueroflaech…*) while the empty
+state column and the space before *Remove* take the width. Then: the name takes the free width, the
+state column only as wide as a chip, the view not filled (A). *Remove* stays a tool button on every
+row. Nothing moves.
+
+### 5. Recording
+
+| Level | Today | Then |
+|---|---|---|
+| Next step | *Start recording* filled in the head and again in the note below | in the head only; the note keeps its sentence ("The recording is not running: start it, then it measures every 10 s.") |
+| Sentence | "Stopped · 0 values" | "1 point, stopped. Start the recording to measure every 10 s." (B) |
+| Data | the series name small above an empty chart; in the figures table the full path wraps over three lines, *Poll · COV* filled on the row | before the first value the chart card says so in one line; the name in one line (device and the last part of the path, the full path as tooltip), per-row *Poll · COV* not filled (A) |
+| Tools | four segmented rows filled (interval, range, compare/single), *Clear values*, *CSV*; in German the label *Alle* (every) stands beside the range's *Alles* (all) and reads like one of its choices | not filled (A); the German label *Intervall*, English keeps *Every*; *Clear values* and *CSV* quiet, as now |
+
+Nothing moves out. Row of 3.3: "Recording: add, interval, start, stop, remove, clear, CSV, backup"
+(*Start* stays reachable in the head; the copy in the note goes).
+
+### 6. Held by you
+
+| Level | Today | Then |
+|---|---|---|
+| Next step | *Release all* filled | unchanged |
+| Data | the row begins with "Priority 8" in `mono`; name and "held since 11:18" run together (*Heating valveheld since*, a missing space); value in the middle without unit | columns *Device · Point*, *Priority*, *Value* (right, with unit), *Since*, *Release*; the point name 600 first |
+| Log | a green *done* chip on every row | chip only for refused or failed writes (D) |
+| Tools | *Leave the site* alone in the toolbar | unchanged |
+
+The missing space is a bug and gets fixed with this page. Nothing moves.
+
+### 7. Settings
+
+No next step, so no filled button. Today *Look now* (search for a new version) is filled, and every
+chosen choice (language, theme, accent, backgrounds, *On*) is filled: seven filled blocks. Then:
+*Look now* a tool button (it is not the next step of the page; the design system makes it quiet,
+question 3), the choices as in A. The version card shows a technical second line under "No answer
+from GitHub" (*no connection to GitHub: failed to lookup address …*): it goes into the tooltip of
+the sentence, readable on hover, so the plain sentence leads.
+
+## Functions
+
+No function goes away. What moves or changes its look, for `concept.md` 3.3:
+
+- *Object types*: within the toolbar of the point list to the right group; on a phone behind
+  *More …*.
+- *Start recording* in the recording's note: the copy goes, the button in the head stays.
+- *Look now*: from filled to tool button, same place.
+- Chosen segments everywhere: from filled to `accent-soft` with `accent` border (question 1).
+
+Each page's pull request lists the functions of that page and the test that shows each one.
+
+## Order of building
+
+One page per branch, each with its tests (the layout test in every language and width, the page's
+own browser test), screenshots light and dark at 390, 1366 and 1920 px, `CHANGELOG.md` and the docs.
+After each page the maintainer looks at the screenshots before the next one starts; the maintainer
+merges.
+
+1. Data points (with A for the segmented control, as it is shared, and F)
+2. Devices
+3. Site problems and watch list
+4. Held by you
+5. Recording
+6. Settings
+
+## Open for the decision
+
+1. **Chosen segments not filled?** Recommended: yes, `accent-soft` ground, `accent` border, label in
+   600. Otherwise the point list keeps three filled blocks and the recording five, and the next step
+   does not stand out. It changes *SegmentedControl* in the design system; the design system would
+   be updated with it.
+2. **Search again beside the next step in the page head?** Recommended: keep it as a tool button on
+   wide screens (you asked for it on 5 November, and searching is used often there), and on a phone
+   show only the next step, *Search again* moving to the toolbar row. The design system's PageHead
+   would then say "at most one tool button beside the next step".
+3. ***Look now* as a tool button?** Recommended: yes; it is not the next step of the settings, and
+   it keeps border, background and its words.
