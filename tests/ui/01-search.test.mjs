@@ -10,6 +10,9 @@ export default {
     const names = await page.$$eval(".row[data-device] .name", (cells) => cells.map((cell) => cell.textContent));
     assert.deepEqual(names.sort(), ["AHU-01", "DDC4000_#21"]);
     assert.equal(await page.textContent(".tabs a[data-area=workspace] .n"), "2");
+    // the area you are on is marked by a bar and a light ground, not filled like the next step
+    const ground = (selector) => page.locator(selector).evaluate((element) => getComputedStyle(element).backgroundColor);
+    assert.notEqual(await ground(".tabs a[aria-current=page]"), await ground("#next"));
     assert.match(await page.textContent(".pagehead p"), /2 devices in 127\.0\.0\.0\/29/);
     // a note on what bacnetio already worked around informs, it does not warn; one to act on stays orange
     const strips = await page.$$eval(".strips .strip", (all) => all.map((strip) => [strip.className, strip.textContent]));

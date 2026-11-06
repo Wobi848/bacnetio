@@ -13,11 +13,14 @@ export default {
     await page.keyboard.press("2");
     await page.waitForSelector("#next");
     assert.equal(await page.textContent("#next"), "Read all devices");
-    assert.match(await page.textContent(".strip.info"), /2 of 2 devices are not read yet/);
+    // a note bacnetio worked around may stand beside it, blue as well
+    await page.waitForSelector(".strip.info:has-text('2 of 2 devices are not read yet')");
     await page.click("#next");
     await page.waitForSelector(".row.problem:has-text('Out of service')", { timeout: 60000 });
     // a table with heads like the point list, sorted by a click on one
     assert.match(await page.textContent(".row.problem.head"), /Device[\s\S]*Name[\s\S]*Value[\s\S]*State/);
+    // the count of problems in the sidebar says it is about problems: in the warning colour
+    assert.ok(await page.isVisible(".tabs a[data-area=problems] .n.warn"));
     await page.click(".row.problem.head button[data-key=device]");
     await page.click(".row.problem.head button[data-key=device]");
     const devices = await page.$$eval(".row.problem:not(.head) > :first-child", (cells) => cells.map((cell) => cell.textContent));

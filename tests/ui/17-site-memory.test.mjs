@@ -28,7 +28,8 @@ export default {
     assert.match(await page.textContent(".strips"), /Remembered from/);
     assert.equal(await page.textContent("#next"), "Search again");
     await page.click("#next");
-    await page.waitForFunction(() => !document.querySelector(".strip.info") && !document.querySelector(".progress"), null, { timeout: 30000 });
+    // the note of the memory goes; a note bacnetio worked around (blue as well) may come with the search
+    await page.waitForFunction(() => !/Remembered from/.test(document.querySelector(".strips")?.textContent ?? "") && !document.querySelector(".progress"), null, { timeout: 30000 });
     assert.equal(await page.$$eval(".row[data-device]", (rows) => rows.length), 2);
   },
 };
