@@ -116,6 +116,15 @@ areas keeps its underline. Nothing moves.
 
 Built on 6 November 2026 (branch `hierarchy-sidebar`).
 
+The head of the sidebar then follows the design system's *SidebarHead*, given by the maintainer as
+the goal: a group *Site* (its name in 15 px bold, never the network alone: *Site without a name*
+until it has one, the name of a site file otherwise; the network once below it; the state with
+dot and word, *3 devices found*; *Switch site*, which was the card leading to the sites) and a
+group *Searching on* (the adapter; *Search settings*, which was *Change*; the network the next
+search looks at, only when it is not the open site's), then the search below a hairline. The
+status bar drops the adapter and address and keeps the port. Below 1000 px the folded head names
+the site the same way. Branch `sidebar-head`.
+
 ### 3. Site problems
 
 The page closest to the rule: device in `muted`, name 600, value right-aligned, a chip only for what
