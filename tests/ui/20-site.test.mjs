@@ -8,7 +8,12 @@ export default {
     await searchInUi(page);
     // the sidebar names the network once: the open site was searched where the next search looks
     // the kept sites come in after the search, a moment later in some browsers
-    await page.waitForFunction(() => /127\.0\.0\.0\/29/.test(document.querySelector(".side .site-link").textContent));
+    await page.waitForFunction(() => /127\.0\.0\.0\/29/.test(document.querySelector(".side .site-group .site-net")?.textContent ?? ""));
+    // the site is named, never by its network alone; the network is said once, not in the status bar
+    assert.equal(await page.textContent(".side .site-group .site-now"), "Site without a name");
+    assert.doesNotMatch(await page.textContent(".status"), /127\.0\.0\./);
+    assert.equal(await page.textContent(".side .site-group .site-link"), "Switch site");
+    assert.equal(await page.textContent(".side button[data-act=network]"), "Search settings");
     assert.equal(await page.$(".side .where"), null);
     await page.keyboard.press("2");
     await page.waitForSelector("#next");

@@ -77,8 +77,9 @@ follows mbusio's interface, which the maintainer sets as the standard: `~/Coding
 └───────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Sidebar:** adapter, connection state, *Change* for the search settings (plant subnet, BBMD,
-  port, ID range, device by IP), the areas, Settings at the bottom. Dark in both themes.
+- **Sidebar:** the site (its name, the network once, the state of the search, *Switch site*), what
+  it searches on (the adapter, *Search settings* for plant subnet, BBMD, port, ID range), the
+  search across the site, the areas, Settings at the bottom. Dark in both themes.
 - **Overview:** what the network and the open device look like, with the next step.
 - **Devices:** the search runs in place with progress; table of devices, details of the chosen one
   beside it (vendor facts, clock, reference), *Open data points* as the next step.
@@ -101,7 +102,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Search: Who-Is and every address asked directly, at the same time | workspace, next step; while values are held a tool beside it, on a phone in the toolbar | `ui/01-search`, `ui/03-write`, `scan.rs` |
 | Devices appear while the search runs, names read at once | table of the site | `scan.rs` (`devices_show_while_the_scan_runs`) |
 | Object lists read during the search, count and progress per device | table of the site, *Objects*; tree | `ui/01-search`, `ui/16-requests`, `scan.rs` (`reads_every_object_list_during_the_search_when_asked`) |
-| Plant subnet (VPN), BBMD, port, device ID range | sidebar, *Change* | `ui/04-reload`, `bbmd.rs`, `scan.rs` (range) |
+| Plant subnet (VPN), BBMD, port, device ID range | sidebar, *Search settings* | `ui/04-reload`, `bbmd.rs`, `scan.rs` (range) |
 | BBMD tables read (BDT and FDT), never written; a device that is none says so | device details, *BBMD tables* | `ui/24-bbmd`, `tests/bbmd.rs` (both tables, no BBMD), `web/ui.test.js` |
 | Device by IP address | table of the site, toolbar, *Device by IP …* | `ui/10-locate` |
 | Routers and the networks behind them | tree and strips above the table | `scan.rs` (routers) |

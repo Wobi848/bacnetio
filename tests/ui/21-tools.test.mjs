@@ -65,7 +65,7 @@ export default {
     await page.click("button[data-act=site-rename]");
     await page.fill("#site-title", "Sample School");
     await page.keyboard.press("Enter");
-    await page.waitForFunction(() => document.querySelector(".site-link .site-now")?.textContent === "Sample School");
+    await page.waitForFunction(() => document.querySelector(".site-group .site-now")?.textContent === "Sample School");
     assert.equal((await api("sites"))[0].title, "Sample School");
     // a site file saves and loads again; what is no site file is refused
     const site = await api("site.json");
@@ -88,13 +88,13 @@ export default {
     // a new search of the network named before brings its name back
     await page.goto(`${base}/#/workspace`);
     await page.reload();
-    await page.waitForFunction(() => document.querySelector(".site-link .site-now")?.textContent === "Plant B");
+    await page.waitForFunction(() => document.querySelector(".site-group .site-now")?.textContent === "Plant B");
     await searchInUi(page);
-    await page.waitForFunction(() => document.querySelector(".site-link .site-now")?.textContent === "Sample School");
+    await page.waitForFunction(() => document.querySelector(".site-group .site-now")?.textContent === "Sample School");
     // another kept site opens from the list
     await page.click(".site-link");
     await page.click(".sites li:has-text('Plant B') button[data-act=site-open]");
-    await page.waitForFunction(() => document.querySelector(".site-link .site-now")?.textContent === "Plant B");
+    await page.waitForFunction(() => document.querySelector(".site-group .site-now")?.textContent === "Plant B");
     // its devices follow the name, a moment later in some browsers
     await page.waitForFunction(() => document.querySelectorAll(".node[data-act=tree-device]").length === 2, null, { timeout: 5000 });
     // a kept site can be removed, after a question
