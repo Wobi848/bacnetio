@@ -44,6 +44,7 @@ bacnetio never writes for this check. Each rule names its place in the recommend
 | 9 | The services behind the profile's server BIBBs (-B) are supported, where one service stands for one BIBB | Device: Protocol_Services_Supported | 6, C1.3 |
 | 10 | Notification classes are KBOB classes (NC1–4, 32–35 … 224–225), with Ack_Required and priorities as table 8 gives | Notification Class objects | 6.2, tables 7 and 8 |
 | 11 | Object names follow the AKS pattern NNNN_AAX_ANN_ANNN_AN, and their FUNKTION fits the object type (AI M/Z, AO Y, AV W/Z/M, BI D, BO S, BV H, MI D, MO S, MV H, TL T, SCHED U, CAL K, LP R, NC N, from the letters of the guide's table 2 and the object types of the functions in 7.2; Event Enrollment, Program, Event Log, Positive Integer Value and File have no letter there and are not checked); only when chosen, since the guide gives it as an example and the owner decides | Object_Name | guide 3.2.2, table 2; recommendation 7.2 |
+| 12 | Commands are held only at priorities table 10 gives a use (1, 2, 5–8, 12, 14, 16); one held at a free priority (3, 4, 9–11, 13, 15) is found, since the recommendation allows those only by agreement with the owner. Schedules write at priority 14 (Priority_For_Writing) | each commandable object: Priority_Array; Schedule: Priority_For_Writing | 6.3.2, table 10 |
 
 ## Checked against the sources
 
@@ -55,7 +56,9 @@ bacnetio never writes for this check. Each rule names its place in the recommend
 - the object types (C1.1) against table 4: the same but for Multi-state Input, mandatory for AS-CH
   in table 4 and conditional in C1.1; table 4 counts;
 - the notification classes and their acknowledgement and priorities against tables 7 and 8;
-- the bit positions of Protocol_Services_Supported against the BACnet library's enumeration.
+- the bit positions of Protocol_Services_Supported against the BACnet library's enumeration;
+- rule 12 against table 10 and the text around it (6 November 2026): the free priorities are the
+  hatched rows, "only after agreement with the owner"; row 14 names the BIBB Scheduling.
 
 Rules 10 and 11 were added on 5 November 2026 from the maintainer's own GA tool, which already
 checked EDE files for them; checked against the recommendation (tables 7 and 8) and the guide
@@ -72,7 +75,11 @@ Said in the report, so nobody takes the check for more than it is:
   need writing to the plant;
 - the minimum string lengths (5.3.1): would need writing;
 - client BIBBs (-A), alarm and trend behaviour, the building automation functions of chapter 7;
-- the owner's naming concept, reserve objects, BTL certification.
+- the owner's naming concept, reserve objects, BTL certification;
+- for priorities (rule 12): who wrote a slot (priority 6 must not be written from outside, but the
+  device does not say by whom), whether safety functions (frost) use the priority array and pass it
+  on to every unit, the priority a Loop writes at (table 10 names no row for it), and deviations
+  the owner approved.
 
 ## In the interface
 

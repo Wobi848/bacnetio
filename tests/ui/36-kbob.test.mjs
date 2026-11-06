@@ -34,10 +34,10 @@ export default {
     const plugin = page.frameLocator("iframe.plugin-frame");
     // the AKS names of the guide's example on top of the rules
     await plugin.locator("details.chooser summary").click();
-    assert.match(await plugin.locator("details.chooser summary").textContent(), /10 of 11/);
+    assert.match(await plugin.locator("details.chooser summary").textContent(), /11 of 12/);
     await plugin.locator("input[data-act=rule][data-rule=aks]").check();
     // the choice is saved first, then the count is drawn anew
-    await plugin.locator("details.chooser summary:has-text('11 of 11')").waitFor();
+    await plugin.locator("details.chooser summary:has-text('12 of 12')").waitFor();
     await plugin.locator("button[data-act=check-all]").click();
     // both devices checked, one after the other; meanwhile the check can be stopped
     await plugin.locator("button[data-act=stop]").waitFor();

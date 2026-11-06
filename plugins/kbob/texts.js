@@ -46,6 +46,7 @@ export const TEXTS = {
       stateTexts: "Binary and multi-state inputs and values carry state texts",
       notificationClass: "Objects that report events name an existing notification class",
       kbobClasses: "Notification classes are KBOB classes, with their acknowledgement and priorities",
+      priorities: "Commands use only the priorities table 10 gives; schedules write at 14",
       services: "The services behind the profile's server BIBBs are supported",
     },
     findings: {
@@ -58,6 +59,8 @@ export const TEXTS = {
       aks: "not after the pattern: {what}",
       aksType: "{what}: FUNKTION {letter} does not fit the object type, expected {expected}",
       kbobClasses: "{what}",
+      priorities: "held at priority {what}, free in table 10 (only by agreement with the owner)",
+      prioritiesSchedule: "writes at priority {what}; table 10 gives 14 for schedules",
       units: "no unit",
       stateTexts: "empty: {what}",
       notificationClass: "notification class {what} does not exist",
@@ -111,6 +114,7 @@ export const TEXTS = {
       stateTexts: "Binäre und Mehrstufen-Eingänge und -Werte haben Zustandstexte",
       notificationClass: "Objekte mit Ereignismeldung nennen eine vorhandene Meldeklasse",
       kbobClasses: "Meldeklassen sind KBOB-Klassen, mit ihrer Quittierung und ihren Prioritäten",
+      priorities: "Befehle nutzen nur die Prioritäten der Tabelle 10; Zeitprogramme schreiben auf 14",
       services: "Die Dienste hinter den Server-BIBBs des Profils werden unterstützt",
     },
     findings: {
@@ -123,6 +127,8 @@ export const TEXTS = {
       aks: "nicht nach dem Muster: {what}",
       aksType: "{what}: FUNKTION {letter} passt nicht zum Objekttyp, erwartet {expected}",
       kbobClasses: "{what}",
+      priorities: "gehalten auf Priorität {what}, in Tabelle 10 frei (nur nach Absprache mit dem Bauherrn)",
+      prioritiesSchedule: "schreibt auf Priorität {what}; Tabelle 10 gibt 14 für Zeitprogramme vor",
       units: "keine Einheit",
       stateTexts: "leer: {what}",
       notificationClass: "Meldeklasse {what} gibt es nicht",
@@ -176,6 +182,7 @@ export const TEXTS = {
       "stateTexts": "Les entrées et valeurs binaires et multi-états ont des textes d’état",
       "notificationClass": "Les objets avec signalisation d’événements indiquent une classe de notification existante",
       "kbobClasses": "Les classes de notification sont des classes KBOB, avec leur acquittement et leurs priorités",
+      "priorities": "Les commandes n’utilisent que les priorités du tableau 10 ; les programmes horaires écrivent en 14",
       "services": "Les services des BIBB serveur du profil sont pris en charge"
     },
     "findings": {
@@ -188,6 +195,8 @@ export const TEXTS = {
       "aks": "pas selon le modèle : {what}",
       "aksType": "{what} : FONCTION {letter} ne correspond pas au type d’objet, attendu {expected}",
       "kbobClasses": "{what}",
+      "priorities": "tenue en priorité {what}, libre dans le tableau 10 (seulement en accord avec le maître d’ouvrage)",
+      "prioritiesSchedule": "écrit en priorité {what} ; le tableau 10 prévoit 14 pour les programmes horaires",
       "units": "pas d’unité",
       "stateTexts": "vide : {what}",
       "notificationClass": "la classe de notification {what} n’existe pas"
@@ -251,6 +260,7 @@ export const TEXTS = {
       "stateTexts": "Ingressi e valori binari e multistato hanno testi di stato",
       "notificationClass": "Gli oggetti con segnalazione di eventi indicano una classe di notifica esistente",
       "kbobClasses": "Le classi di notifica sono classi KBOB, con la loro conferma e le loro priorità",
+      "priorities": "I comandi usano solo le priorità della tabella 10; i programmi orari scrivono su 14",
       "services": "I servizi dei BIBB server del profilo sono supportati"
     },
     "findings": {
@@ -263,6 +273,8 @@ export const TEXTS = {
       "aks": "non secondo il modello: {what}",
       "aksType": "{what}: FUNZIONE {letter} non corrisponde al tipo di oggetto, atteso {expected}",
       "kbobClasses": "{what}",
+      "priorities": "mantenuto sulla priorità {what}, libera nella tabella 10 (solo d’intesa con il committente)",
+      "prioritiesSchedule": "scrive sulla priorità {what}; la tabella 10 prevede 14 per i programmi orari",
       "units": "nessuna unità",
       "stateTexts": "vuoto: {what}",
       "notificationClass": "la classe di notifica {what} non esiste"
@@ -326,6 +338,7 @@ export const TEXTS = {
       "stateTexts": "Las entradas y valores binarios y multiestado tienen textos de estado",
       "notificationClass": "Los objetos con notificación de eventos indican una clase de notificación existente",
       "kbobClasses": "Las clases de notificación son clases KBOB, con su confirmación y sus prioridades",
+      "priorities": "Las órdenes usan solo las prioridades de la tabla 10; los programas horarios escriben en 14",
       "services": "Se admiten los servicios de los BIBB servidor del perfil"
     },
     "findings": {
@@ -338,6 +351,8 @@ export const TEXTS = {
       "aks": "no sigue el patrón: {what}",
       "aksType": "{what}: FUNCIÓN {letter} no corresponde al tipo de objeto, se espera {expected}",
       "kbobClasses": "{what}",
+      "priorities": "mantenido en la prioridad {what}, libre en la tabla 10 (solo de acuerdo con el propietario)",
+      "prioritiesSchedule": "escribe en la prioridad {what}; la tabla 10 prevé 14 para los programas horarios",
       "units": "sin unidad",
       "stateTexts": "vacío: {what}",
       "notificationClass": "la clase de notificación {what} no existe"
