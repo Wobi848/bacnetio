@@ -10,7 +10,7 @@ import { listBorders } from "./panels.js";
 import { detailHtml } from "./point-detail.js";
 import { pluginMarksHtml } from "./plugins.js";
 import { matchesQuery, parseQuery } from "./point-query.js";
-import { AREA_ICONS, readingText } from "./shell.js";
+import { AREA_ICONS, headToolHtml, readingText } from "./shell.js";
 import { sortHead, sortRows } from "./sorting.js";
 import { isViewNode, nodePoints, plantNodes } from "./structure.js";
 
@@ -139,7 +139,7 @@ function readAtChip(state) {
   return `<span class="chip warn">${t("read.ago", { time, n: Math.round(age / 60000) })}</span>`;
 }
 
-function toolbar(state, points) {
+function toolbar(state, points, also) {
   const count = (view) => points.filter((point) => VIEWS[view](state, point)).length;
   const rare = Object.entries(RARE_VIEWS).map(([view, kind]) => {
     const n = count(view);
@@ -155,9 +155,10 @@ function toolbar(state, points) {
     <button type="button" class="quiet phone-back" data-act="tree-site">← ${t("tab.devices")}</button>
     <input id="filter" type="search" title="${t("filter.hint")} (f)" placeholder="${t("filter")}" value="${h(state.filter)}" autocomplete="off">
     <span class="seg"${referenceTitle}>${viewButton(state, "all", points.length)}${viewButton(state, "faults", count("faults"), "err")}${viewButton(state, "overridden", count("overridden"), "warn")}${rare}${reference}</span>
-    ${typesMenu(state, points)}
     ${readAtChip(state)}
     <div class="end">
+      ${headToolHtml(also)}
+      ${typesMenu(state, points)}
       <button type="button" class="quiet" data-act="reload"${state.reading ? " disabled" : ""}>${t("readAgain")}</button>
       <button type="button" class="${state.liveList ? "tonal" : "quiet"}" data-act="live-list" aria-pressed="${state.liveList}" title="${t("live.hint")}">${t(state.liveList ? "live.on" : "live.off")}</button>
       ${moreMenu(state)}
@@ -248,8 +249,16 @@ function readingHtml(state) {
   return `<div class="empty"><p><span class="dot busy"></span> ${h(readingText(state.readProgress))}</p></div>`;
 }
 
-export function viewPoints(state) {
+/** What the page is and what to do here, with the count; the device facts are in its details. */
+function pointsLead(state, points) {
+  const held = points.filter((point) => heldHere(state, point)).length;
+  if (points.length === 1) return t("pts.leadOne");
+  return held ? t("pts.leadHeld", { n: points.length, held }) : t("pts.lead", { n: points.length });
+}
+
+export function viewPoints(state, also = null) {
   const device = state.device;
+  // while the list is read there is nothing to choose yet: the device facts say where it is read from
   const lead = `${h(deviceMaker(device))} · <span class="mono">#${device.instance} · ${h(device.address)}</span>`;
   if (!state.points) return { title: deviceName(device), lead, html: `<section class="listwrap">${listBorders()}${readingHtml(state)}</section>${deviceDetailHtml(state)}` };
   const points = state.points.filter((point) => point.type !== DEVICE_TYPE);
@@ -258,8 +267,8 @@ export function viewPoints(state) {
   const shown = visiblePoints(state);
   return {
     title: deviceName(device),
-    lead,
-    html: `<section class="listwrap">${listBorders()}${toolbar(state, pointsOfNode(state))}${strips}<div class="rows${points.some((point) => point.description) ? "" : " no-desc"}" data-keep="points" tabindex="0" role="listbox" data-list="points">${listHtml(state, shown, points)}</div></section>
+    lead: h(pointsLead(state, points)),
+    html: `<section class="listwrap">${listBorders()}${toolbar(state, pointsOfNode(state), also)}${strips}<div class="rows${points.some((point) => point.description) ? "" : " no-desc"}" data-keep="points" tabindex="0" role="listbox" data-list="points">${listHtml(state, shown, points)}</div></section>
       ${state.selectedPoint ? detailHtml(state) : deviceDetailHtml(state)}`,
   };
 }

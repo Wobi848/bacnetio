@@ -7,7 +7,7 @@ import { h } from "./html.js";
 import { pluginMarksHtml } from "./plugins.js";
 import { currentLocale, errorText, eventStateText, objectText, t } from "./i18n.js";
 import { listBorders } from "./panels.js";
-import { searchScope } from "./shell.js";
+import { headToolHtml, searchScope } from "./shell.js";
 import { sortHead, sortRows } from "./sorting.js";
 
 const DEVICE_COLUMNS = {
@@ -52,12 +52,12 @@ function exportMenu(state, searching) {
   return `<span class="menu-host"><button type="button" class="quiet" data-act="export-menu" aria-expanded="${state.menu === "export"}">${t("export")}</button>${menu}</span>`;
 }
 
-function toolbar(state, devices) {
+function toolbar(state, devices, also) {
   const searching = state.scan.state === "running";
   const search = `<input id="device-filter" type="search" placeholder="${t("filter.devices")}" value="${h(state.deviceFilter)}" autocomplete="off">`;
   return `<div class="toolbar">${search}${progress(state.scan)}
     <div class="end">
-      ${state.selectedDevice !== null ? `<button type="button" class="tonal" data-act="find"${searching ? " disabled" : ""}>${t("searchAgain")}</button>` : ""}
+      ${state.selectedDevice !== null ? `<button type="button" class="tonal" data-act="find"${searching ? " disabled" : ""}>${t("searchAgain")}</button>` : headToolHtml(also)}
       <span class="menu-host"><button type="button" class="quiet" data-act="locate-menu" aria-expanded="${state.menu === "locate"}">${t("locate.short")}</button>${locateMenu(state)}</span>
       ${devices.length ? exportMenu(state, searching) : ""}
     </div></div>`;
@@ -214,7 +214,7 @@ export function deviceDetailHtml(state) {
   </aside>`;
 }
 
-export function viewDevices(state) {
+export function viewDevices(state, also = null) {
   const scan = state.scan;
   const all = scan.devices ?? [];
   const devices = filterDevices(all, state.deviceFilter);
@@ -233,7 +233,7 @@ export function viewDevices(state) {
   return {
     title: t("tab.devices"),
     lead,
-    html: `<section class="listwrap">${listBorders()}${toolbar(state, all)}${strips}<div class="rows" data-keep="devices" tabindex="0" role="listbox" data-list="devices">${rows}</div></section>
+    html: `<section class="listwrap">${listBorders()}${toolbar(state, all, also)}${strips}<div class="rows" data-keep="devices" tabindex="0" role="listbox" data-list="devices">${rows}</div></section>
       ${deviceDetailHtml(state)}`,
   };
 }

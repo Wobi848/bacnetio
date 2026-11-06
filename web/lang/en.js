@@ -27,6 +27,7 @@ export default {
     
     
     
+    "pts.lead": "{n} data points. Choose one to see its details.", "pts.leadOne": "1 data point. Choose it to see its details.", "pts.leadHeld": "{n} data points, {held} of them held by you. Choose one to see its details.",
     "pts.reading": "Reading the data point …",
     "view.all": "All", "view.faults": "Faults", "view.overridden": "Overridden", "view.changed": "Changed", "view.alarm": "Alarm", "view.outOfService": "Out of service", "view.held": "Held by you", "filter.clearAll": "Clear all", "filter.remove": "Remove this filter", "filter.hint": "Also: #123 for an instance, type:AO, value:>50", "filter.types": "Object types",
     "ref.hint": "Remembers all values now, to see later what changed (before and after commissioning).",
