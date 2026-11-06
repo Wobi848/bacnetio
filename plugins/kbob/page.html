@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>KBOB check</title>
+<script type="application/json" id="bacnetio-plugin">
+{ "id": "kbob", "name": "KBOB", "version": "1.0.0", "api": 1,
+  "description": "Checks devices against the KBOB recommendation BACnet Anwendung V2.0, by reading only" }
+</script>
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; padding: 20px; font: 14px/1.45 system-ui, sans-serif; color: var(--text, #14171d); background: var(--bg, #fff); }
+  h1 { margin: 0; font-size: 18px; }
+  p { margin: 4px 0; }
+  .muted { color: var(--muted, #555); }
+  .small { font-size: 12px; }
+  .mono { font-family: var(--mono, monospace); }
+  .good { color: var(--ok, #3f7a12); font-weight: 600; }
+  .bad { color: var(--err, #b42318); font-weight: 600; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 12px; }
+  button, select { font: inherit; height: 32px; padding: 0 12px; border: 1px solid var(--line-strong, #888); border-radius: 8px; background: var(--surface, #fff); color: var(--text, #14171d); font-weight: 600; cursor: pointer; }
+  button.primary { background: var(--accent, #2448e0); border-color: var(--accent, #2448e0); color: var(--accent-ink, #fff); }
+  td.acts { display: flex; gap: 8px; justify-content: flex-end; }
+  button:disabled { opacity: .5; cursor: default; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface, #fff); border: 1px solid var(--line, #ddd); border-radius: 10px; }
+  th { text-align: left; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted, #555); padding: 10px 12px; border-bottom: 1px solid var(--line, #ddd); }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--line, #ddd); vertical-align: middle; }
+  tr.details td { background: var(--sunken, #f4f4f4); }
+  .rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .rule-head { display: flex; justify-content: space-between; gap: 16px; }
+  .found { color: var(--muted, #555); }
+  .objects { margin: 4px 0 0; padding-left: 18px; font-size: 13px; }
+  .limits { margin-top: 12px; }
+  .option { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .chooser { margin: 0 0 12px; }
+  .chooser summary { cursor: pointer; font-weight: 600; }
+  .choices { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; }
+  .choices .option { font-weight: 400; }
+  .choices p { margin: 0 0 0 26px; }
+  /* a phone: each device as a block of its own instead of a table wider than the screen */
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    table, tbody, tr, td { display: block; width: auto; }
+    thead { display: none; }
+    tbody > tr:not(.details) { padding: 8px 0; border-top: 1px solid var(--line, #ddd); }
+    td { border: 0; padding: 4px 12px; }
+    td.acts { justify-content: flex-start; flex-wrap: wrap; }
+    .rule-head { flex-direction: column; gap: 2px; }
+  }
+  .limits summary { cursor: pointer; color: var(--muted, #555); font-size: 12px; }
+</style>
+<p id="lead" class="muted"></p>
+<div id="app"></div>
+<script src="rules.js"></script>
+<script src="aks.js"></script>
+<script src="check.js"></script>
+<script src="texts.js"></script>
+<script src="page.js"></script>
+</html>

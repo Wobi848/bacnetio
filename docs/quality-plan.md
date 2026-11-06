@@ -356,7 +356,7 @@ the switch itself is the maintainer's.
       reporting on, a short description and topics. Public since 3 November 2026.
 - [x] CI runs again, free for a public repo. The stacked branches are merged; the last fix left on
       `plant-tools` came over with `going-public`.
-- [ ] A first release with the Windows build, on the maintainer's word.
+- [x] A first release with the Windows build, on the maintainer's word: v0.1.1 on 4 November 2026.
 
 ## Done
 

@@ -5,6 +5,9 @@ recommendation on BACnet; on 5 November the public documents were found and the 
 for. It comes as the first **plugin** (`docs/concept-plugins.md`): installed apart from
 bacnetio, as the maintainer wants.
 
+Built on 5 November 2026: `plugins/kbob/` (rules from C1 in `rules.js`, the check in `check.js`,
+the page), built into one file by `plugins/build.mjs`.
+
 ## Sources
 
 KBOB, *Gebäudetechnik und Gebäudeautomation*,
@@ -35,10 +38,28 @@ bacnetio never writes for this check. Each rule names its place in the recommend
 | 3 | No proprietary object types (number 128 or above) | Device: Object_List | 4.4 |
 | 4 | Each object has the properties its type requires in the profile | each object: Property_List, else all properties | 5.3, appendix A, C1.2 |
 | 5 | Every object has a name, and no name occurs twice in the site | Object_Name of all devices read | 5.3.3 |
-| 6 | Analog objects carry a unit | Units | 5.3.4 |
-| 7 | Binary and multi-state objects carry state texts | Active_Text, Inactive_Text, State_Text | 5.3.6 |
+| 6 | Analog objects carry a unit; no-units is one of the BACnetEngineeringUnits and counts | Units | 5.3.4 |
+| 7 | Binary and multi-state inputs and values carry state texts (outputs are not named there) | Active_Text, Inactive_Text, State_Text | 5.3.6 |
 | 8 | Objects that report events name a notification class | Event_Enable, Notification_Class | 5.3.5 |
 | 9 | The services behind the profile's server BIBBs (-B) are supported, where one service stands for one BIBB | Device: Protocol_Services_Supported | 6, C1.3 |
+| 10 | Notification classes are KBOB classes (NC1–4, 32–35 … 224–225), with Ack_Required and priorities as table 8 gives | Notification Class objects | 6.2, tables 7 and 8 |
+| 11 | Object names follow the AKS pattern NNNN_AAX_ANN_ANNN_AN, and their FUNKTION fits the object type (AI M/Z, AO Y, AV W/Z/M, BI D, BO S, BV H, MI D, MO S, MV H, TL T, SCHED U, CAL K, LP R, NC N, from the letters of the guide's table 2 and the object types of the functions in 7.2; Event Enrollment, Program, Event Log, Positive Integer Value and File have no letter there and are not checked); only when chosen, since the guide gives it as an example and the owner decides | Object_Name | guide 3.2.2, table 2; recommendation 7.2 |
+
+## Checked against the sources
+
+5 November 2026, each by machine where the documents allow it:
+
+- the properties per object type and profile (`rules.js`, from C1.2) against appendix A of the
+  recommendation: the same for all 20 types and both profiles;
+- the BIBBs (C1.3) against the tables of chapter 6: the same for all 97;
+- the object types (C1.1) against table 4: the same but for Multi-state Input, mandatory for AS-CH
+  in table 4 and conditional in C1.1; table 4 counts;
+- the notification classes and their acknowledgement and priorities against tables 7 and 8;
+- the bit positions of Protocol_Services_Supported against the BACnet library's enumeration.
+
+Rules 10 and 11 were added on 5 November 2026 from the maintainer's own GA tool, which already
+checked EDE files for them; checked against the recommendation (tables 7 and 8) and the guide
+(3.2.2) before they were taken over.
 
 Each rule ends as **met**, **not met** (with what is missing) or **not checkable** (the device did
 not answer, or the rule needs something bacnetio cannot read).

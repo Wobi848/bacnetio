@@ -43,10 +43,10 @@ export async function showSite(page) {
   await page.waitForSelector(".row[data-device]");
 }
 
-/** Clicks the page's next step and waits until both simulated devices are listed. */
-export async function searchInUi(page) {
+/** Clicks the page's next step and waits until the simulated devices are listed: both, or `devices`. */
+export async function searchInUi(page, devices = 2) {
   await page.click("#next");
-  await page.waitForFunction(() => document.querySelectorAll(".row[data-device]").length === 2 && !document.querySelector(".progress"), null, { timeout: 30000 });
+  await page.waitForFunction((count) => document.querySelectorAll(".row[data-device]").length === count && !document.querySelector(".progress"), devices, { timeout: 30000 });
 }
 
 /** Opens the data points of a device by its name in the device list. */

@@ -12,6 +12,9 @@ const STYLE_TOKENS = ["--bg", "--surface", "--sunken", "--line", "--line-strong"
 /** A plugin points at what it found; more than this is a list, not a mark. */
 const MOST_MARKS = 20000;
 const MOST_MARK_CHARS = 200;
+/** A mark's own word on its badge: short, as the badge sits beside a name. */
+const MOST_LABEL_CHARS = 16;
+const MARK_STATES = ["ok", "bad"];
 
 export async function loadPlugins() {
   try {
@@ -101,6 +104,8 @@ function setMarks(id, marks) {
       device: mark.device,
       ...(number(mark.type) && number(mark.instance) ? { type: mark.type, instance: mark.instance } : {}),
       text: mark.text.slice(0, MOST_MARK_CHARS),
+      ...(typeof mark.label === "string" && mark.label.trim() ? { label: mark.label.trim().slice(0, MOST_LABEL_CHARS) } : {}),
+      ...(MARK_STATES.includes(mark.state) ? { state: mark.state } : {}),
     }));
   render();
   return state.marks[id].length;

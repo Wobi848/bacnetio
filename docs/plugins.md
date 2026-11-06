@@ -82,9 +82,11 @@ await ask("mark", [
 ]);
 ```
 
-A mark without `type` and `instance` belongs to the device. bacnetio shows the plugin's name as a
-small badge beside the device in the device list and the tree, and beside the object in the
-point list; the text shows on hover. Each call replaces all marks of the plugin; `[]` clears
+A mark without `type` and `instance` belongs to the device. bacnetio shows a small badge beside
+the device in the device list and the tree, and beside the object in the point list; the text
+shows on hover. The badge says the plugin's name, or `label` when the mark gives one (up to 16
+characters, such as `"KBOB ✓"`); `state` `"ok"` makes it green, `"bad"` red, none leaves it
+neutral. Each call replaces all marks of the plugin; `[]` clears
 them. Switching the plugin off or removing it takes its marks away.
 
 ### Looking like bacnetio
@@ -97,6 +99,13 @@ for (const [name, value] of Object.entries(tokens)) document.documentElement.sty
 ```
 
 and use `var(--text)`, `var(--bg)`, `var(--accent)` in the style.
+
+## Plugins of this project
+
+They live under `plugins/<id>/`: `page.html` with the description, and its scripts as modules
+(`<script src="check.js"></script>`), so the logic can be tested with `node --test`
+(`tests/plugins/`). `node plugins/build.mjs [folder]` puts each into its single file
+(`target/plugins/` by default); every release carries them beside the programs.
 
 ## What a plugin cannot do
 

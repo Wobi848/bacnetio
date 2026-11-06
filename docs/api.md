@@ -500,6 +500,9 @@ number. All write requests below answer with this same object.
 - `POST /api/recording/points/remove` with the same body: remove a point and its samples.
 - `POST /api/recording/start` `{ "interval_s": 10 }`: start sampling, or change the interval of a
   running recording. At least 1 s; `409` without points.
+- `POST /api/recording/mode` `{ "device": 1001, "type": 0, "instance": 1, "mode": "cov" }`: record
+  the point by the device's change reports (`cov`) instead of polling it at the interval (`poll`,
+  the default). `400` when the point is not in the recording.
 - `POST /api/recording/stop`: stop sampling; the samples stay.
 - `POST /api/recording/clear`: drop all samples, keep the points.
 - While sampling, the recording is also saved every minute to `recording-utc.csv` in the data

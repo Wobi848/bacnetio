@@ -37,16 +37,27 @@ light and dark theme, the system's language (English or German), keys `1`–`6`,
 - **Held by you**: values you still hold, also after a restart, every write of the session, and
   leaving the site with what you hold released.
 - **Exports**: device list and points as CSV, also with priorities; EDE files with state texts, per
-  device or for the whole site. Settings keeps each site searched, also as a file.
+  device or for the whole site.
+- **Sites**: each site searched is kept, named by you, opened again, saved to and read from a file.
+- **Extensions**: plugins installed from one file each under *Settings → Extensions*; each gets a
+  page in the sidebar and can mark devices and points in the lists. A plugin reads only, it can
+  never write to the plant. The first one is the **KBOB check** (`kbob.bacnetio-plugin.html` in each
+  release): devices against the Swiss KBOB recommendation *BACnet Anwendung*, marked *KBOB ✓* or
+  *KBOB ✗* with what is missing. Writing a plugin: [docs/plugins.md](docs/plugins.md).
 
-A reload keeps the area, the search result, the open device and the search settings.
+A reload keeps the area, the search result, the open device and the search settings. A changed
+adapter address, a VPN coming up or a cable plugged in shows without a restart. Starting bacnetio
+a second time opens the one already running. With the mouse, press on a watch or record switch in
+the point list and drag over other rows to switch them all at once.
 
 The user interface lives in `web/` (plain HTML, CSS and JavaScript, no build step); the JSON API it
 uses is described in [docs/api.md](docs/api.md).
 
 To try it without a plant: `cargo run --example simulated_plant -- <IP>` starts a simulated device
-on that address; `simulated_controller` is one named by paths with about a hundred points. It has to run on another machine or network namespace than bacnetio, because two
-programs on one host cannot both use port 47808 properly.
+on that address; `simulated_controller` is one named by paths with about a hundred points, and
+`simulated_kbob` an automation station that meets the KBOB profile AS-CH in full. They have to run
+on another machine or network namespace than bacnetio, because two programs on one host cannot
+both use port 47808 properly; the browser tests run them on loopback addresses with port 47809.
 
 ```text
 bacnetio interfaces                   list network adapters (* = used by default)

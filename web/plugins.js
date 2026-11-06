@@ -23,7 +23,8 @@ export function pluginTabsHtml(state) {
 export function viewPlugin(state) {
   const plugin = pluginOfArea(state);
   if (!plugin) return { title: t("plugins.title"), lead: "", next: null, html: `<div class="split single"><section class="listwrap"><div class="rows"><div class="empty"><p>${t("plugins.gone")}</p></div></div></section></div>` };
-  return { title: plugin.name, lead: plugin.description, next: null, html: "" };
+  // the plugin's page says what it does in the interface's language; its description is one language
+  return { title: plugin.name, lead: "", next: null, html: "" };
 }
 
 function pluginRow(state, plugin) {
@@ -59,5 +60,6 @@ export function pluginMarksHtml(state, device, type = null, instance = null) {
     (state.marks[plugin.id] ?? [])
       .filter((mark) => mark.device === device && (type === null ? mark.type === undefined : mark.type === type && mark.instance === instance))
       .map((mark) => ({ plugin, mark })));
-  return shown.map(({ plugin, mark }) => `<span class="chip mark" title="${h(plugin.name)}: ${h(mark.text)}">${h(plugin.name)}</span>`).join("");
+  return shown.map(({ plugin, mark }) =>
+    `<span class="chip mark${mark.state ? ` ${mark.state}` : ""}" title="${h(plugin.name)}: ${h(mark.text)}">${h(mark.label ?? plugin.name)}</span>`).join("");
 }
