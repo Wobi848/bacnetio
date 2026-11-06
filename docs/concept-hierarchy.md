@@ -141,6 +141,15 @@ sites and *All sites …*, where a site without a name has its name field ready)
 network once and the state, beside them *Search settings* as a framed sliders button (its word
 joins it from 280 px of card width). The adapter is setup and sits only in *Search settings*.
 
+With it, after the design system's *Tree*, *Menu* and *Dialog* (6 November): devices in the tree in
+600 and the chosen node with the bar in `brand`; the list of sites opens under its field, the
+chosen site light and bold, *All sites …* below a hairline, the arrow keys move, Escape closes it
+and gives the focus back; *Search settings* is a dialog on a dimmed page with its sentence ("Where
+bacnetio looks for devices. Changes apply to the next search."), the fields as a list of facts,
+*Cancel* and the one filled button; the focus goes in, Tab stays inside, Escape or *Cancel* gives
+it back. Nothing moves: every field of the search settings stays (`ui/20-site`, `ui/33-adapters`,
+`ui/04-reload`).
+
 ### 3. Site problems
 
 The page closest to the rule: device in `muted`, name 600, value right-aligned, a chip only for what

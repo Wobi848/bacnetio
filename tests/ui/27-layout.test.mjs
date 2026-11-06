@@ -17,7 +17,7 @@ const problems = (page) =>
       if (!shown(element) || element.closest(".tabs, .seg, .menu, .detail:not(.open), .rows")) continue;
       if (box(element).right > innerWidth + 1 || box(element).left < -1) out.push(`outside: ${(element.textContent || element.id).trim().slice(0, 30)}`);
     }
-    for (const element of document.querySelectorAll(".toolbar button, .toolbar a.quiet, #next, .card button, .detail button, .net button, .net .state, .pagehead h1")) {
+    for (const element of document.querySelectorAll(".toolbar button, .toolbar a.quiet, #next, .card button, .detail button, .side-card button, .side-card .state, .pagehead h1")) {
       if (shown(element) && element.scrollWidth > element.clientWidth + 1) out.push(`cut off: ${element.textContent.trim().slice(0, 30)}`);
     }
     // a chip is a state: it must be readable whole, not cut off by its row or column
@@ -56,7 +56,7 @@ export default {
         for (const area of ["workspace", "problems", "watch"]) {
           // one full load, as below: a goto with a new hash and a reload made WebKit fail now and then
           await page.goto(`${base}/?${language}-${width}#/${area}`);
-          await page.waitForSelector("#adapter", { state: "attached" });
+          await page.waitForSelector(".side-card", { state: "attached" });
           for (const problem of await problems(page)) found.push(`not searched, ${language}, ${width} px, ${area}: ${problem}`);
         }
       }
@@ -64,7 +64,7 @@ export default {
     await page.evaluate(() => localStorage.setItem("bacnetio.language", "en"));
     await page.setViewportSize({ width: 1500, height: 900 });
     await page.goto(`${base}/?searched#/workspace`);
-    await page.waitForSelector("#adapter", { state: "attached" });
+    await page.waitForSelector(".side-card", { state: "attached" });
     await searchInUi(page);
     await openDevice(page, "DDC4000_#21");
     await page.click(".row[data-point]:has-text('Zuluft_Temperatur')");
@@ -83,7 +83,7 @@ export default {
           for (const area of AREAS) {
             // a query of its own makes this one full load; a changed hash alone would not reload
             await page.goto(`${base}/?${language}-${theme}-${width}#/${area}`);
-            await page.waitForSelector("#adapter", { state: "attached" });
+            await page.waitForSelector(".side-card", { state: "attached" });
             await page.waitForTimeout(area === "points" ? 600 : 200);
             for (const problem of await problems(page)) found.push(`${language}, ${theme}, ${width} px, ${area}: ${problem}`);
           }

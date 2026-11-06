@@ -102,14 +102,35 @@ button.chip { height: 22px; border: 0; cursor: pointer; }
 }
 .toast.error { background: var(--err); color: var(--err-ink); }
 
-/* The site shown, at the top of the sidebar; leads to all sites */
-.site-link { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; color: var(--text); text-decoration: none; }
-.site-link:hover { background: var(--sunken); }
-.site-link > span { display: flex; flex-direction: column; min-width: 0; }
-.site-link .side-caption { color: var(--muted); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
-.site-link .site-now, .site-link .site-net { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.site-link .site-net { color: var(--muted); font-size: 12px; }
-.site-link[aria-current="page"] { border-color: var(--accent); background: var(--accent-soft); }
+/* The head of the sidebar (SidebarHead): one card, the site as a select field, below it the
+   network and the state beside the search settings; then the search on its own */
+.side-card { container-type: inline-size; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.side-card .side-part { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 10px 12px; }
+.side-card .cap { color: var(--muted); font-size: 11.5px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; }
+.side-card .site-host { display: flex; margin: 2px 0 4px; }
+.side-card .site-switch { flex: 1; min-width: 0; justify-content: space-between; gap: 8px; padding: 0 10px; font-size: 15px; font-weight: 700; text-align: left; }
+.side-card .site-switch .site-now { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.side-card .site-switch .chevron { flex: none; width: 16px; height: 16px; color: var(--muted); }
+.side-card .side-meta { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.side-card .side-detail { display: grid; gap: 2px; min-width: 0; color: var(--muted); font-size: 12.5px; }
+.side-card .side-detail .mono { overflow-wrap: anywhere; }
+/* the state wraps rather than being cut off: it says what to do */
+.side-card .state { min-width: 0; line-height: 1.25; }
+/* the search settings: a framed icon, the word joins it where the card has room */
+.side-card .side-tool { width: 32px; padding: 0; justify-content: center; }
+.side-card .side-tool .nav-i { display: block; width: 18px; height: 18px; color: inherit; }
+.side-card .side-tool-label { display: none; }
+@container (min-width: 280px) {
+  .side-card .side-tool { width: auto; padding: 0 10px; }
+  .side-card .side-tool-label { display: inline; }
+}
+/* Menu: items 32 px, a sunken hover, the chosen site light and bold; all sites below a hairline */
+.menu.site-choices { display: grid; gap: 2px; min-width: 100%; max-width: 340px; padding: 6px; border-radius: 10px; }
+.menu.site-choices button { height: 32px; justify-content: flex-start; min-width: 0; padding: 0 10px; border-color: transparent; border-radius: 6px; background: none; font-weight: 500; }
+.menu.site-choices button:hover { background: var(--sunken); }
+.menu.site-choices button[aria-checked="true"] { background: var(--accent-soft); font-weight: 700; }
+.menu.site-choices .cut { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu.site-choices hr { width: 100%; margin: 4px 0; border: 0; border-top: 1px solid var(--line); }
 
 /* A newer release is out: a link to its page, below the site */
 /* filled green, apart from the blue of the chosen area: it has to catch the eye */

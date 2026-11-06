@@ -18,6 +18,7 @@ import { editDay, editProperty, releaseHeld, releaseHere, releaseOther, selectPo
 import { installPlugin, installPluginBridge, loadPlugins, pluginsMayAsk, removePlugin, switchPlugin } from "./plugin-actions.js";
 import { pollRecording, recordHere, recordPoint, recordingRequest, removeRecorded, setRecordMode } from "./recording-actions.js";
 import { setAccent, setBackground, setTheme } from "./settings.js";
+import { siteName } from "./sites.js";
 import { nextSort } from "./sorting.js";
 import { checkForUpdate, setUpdateCheck } from "./update.js";
 import { TABLE_FILTERS, noTableFilter } from "./table-filter.js";
@@ -55,6 +56,14 @@ const FILTERS = {
 
 /** The chosen device's name as last read, to start a new one from. */
 const deviceNameNow = () => (state.scan.devices ?? []).find((device) => device.instance === state.selectedDevice)?.name ?? "";
+
+/** Opens the name field of a kept site, with its name so far. */
+function startRename(index) {
+  state.renamingSite = index;
+  state.siteTitle = state.sites[index].title ?? "";
+  render();
+  document.getElementById("site-title")?.focus();
+}
 
 /** Goes to an area, with what that area needs loaded. */
 function enter(area) {
@@ -101,9 +110,14 @@ const actions = {
   locate: () => locate(),
   network: () => { state.menu = state.menu === "network" ? null : "network"; render(); document.getElementById("subnet")?.focus(); },
   "locate-menu": () => { state.menu = state.menu === "locate" ? null : "locate"; render(); document.getElementById("locate-address")?.focus(); },
-  "close-menu": () => { state.menu = null; render(); },
+  "close-menu": () => closeMenu(),
   "toggle-head": () => { state.headOpen = !state.headOpen; render(); },
-  "focus-adapter": () => document.getElementById("adapter")?.focus(),
+  // the adapter is chosen in the search settings: open them with the choice in focus
+  "focus-adapter": () => {
+    state.menu = "network";
+    render();
+    document.getElementById("adapter")?.focus();
+  },
   go: (element) => enter(element.dataset.area),
   "tree-site": () => showSite(),
   "tree-device": (element) => {
@@ -162,16 +176,25 @@ const actions = {
   "property-edit": (element) => editProperty(element.dataset.property),
   "property-cancel": () => { state.editProperty = null; render(); },
   "property-write": () => writeProperty(),
-  "site-open": (element) => { forgetDeviceReads(); openSite(state.sites[Number(element.dataset.index)].name); },
+  "site-open": (element) => { state.menu = null; forgetDeviceReads(); openSite(state.sites[Number(element.dataset.index)].name); },
   "site-ask-delete": (element) => { state.deletingSite = Number(element.dataset.index); render(); },
   "site-delete": () => deleteSite(state.sites[state.deletingSite].name),
   "site-keep": () => { state.deletingSite = null; render(); },
-  "site-rename": (element) => {
-    const index = Number(element.dataset.index);
-    state.renamingSite = index;
-    state.siteTitle = state.sites[index].title ?? "";
+  "site-rename": (element) => startRename(Number(element.dataset.index)),
+  // the site field: the known sites to switch to, fetched again while it opens
+  "site-menu": () => {
+    state.menu = state.menu === "sites" ? null : "sites";
     render();
-    document.getElementById("site-title")?.focus();
+    document.querySelector(".site-choices [aria-checked=true], .site-choices button")?.focus();
+    if (state.menu === "sites") loadSites();
+  },
+  // the page of all sites; a site without a name has its name field ready to type there
+  "sites-all": async () => {
+    state.menu = null;
+    go("sites");
+    await loadSites();
+    const index = state.sites.findIndex((site) => site.open && !siteName(site));
+    if (index >= 0) startRename(index);
   },
   "site-rename-cancel": () => { state.renamingSite = null; render(); },
   // a new site starts with a search; the network form says where
@@ -313,7 +336,7 @@ function toggleGroup(row) {
 
 document.addEventListener("click", (event) => {
   const target = event.target;
-  if (state.menu && !target.closest(".menu, [data-act=network], [data-act=locate-menu], [data-act=export-menu], [data-act=more-menu], [data-act=types-menu]")) {
+  if (state.menu && !target.closest(".menu, .modal-box, [data-act=network], [data-act=site-menu], [data-act=locate-menu], [data-act=export-menu], [data-act=more-menu], [data-act=types-menu]")) {
     state.menu = null;
     render();
   }
@@ -428,10 +451,49 @@ window.bacnetioBack = () => {
   return JSON.stringify({ stepped: true, held: state.held.length });
 };
 
+/** The button each menu or dialog opens from: the focus goes back to it when it closes. */
+const OPENERS = { sites: "site-menu", network: "network", export: "export-menu", more: "more-menu", types: "types-menu", locate: "locate-menu" };
+
+/** Up and down move through a list menu, as through the rows of a list. */
+function moveInMenu(event) {
+  const menu = event.target.closest(".menu[role=listbox], .menu[role=menu]");
+  if (!menu || (event.key !== "ArrowDown" && event.key !== "ArrowUp")) return false;
+  const items = [...menu.querySelectorAll("button, a")];
+  const at = items.indexOf(document.activeElement);
+  const next = event.key === "ArrowDown" ? Math.min(at + 1, items.length - 1) : Math.max(at - 1, 0);
+  items[next]?.focus();
+  return true;
+}
+
+/** Tab stays inside an open dialog. */
+function keepInDialog(event) {
+  const box = document.querySelector(".modal-box");
+  if (!box || event.key !== "Tab") return false;
+  const fields = [...box.querySelectorAll("button, select, input, a[href]")].filter((field) => !field.disabled);
+  const [first, last] = [fields[0], fields[fields.length - 1]];
+  if (!box.contains(document.activeElement)) first?.focus();
+  else if (event.shiftKey && document.activeElement === first) last.focus();
+  else if (!event.shiftKey && document.activeElement === last) first.focus();
+  else return false;
+  return true;
+}
+
+/** Closes the open menu or dialog and gives the focus back to the button that opened it. */
+function closeMenu() {
+  const opener = OPENERS[state.menu];
+  state.menu = null;
+  render();
+  if (opener) document.querySelector(`[data-act="${opener}"]`)?.focus();
+}
+
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
-    closeTopmost();
-    render();
+    if (state.menu) closeMenu();
+    else if (closeTopmost()) render();
+    return;
+  }
+  if (moveInMenu(event) || keepInDialog(event)) {
+    event.preventDefault();
     return;
   }
   if (event.key === "Enter" && typing()) {

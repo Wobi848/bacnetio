@@ -9,18 +9,11 @@
 /* the folded head is for narrow screens (layout.css); the sidebar shows everything */
 .head-toggle { display: none; }
 .head-more { display: contents; }
-.net { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
-.net select { width: 100%; font-weight: 600; text-overflow: ellipsis; }
-.net .conn { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
-.net .conn > button { flex: none; }
-/* the state wraps rather than being cut off: it says what to do */
-.net .conn .state { min-width: 0; line-height: 1.25; }
 .side .site-search { position: relative; display: block; }
 .side #site-search { width: 100%; padding-right: 30px; }
 /* the key that jumps here, as on the keyboard */
 .side .site-search kbd { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); padding: 0 6px; border: 1px solid var(--line-strong); border-radius: 4px; color: var(--muted); font: 600 11px/18px var(--mono); pointer-events: none; }
 .side .site-search:focus-within kbd, .side #site-search:not(:placeholder-shown) + kbd { display: none; }
-.net .where { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .tabs { display: flex; gap: 2px; }
 .tabs a {

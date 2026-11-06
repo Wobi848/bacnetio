@@ -2,11 +2,10 @@
 
 import { h } from "./html.js";
 import { t } from "./i18n.js";
-import { deviceCount } from "./format.js";
 import { resizeHandle } from "./panels.js";
 import { pluginTabsHtml } from "./plugins.js";
 import { siteProblems } from "./problems.js";
-import { openSiteOf, siteTitle } from "./sites.js";
+import { openSiteOf, siteName } from "./sites.js";
 
 const ICON = (path) => `<svg class="nav-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
 export const AREA_ICONS = {
@@ -16,7 +15,6 @@ export const AREA_ICONS = {
   recording: ICON('<path d="M3 17l5-6 4 3 5-7 4 4"/><path d="M3 21h18"/>'),
   log: ICON('<path d="M14.5 4.5l5 5L9 20H4v-5z"/><path d="M12 7l5 5"/>'),
 };
-const SITES_ICON = ICON('<path d="M3 21h18"/><path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-5h6v5"/><path d="M9 10h.01M15 10h.01"/>');
 const SETTINGS_ICON = ICON('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>');
 
 function badge(state, area) {
@@ -38,7 +36,10 @@ function connection(state) {
   const scan = state.scan;
   if (scan.state === "running") return `<span class="state"><span class="dot busy"></span>${t("conn.searching")}</span>`;
   if (scan.state === "failed") return `<span class="state"><span class="dot err"></span>${t("conn.failed")}</span>`;
-  if (scan.state === "done") return `<span class="state"><span class="dot on"></span>${deviceCount(scan.devices?.length ?? 0)}</span>`;
+  if (scan.state === "done") {
+    const n = scan.devices?.length ?? 0;
+    return `<span class="state"><span class="dot on"></span>${n === 1 ? t("side.foundOne") : t("side.found", { n })}</span>`;
+  }
   return `<span class="state"><span class="dot"></span>${t("conn.ready")}</span>`;
 }
 
@@ -49,37 +50,69 @@ export function searchScope(state) {
   return state.adapter ? `${state.adapter.ip}/${state.adapter.prefix_len}` : "";
 }
 
-function networkMenu(state) {
+/** The network adapter to search on, chosen in the search settings. */
+function adapterField(state) {
+  if (!state.adapters.length) return `<span class="hint">${t("start.noAdapter")}</span>`;
+  const options = state.adapters.map((adapter, index) => {
+    const label = `${adapter.name} · ${adapter.ip}`;
+    return `<option value="${index}"${adapter === state.adapter ? " selected" : ""}>${h(label)}</option>`;
+  }).join("");
+  return `<select id="adapter" aria-label="${t("adapter.title")}" title="${h(state.adapter?.description ?? state.adapter?.name ?? "")}">${options}</select>`;
+}
+
+/** Search settings (Dialog): where the search looks, with the adapter; on a dimmed page, focus kept inside. */
+export function searchDialog(state) {
   if (state.menu !== "network") return "";
   const value = (key) => h(state.settings[key]);
-  return `<div class="menu dialog" role="dialog" aria-label="${t("net.title")}">
-    <h3>${t("net.title")}</h3>
-    <p class="hint">${t("vpn.hint")}</p>
-    <label class="row"><span>${t("subnet")}</span><input id="subnet" class="mono" placeholder="192.168.10.0/24" value="${value("subnet")}"></label>
-    <label class="row"><span>${t("bbmd")}</span><input id="bbmd" class="mono" placeholder="10.20.0.10" value="${value("bbmd")}"></label>
-    <label class="row"><span>${t("port")}</span><input id="port" class="mono" inputmode="numeric" value="${value("port")}"></label>
-    <label class="row"><span>${t("range.from")}</span><input id="id-from" class="mono" inputmode="numeric" placeholder="0" value="${value("idFrom")}"></label>
-    <label class="row"><span>${t("range.to")}</span><input id="id-to" class="mono" inputmode="numeric" placeholder="4194302" value="${value("idTo")}"></label>
-    <p class="hint">${t("range.hint")}</p>
-    <div class="row end"><button type="button" class="quiet" data-act="close-menu">${t("cancel")}</button><button type="button" data-act="find">${t("searchWithSettings")}</button></div>
+  const field = (id, label, input) => `<dt><label for="${id}">${label}</label></dt><dd>${input}</dd>`;
+  return `<div class="modal"><div class="modal-box search-settings" role="dialog" aria-modal="true" aria-labelledby="net-title">
+    <h2 id="net-title">${t("net.title")}</h2>
+    <p class="sub">${t("net.lead")}</p>
+    <dl class="facts">
+      ${field("adapter", t("adapter.title"), adapterField(state))}
+      <dd class="hint">${t("vpn.hint")}</dd>
+      ${field("subnet", t("subnet"), `<input id="subnet" class="mono" placeholder="192.168.10.0/24" value="${value("subnet")}">`)}
+      ${field("bbmd", t("bbmd"), `<input id="bbmd" class="mono" placeholder="10.20.0.10" value="${value("bbmd")}">`)}
+      ${field("port", t("port"), `<input id="port" class="mono" inputmode="numeric" value="${value("port")}">`)}
+      ${field("id-from", t("range.from"), `<input id="id-from" class="mono" inputmode="numeric" placeholder="0" value="${value("idFrom")}">`)}
+      ${field("id-to", t("range.to"), `<input id="id-to" class="mono" inputmode="numeric" placeholder="4194302" value="${value("idTo")}">`)}
+      <dd class="hint">${t("range.hint")}</dd>
+    </dl>
+    <div class="acts"><button type="button" class="quiet" data-act="close-menu">${t("cancel")}</button><button type="button" data-act="find">${t("searchWithSettings")}</button></div>
+  </div></div>`;
+}
+
+/** The site as a select field: the known sites, the open one marked, the page of all sites last. */
+function siteMenu(state) {
+  if (state.menu !== "sites") return "";
+  const sites = state.sites.map((site, index) => {
+    const name = siteName(site) ?? site.name;
+    const act = site.open ? 'data-act="close-menu"' : `data-act="site-open" data-index="${index}"`;
+    return `<button type="button" id="site-choice-${index}" class="quiet" role="option" aria-checked="${Boolean(site.open)}" ${act} title="${h(site.name)}"><span class="cut">${h(name)}</span></button>`;
+  }).join("");
+  return `<div class="menu site-choices" role="listbox" aria-label="${t("side.site")}">${sites}
+    <hr role="separator"><button type="button" id="site-choice-all" class="quiet all-sites" role="option" aria-checked="false" data-act="sites-all">${t("side.allSites")}</button></div>`;
+}
+
+const CHEVRON = '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+const SLIDERS_ICON = ICON('<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>');
+
+/**
+ * The head of the sidebar (SidebarHead): one card with the site as a select field, below it the
+ * network and how the search went, and beside them the search settings. The adapter is setup and
+ * sits in the search settings, not in the card.
+ */
+function sideCard(state) {
+  const site = openSiteOf(state);
+  // a site known only by its network shows that network as its name, said once
+  const name = site ? siteName(site) ?? site.name : t("side.noSite");
+  const network = site && site.name !== name ? `<span class="site-net mono">${h(site.name)}</span>` : "";
+  return `<div class="side-card">
+    <section class="side-part site-group" aria-label="${t("side.site")}"><span class="cap">${t("side.site")}</span>
+      <div class="menu-host site-host"><button type="button" id="site-switch" class="quiet site-switch" data-act="site-menu" aria-haspopup="listbox" aria-expanded="${state.menu === "sites"}" title="${h(name)}"><span class="site-now">${h(name)}</span>${CHEVRON}</button>${siteMenu(state)}</div>
+      <div class="side-meta"><span class="side-detail">${network}${connection(state)}</span>
+        <button type="button" id="search-settings" class="quiet side-tool" data-act="network" aria-expanded="${state.menu === "network"}" aria-label="${t("side.searchSettings")}" title="${t("side.searchSettings")}">${SLIDERS_ICON}<span class="side-tool-label">${t("side.searchSettings")}</span></button></div></section>
   </div>`;
-}
-
-/** The open site was searched where the next search would look: the line below the adapter would
- *  only repeat its network. The server names an adapter's own subnet by the adapter's address. */
-function searchesOpenSite(state) {
-  const site = openSiteOf(state);
-  const scope = searchScope(state);
-  return Boolean(site) && (scope === site.name || scope.startsWith(`${site.name}/`));
-}
-
-/** The site shown, named as the technician named it; a click leads to all sites. */
-function siteLink(state) {
-  const site = openSiteOf(state);
-  const current = state.area === "sites" ? ' aria-current="page"' : "";
-  const name = site ? `<b class="site-now">${h(siteTitle(site))}</b>` : "";
-  const network = site?.title ? `<span class="site-net mono">${h(site.name)}</span>` : "";
-  return `<a class="site-link" href="#/sites" data-area="sites"${current} title="${h(site ? `${siteTitle(site)} · ${site.name}` : t("sites.title"))}">${SITES_ICON}<span><span class="side-caption">${t("sites.title")}</span>${name}${network}</span></a>`;
 }
 
 /** The note in the sidebar: only when a newer release is out. */
@@ -90,13 +123,6 @@ export function updateNoteHtml(state) {
 }
 
 export function sideHtml(state) {
-  const options = state.adapters.map((adapter, index) => {
-    const label = `${adapter.name} · ${adapter.ip}`;
-    return `<option value="${index}"${adapter === state.adapter ? " selected" : ""}>${h(label)}</option>`;
-  }).join("");
-  const adapterField = state.adapters.length
-    ? `<select id="adapter" aria-label="${t("adapter.title")}" title="${h(state.adapter?.description ?? state.adapter?.name ?? "")}">${options}</select>`
-    : `<span class="hint">${t("start.noAdapter")}</span>`;
   // the keys 1 to 6 choose the areas in this order, settings last (app.js)
   const listed = ["workspace", "problems", "watch", "recording", "log"];
   const areas = listed.map((area, index) => tab(state, area, index + 1)).join("");
@@ -106,14 +132,7 @@ export function sideHtml(state) {
     ${headToggle(state, open)}
     ${updateNoteHtml(state)}
     <div class="head-more${open ? " open" : ""}" id="head-more">
-    ${siteLink(state)}
-    <div class="net">
-      ${adapterField}
-      <div class="conn menu-host">${connection(state)}
-        <button type="button" class="quiet" data-act="network" aria-expanded="${state.menu === "network"}">${t("change")}</button>
-        ${networkMenu(state)}</div>
-      ${searchesOpenSite(state) ? "" : `<div class="where mono">${h(searchScope(state))}</div>`}
-    </div>
+    ${sideCard(state)}
     <label class="site-search"><input id="site-search" type="search" placeholder="${t("search.site")}" aria-keyshortcuts="/" value="${h(state.siteSearch)}" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
     </div>
     <nav class="tabs" aria-label="${t("areas")}">${areas}${pluginTabsHtml(state)}</nav>
@@ -123,13 +142,13 @@ export function sideHtml(state) {
 
 /** On a narrow screen the site, adapter and site search fold away until needed; before the first search they stay open. */
 function headOpen(state) {
-  return state.headOpen || state.scan.state === "idle" || Boolean(state.siteSearch) || state.menu === "network";
+  return state.headOpen || state.scan.state === "idle" || Boolean(state.siteSearch) || state.menu === "network" || state.menu === "sites";
 }
 
 /** The folded head in one line: the site and how many devices answered. Only shown on a narrow screen. */
 function headToggle(state, open) {
   const site = openSiteOf(state);
-  const name = site ? siteTitle(site) : searchScope(state);
+  const name = !site ? t("side.noSite") : siteName(site) ?? site.name;
   return `<button type="button" class="quiet head-toggle" data-act="toggle-head" aria-controls="head-more" aria-expanded="${open}" title="${t("head.toggle")}"><span class="cut">${h(name)}</span>${connection(state)}<span class="caret" aria-hidden="true">${open ? "▴" : "▾"}</span></button>`;
 }
 
@@ -164,12 +183,11 @@ export function readingText(progress) {
 
 export function statusHtml(state) {
   const busy = state.scan.state === "running" || state.reading;
-  const adapter = state.adapter ? `${state.adapter.name} ${state.adapter.ip}/${state.adapter.prefix_len}` : "";
   const port = state.settings.port.trim() || "47808";
   const held = state.held.length ? `<button type="button" class="chip warn" data-area-go="log">${t("held", { n: state.held.length })}</button>` : "";
   const recording = state.recording?.running ? `<button type="button" class="chip accent" data-area-go="recording">● ${t("rec.on")}</button>` : "";
   return `<span class="state"><span class="dot ${busy ? "busy" : "on"}"></span>${h(activity(state))}</span>
     ${busy ? `<button type="button" class="quiet" data-act="stop-running">${t("stop")}</button>` : ""}
-    <span class="cut">${h(adapter)} · ${t("port")} ${h(port)}</span>
+    <span class="cut">${t("port")} ${h(port)}</span>
     <span class="chips">${held}${recording}</span>`;
 }

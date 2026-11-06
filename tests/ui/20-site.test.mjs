@@ -6,10 +6,38 @@ export default {
   async run({ page, base }) {
     await open(page, base);
     await searchInUi(page);
-    // the sidebar names the network once: the open site was searched where the next search looks
+    // a site without a name shows its network as its name, once: no placeholder, no naming button
     // the kept sites come in after the search, a moment later in some browsers
-    await page.waitForFunction(() => /127\.0\.0\.0\/29/.test(document.querySelector(".side .site-link").textContent));
-    assert.equal(await page.$(".side .where"), null);
+    await page.waitForFunction(() => document.querySelector(".side .site-group .site-now")?.textContent === "127.0.0.0/29");
+    assert.equal(await page.$(".side .site-group .site-net"), null, "the network is said once");
+    assert.match(await page.textContent(".side .site-group .side-detail"), /2 devices found/);
+    assert.doesNotMatch(await page.textContent(".status"), /127\.0\.0\./);
+    // the site is a select field; the search settings a framed icon with its name for the ear
+    assert.equal(await page.getAttribute(".side .site-switch", "aria-haspopup"), "listbox");
+    assert.equal(await page.getAttribute(".side button[data-act=network]", "aria-label"), "Search settings");
+    assert.equal(await page.getAttribute(".side button[data-act=network]", "title"), "Search settings");
+    assert.equal(await page.$(".side-card .adapter-name"), null, "the adapter is setup, in the search settings");
+    // reached with the keyboard: from the site field one Tab on, Enter opens the settings
+    await page.focus(".side .site-switch");
+    await page.keyboard.press("Tab");
+    assert.equal(await page.evaluate(() => document.activeElement.dataset.act), "network");
+    await page.keyboard.press("Enter");
+    // a dialog on a dimmed page: the focus goes in, Tab keeps it inside, Escape gives it back
+    await page.waitForSelector(".modal .search-settings #adapter");
+    assert.equal(await page.evaluate(() => document.activeElement.id), "subnet");
+    for (let step = 0; step < 12; step += 1) await page.keyboard.press("Tab");
+    assert.ok(await page.evaluate(() => document.querySelector(".modal-box").contains(document.activeElement)), "Tab stays in the dialog");
+    await page.keyboard.press("Escape");
+    await page.waitForSelector("#adapter", { state: "detached" });
+    assert.equal(await page.evaluate(() => document.activeElement.dataset.act), "network");
+    // the site field: the arrows move through the sites, Escape closes it and gives the focus back
+    await page.click(".side .site-switch");
+    assert.equal(await page.evaluate(() => document.activeElement.getAttribute("aria-checked")), "true");
+    await page.keyboard.press("ArrowDown");
+    assert.equal(await page.evaluate(() => document.activeElement.dataset.act), "sites-all");
+    await page.keyboard.press("Escape");
+    assert.equal(await page.$(".site-choices"), null);
+    assert.equal(await page.evaluate(() => document.activeElement.dataset.act), "site-menu");
     await page.keyboard.press("2");
     await page.waitForSelector("#next");
     assert.equal(await page.textContent("#next"), "Read all devices");

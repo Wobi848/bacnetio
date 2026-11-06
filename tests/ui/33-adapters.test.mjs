@@ -6,7 +6,9 @@ export default {
   name: "Adapters are read again: a new address shows",
   async run({ page, base }) {
     await open(page, base);
-    await page.waitForSelector("#adapter", { state: "attached" });
+    await page.waitForSelector(".side-card", { state: "attached" });
+    // the adapter is chosen in the search settings, by name and address
+    await page.click(".side button[data-act=network]");
     const label = () => page.$eval("#adapter", (select) => select.selectedOptions[0].textContent);
     const first = await label();
     await page.route("**/api/adapters", async (route) => {
@@ -15,7 +17,7 @@ export default {
     });
     // coming back to the window asks at once
     await page.evaluate(() => window.dispatchEvent(new Event("focus")));
-    await page.waitForFunction(() => document.querySelector("#adapter option:checked")?.textContent.includes("127.0.0.9"));
+    await page.waitForFunction(() => /127\.0\.0\.9/.test(document.querySelector("#adapter")?.selectedOptions[0]?.textContent ?? ""));
     assert.equal((await label()).split(" · ")[0], first.split(" · ")[0]);
   },
 };

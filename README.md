@@ -22,7 +22,7 @@ light and dark theme, the system's language (English or German), keys `1`–`6`,
 
 - **Workspace**: the tree of the site beside the table of what is chosen in it, and its details. With
   the site chosen, the table is the device list: Who-Is plus every address asked directly; plant subnet (VPN), BBMD, port and a
-  device ID range under *Change*; routers and their networks, diagnosis in plain words. The chosen
+  device ID range under *Search settings* in the sidebar; routers and their networks, diagnosis in plain words. The chosen
   device's facts (vendor, firmware, clock …) beside the list, its clock set to this computer's
   time. Each device's object count shows from the search on. A device the search does not reach
   opens by its IP address.

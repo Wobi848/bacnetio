@@ -61,11 +61,15 @@ export default {
     await page.reload();
     await page.waitForSelector(".sites .site.open");
     assert.match(await page.textContent(".sites .site.open"), /127\.0\.0\.0\/29/);
-    // the site gets a name of the technician's, which the sidebar shows
-    await page.click("button[data-act=site-rename]");
-    await page.fill("#site-title", "Sample School");
+    // the site gets a name of the technician's, which the sidebar shows: while it is known only by
+    // its network, all sites from the site field open with its name field ready to type
+    await page.goto(`${base}/#/workspace`);
+    await page.click(".site-group .site-switch");
+    await page.click(".site-choices .all-sites");
+    await page.waitForFunction(() => location.hash === "#/sites" && document.activeElement?.id === "site-title");
+    await page.keyboard.type("Sample School");
     await page.keyboard.press("Enter");
-    await page.waitForFunction(() => document.querySelector(".site-link .site-now")?.textContent === "Sample School");
+    await page.waitForFunction(() => document.querySelector(".site-group .site-now")?.textContent === "Sample School");
     assert.equal((await api("sites"))[0].title, "Sample School");
     // a site file saves and loads again; what is no site file is refused
     const site = await api("site.json");
@@ -88,17 +92,19 @@ export default {
     // a new search of the network named before brings its name back
     await page.goto(`${base}/#/workspace`);
     await page.reload();
-    await page.waitForFunction(() => document.querySelector(".site-link .site-now")?.textContent === "Plant B");
+    await page.waitForFunction(() => document.querySelector(".site-group .site-now")?.textContent === "Plant B");
     await searchInUi(page);
-    await page.waitForFunction(() => document.querySelector(".site-link .site-now")?.textContent === "Sample School");
-    // another kept site opens from the list
-    await page.click(".site-link");
-    await page.click(".sites li:has-text('Plant B') button[data-act=site-open]");
-    await page.waitForFunction(() => document.querySelector(".site-link .site-now")?.textContent === "Plant B");
+    await page.waitForFunction(() => document.querySelector(".site-group .site-now")?.textContent === "Sample School");
+    // another kept site opens from the site field, the open one marked
+    await page.click(".site-switch");
+    assert.match(await page.textContent(".site-choices [aria-checked=true]"), /Sample School/);
+    await page.click(".site-choices button:has-text('Plant B')");
+    await page.waitForFunction(() => document.querySelector(".site-group .site-now")?.textContent === "Plant B");
     // its devices follow the name, a moment later in some browsers
     await page.waitForFunction(() => document.querySelectorAll(".node[data-act=tree-device]").length === 2, null, { timeout: 5000 });
     // a kept site can be removed, after a question
-    await page.click(".site-link");
+    await page.click(".site-switch");
+    await page.click(".site-choices .all-sites");
     await page.click(".sites li:has-text('Plant B') button[data-act=site-ask-delete]");
     await page.click("button[data-act=site-delete]");
     await page.waitForFunction(() => !/Plant B/.test(document.querySelector(".sites")?.textContent ?? ""));

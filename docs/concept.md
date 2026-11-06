@@ -77,8 +77,10 @@ follows mbusio's interface, which the maintainer sets as the standard: `~/Coding
 └───────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Sidebar:** adapter, connection state, *Change* for the search settings (plant subnet, BBMD,
-  port, ID range, device by IP), the areas, Settings at the bottom. Dark in both themes.
+- **Sidebar:** one card with the site as a select field (its name, or its network while it has
+  none; the known sites and *All sites …*), below it the network once and the state of the search,
+  beside them *Search settings* (adapter, plant subnet, BBMD, port, ID range); then the search
+  across the site, the areas, Settings at the bottom. Dark in both themes.
 - **Overview:** what the network and the open device look like, with the next step.
 - **Devices:** the search runs in place with progress; table of devices, details of the chosen one
   beside it (vendor facts, clock, reference), *Open data points* as the next step.
@@ -97,11 +99,11 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 
 | Function | Place | Test |
 | --- | --- | --- |
-| Choose the network adapter | sidebar, adapter field | `ui/14-details`, `interfaces.rs` |
+| Choose the network adapter | sidebar, *Search settings*: the adapter by name and address; an empty device list offers it too | `ui/14-details`, `ui/33-adapters`, `interfaces.rs` |
 | Search: Who-Is and every address asked directly, at the same time | workspace, next step; while values are held a tool beside it, on a phone in the toolbar | `ui/01-search`, `ui/03-write`, `scan.rs` |
 | Devices appear while the search runs, names read at once | table of the site | `scan.rs` (`devices_show_while_the_scan_runs`) |
 | Object lists read during the search, count and progress per device | table of the site, *Objects*; tree | `ui/01-search`, `ui/16-requests`, `scan.rs` (`reads_every_object_list_during_the_search_when_asked`) |
-| Plant subnet (VPN), BBMD, port, device ID range | sidebar, *Change* | `ui/04-reload`, `bbmd.rs`, `scan.rs` (range) |
+| Plant subnet (VPN), BBMD, port, device ID range | sidebar, *Search settings* | `ui/04-reload`, `bbmd.rs`, `scan.rs` (range) |
 | BBMD tables read (BDT and FDT), never written; a device that is none says so | device details, *BBMD tables* | `ui/24-bbmd`, `tests/bbmd.rs` (both tables, no BBMD), `web/ui.test.js` |
 | Device by IP address | table of the site, toolbar, *Device by IP …* | `ui/10-locate` |
 | Routers and the networks behind them | tree and strips above the table | `scan.rs` (routers) |
@@ -162,7 +164,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Change any property with a plain value, logged; the device decides | technical details, after the unlock | `ui/21-tools`, `ui/22-commands`, `storage.rs` |
 | The priority that wins on each point | table of a device, *Read priorities* | `ui/21-tools` |
 | Values reported unasked (unconfirmed COV) count as live | point details | `watch.rs` |
-| Several sites kept, opened again, removed, saved to and loaded from a file | *Sites*, top of the sidebar | `ui/21-tools`, `site.rs` |
+| Several sites kept, opened again, named, removed, saved to and loaded from a file | the site field in the sidebar (known sites, *All sites …*); a site without a name: *All sites …* opens its name field | `ui/21-tools`, `site.rs` |
 | Android app with the same UI | phone | not automated (concept section 9) |
 
 ## 4. Scope
