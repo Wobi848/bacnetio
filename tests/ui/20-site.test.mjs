@@ -13,7 +13,8 @@ export default {
     await page.keyboard.press("2");
     await page.waitForSelector("#next");
     assert.equal(await page.textContent("#next"), "Read all devices");
-    assert.match(await page.textContent(".strip.info"), /2 of 2 devices are not read yet/);
+    // a note bacnetio worked around may stand beside it, blue as well
+    await page.waitForSelector(".strip.info:has-text('2 of 2 devices are not read yet')");
     await page.click("#next");
     await page.waitForSelector(".row.problem:has-text('Out of service')", { timeout: 60000 });
     // a table with heads like the point list, sorted by a click on one
