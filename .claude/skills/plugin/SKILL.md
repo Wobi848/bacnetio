@@ -24,9 +24,10 @@ arrive with the plugin system; where they are missing, the plugin system is not 
 - It reads what bacnetio reads and marks devices and objects through the plugin API. It cannot
   write to the plant, reach bacnetio's server or the user's files; do not look for ways around
   that, and report any you find as a security bug.
-- Its texts in the plugin (`texts.js`), at least English and German; another interface language
-  falls back to English until someone from the trade has read a translation (AGENTS.md: a language
-  enters only after review). The KBOB plugin has en and de.
+- Its texts in the plugin (`texts.js`), in the interface's five languages like bacnetio's; French,
+  Italian and Spanish are drafts that bacnetio shows only for review (`?lang=`) until someone from
+  the trade has read them. `tests/plugins/kbob.test.js` checks that every language has every text
+  with the same placeholders; a new plugin gets the same test.
 - Rules taken from a standard or recommendation (KBOB): skill standards.
 - Tests: logic in `tests/plugins/*.test.js`, the installed plugin in the browser tests
   (`tests/ui/34-plugins.test.mjs`, `36-kbob.test.mjs`), against a simulator with matching data
