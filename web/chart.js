@@ -4,11 +4,36 @@ import { extent, thinned } from "./analysis.js";
 import { h } from "./html.js";
 import { currentLocale, t, valueWord } from "./i18n.js";
 
-const WIDTH = 600;
-const HEIGHT = 150;
+/** Until a chart has been measured on screen it is drawn this wide; then at its own width. */
+const DEFAULT_WIDTH = 600;
+/** A single point's chart; a compare chart, where states need less room than a number. */
+const HEIGHT = 220;
+const COMPARE_HEIGHT = 150;
+const STATES_HEIGHT = 96;
 const PAD = { top: 12, right: 64, bottom: 24, left: 8 };
 /** Spans longer than this label the axis with dates. */
 const DAY_MS = 20 * 60 * 60 * 1000;
+
+/** Each chart's width on screen, by id: drawn at its own size, its text keeps its size. */
+const widths = new Map();
+const widthOf = (id) => widths.get(id) ?? DEFAULT_WIDTH;
+
+/** Takes the width of every chart on screen; true when one changed, so the page is drawn again. */
+export function measureCharts() {
+  let changed = false;
+  for (const element of document.querySelectorAll(".chart[data-chart], .chart[data-compare]")) {
+    const id = element.dataset.chart ?? element.dataset.compare;
+    const width = Math.round(element.clientWidth);
+    if (width > 0 && Math.abs(width - widthOf(id)) > 4) {
+      widths.set(id, width);
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+/** The width a drawing was made for, from its viewBox: the pointer is measured against it. */
+const drawnWidth = (svg) => svg.viewBox.baseVal.width;
 
 /** The series of each chart on screen, by id, for the crosshair. */
 const shown = new Map();
@@ -34,10 +59,14 @@ const HOUR = 60 * MINUTE;
 const TICK_STEPS = [SECOND, 5 * SECOND, 10 * SECOND, 30 * SECOND, MINUTE, 5 * MINUTE, 10 * MINUTE, 15 * MINUTE, 30 * MINUTE,
   HOUR, 2 * HOUR, 3 * HOUR, 6 * HOUR, 12 * HOUR, 24 * HOUR];
 const MOST_TICKS = 7;
+/** A time label needs this much room on the axis, so marks never run into each other. */
+const TICK_ROOM = 80;
+/** As many time marks as fit on an axis `width` wide, at most MOST_TICKS. */
+const ticksFor = (width) => Math.max(3, Math.min(MOST_TICKS, Math.floor((width - PAD.left - PAD.right) / TICK_ROOM)));
 
 /** Time marks between `from` and `to` at round local times (10:15, 10:30, …), with their labels. */
-export function timeTicks(from, to) {
-  const step = TICK_STEPS.find((candidate) => Math.floor((to - from) / candidate) + 1 <= MOST_TICKS) ?? TICK_STEPS.at(-1);
+export function timeTicks(from, to, most = MOST_TICKS) {
+  const step = TICK_STEPS.find((candidate) => Math.floor((to - from) / candidate) + 1 <= most) ?? TICK_STEPS.at(-1);
   // round in local time, so an hour mark sits on the hour where the technician is
   const offset = new Date(from).getTimezoneOffset() * MINUTE;
   const ticks = [];
@@ -49,12 +78,12 @@ export function timeTicks(from, to) {
   return ticks.map((ms) => ({ ms, label: new Date(ms).toLocaleString(currentLocale(), options) }));
 }
 
-/** The marks on the time axis of a chart `height` high, kept inside the drawing at both ends. */
-function ticksSvg(ticks, x, height) {
+/** The marks on the time axis of a chart `width` by `height`, kept inside the drawing at both ends. */
+function ticksSvg(ticks, x, width, height) {
   const bottom = height - PAD.bottom;
   return ticks.map(({ ms, label }) => {
     const at = x(ms);
-    const anchor = at < PAD.left + 28 ? "start" : at > WIDTH - PAD.right - 28 ? "end" : "middle";
+    const anchor = at < PAD.left + 28 ? "start" : at > width - PAD.right - 28 ? "end" : "middle";
     return `<line x1="${at.toFixed(1)}" x2="${at.toFixed(1)}" y1="${bottom}" y2="${bottom + 4}" class="tick"/><text x="${at.toFixed(1)}" y="${height - 6}" class="axis" text-anchor="${anchor}">${h(label)}</text>`;
   }).join("");
 }
@@ -91,16 +120,16 @@ function timeText(ms, withDate) {
   return new Date(ms).toLocaleString(currentLocale(), options);
 }
 
-export function scale(samples, states = null) {
+export function scale(samples, states = null, width = DEFAULT_WIDTH, height = HEIGHT) {
   const values = samples.map(([, value]) => value).filter((value) => value !== null);
   const { low, high, levels, labels } = valueLevels(states, ...extent(values));
   const first = samples[0][0];
   const last = samples.at(-1)[0];
   const span = Math.max(last - first, 1);
   return {
-    low, high, first, last, levels, labels,
-    x: (ms) => PAD.left + ((ms - first) / span) * (WIDTH - PAD.left - PAD.right),
-    y: (value) => PAD.top + (1 - (value - low) / (high - low)) * (HEIGHT - PAD.top - PAD.bottom),
+    low, high, first, last, levels, labels, width, height,
+    x: (ms) => PAD.left + ((ms - first) / span) * (width - PAD.left - PAD.right),
+    y: (value) => PAD.top + (1 - (value - low) / (high - low)) * (height - PAD.top - PAD.bottom),
   };
 }
 
@@ -159,31 +188,27 @@ export function chartHtml(id, series, emptyText) {
   if (!samples.some(([, value]) => value !== null)) return `<p class="hint">${h(emptyText)}</p>`;
   shown.set(id, series);
   const line = heldOn(samples, series.until);
-  const s = scale(line, series.states);
-  const grid = gridSvg(s.levels, s.labels, s.y);
-  const times = ticksSvg(timeTicks(s.first, s.last), s.x, HEIGHT);
+  const width = widthOf(id);
+  const s = scale(line, series.states, width);
+  const grid = gridSvg(s.levels, s.labels, s.y, width);
+  const times = ticksSvg(timeTicks(s.first, s.last, ticksFor(width)), s.x, width, HEIGHT);
   return `<div class="chart" data-chart="${h(id)}">
-    <svg viewBox="0 0 ${WIDTH} ${HEIGHT}" role="img" aria-label="${h(series.label)}">
+    <svg viewBox="0 0 ${width} ${HEIGHT}" role="img" aria-label="${h(series.label)}">
       ${grid}${times}
       <path d="${linePath(line, s, Boolean(series.states))}" class="line"/>
       ${marksSvg(samples, s, HEIGHT - PAD.bottom)}
       <g class="cross"><line class="cross-line" y1="${PAD.top}" y2="${HEIGHT - PAD.bottom}"/><circle r="5" class="cross-dot"/></g>
-      <rect x="0" y="0" width="${WIDTH}" height="${HEIGHT}" class="hit"/>
+      <rect x="0" y="0" width="${width}" height="${HEIGHT}" class="hit"/>
     </svg><div class="tip" hidden></div></div>`;
 }
 
 /** Lines across at each level, labelled on the right. */
-function gridSvg(levels, labels, y) {
+function gridSvg(levels, labels, y, width) {
   return levels.map((value, index) => {
     const at = y(value).toFixed(1);
-    return `<line x1="${PAD.left}" x2="${WIDTH - PAD.right}" y1="${at}" y2="${at}" class="grid"/><text x="${WIDTH - PAD.right + 8}" y="${at}" dy="4" class="axis">${h(labels[index])}</text>`;
+    return `<line x1="${PAD.left}" x2="${width - PAD.right}" y1="${at}" y2="${at}" class="grid"/><text x="${width - PAD.right + 8}" y="${at}" dy="4" class="axis">${h(labels[index])}</text>`;
   }).join("");
 }
-
-/** At the widest a compare chart is drawn (860 px), this keeps it about 220 px high; states need
- *  less room than a number. */
-const COMPARE_HEIGHT = 160;
-const STATES_HEIGHT = 96;
 
 /**
  * Several series of one unit on one axis over the window `range`, each in its own colour, for
@@ -200,7 +225,8 @@ export function compareChartHtml(id, series, range) {
   const { low, high } = axis;
   // a number gets a line in the middle as well
   const levels = states ? axis.levels : [low, (low + high) / 2, high];
-  const width = WIDTH - PAD.left - PAD.right;
+  const chartWidth = widthOf(id);
+  const width = chartWidth - PAD.left - PAD.right;
   const height = chartHeight - PAD.top - PAD.bottom;
   const span = Math.max(range.to - range.from, 1);
   const s = {
@@ -208,23 +234,25 @@ export function compareChartHtml(id, series, range) {
     y: (value) => PAD.top + (1 - (value - low) / (high - low)) * height,
   };
   shownCompare.set(id, { series, range, s });
-  const grid = gridSvg(levels, states ? axis.labels : axisTexts(levels), s.y);
-  const times = ticksSvg(timeTicks(range.from, range.to), s.x, chartHeight);
+  const grid = gridSvg(levels, states ? axis.labels : axisTexts(levels), s.y, chartWidth);
+  const times = ticksSvg(timeTicks(range.from, range.to, ticksFor(chartWidth)), s.x, chartWidth, chartHeight);
   const lines = series.map((item) => `<path d="${linePath(thinned(heldOn(item.samples, item.until)), s, Boolean(item.states))}" class="line" style="stroke:var(--series-${item.color})"/>${marksSvg(item.samples, s, chartHeight - PAD.bottom, item.color)}`).join("");
   return `<div class="chart compare" data-compare="${h(id)}">
-    <svg viewBox="0 0 ${WIDTH} ${chartHeight}" role="img" aria-label="${h(series.map((item) => item.label).join(", "))}">
+    <svg viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="${h(series.map((item) => item.label).join(", "))}">
       ${grid}${times}${lines}
       <g class="cross"><line class="cross-line" y1="${PAD.top}" y2="${chartHeight - PAD.bottom}"/></g>
       <rect class="zoom" y="${PAD.top}" height="${height}" hidden></rect>
-      <rect x="0" y="0" width="${WIDTH}" height="${chartHeight}" class="hit"/>
+      <rect x="0" y="0" width="${chartWidth}" height="${chartHeight}" class="hit"/>
     </svg><div class="tip" hidden></div></div>`;
 }
 
 /** The time under the pointer in a compare chart. */
 export function compareTime(element, clientX) {
   const chart = shownCompare.get(element.dataset.compare);
-  const box = element.querySelector("svg").getBoundingClientRect();
-  const fraction = ((clientX - box.left) / box.width * WIDTH - PAD.left) / (WIDTH - PAD.left - PAD.right);
+  const svg = element.querySelector("svg");
+  const box = svg.getBoundingClientRect();
+  const width = drawnWidth(svg);
+  const fraction = ((clientX - box.left) / box.width * width - PAD.left) / (width - PAD.left - PAD.right);
   return chart.range.from + Math.min(Math.max(fraction, 0), 1) * (chart.range.to - chart.range.from);
 }
 
@@ -254,7 +282,7 @@ export function showCompareCrosshair(event, noAnswer) {
       line.textContent = `${item.label}: ${nearest && nearest[1] !== null ? valueLabel(item.states, nearest[1], item.units) : noAnswer}`;
       tip.append(line);
     }
-    tip.style.left = `${Math.min(Math.max((x / WIDTH) * 100, 22), 78)}%`;
+    tip.style.left = `${Math.min(Math.max((x / drawnWidth(chartElement.querySelector("svg"))) * 100, 22), 78)}%`;
   }
 }
 
@@ -272,8 +300,9 @@ export function showCrosshair(event, noAnswer) {
   if (!series) return;
   const svg = chartElement.querySelector("svg");
   const box = svg.getBoundingClientRect();
-  const s = scale(heldOn(series.samples, series.until), series.states);
-  const ms = s.first + ((event.clientX - box.left) / box.width * WIDTH - PAD.left) / (WIDTH - PAD.left - PAD.right) * (s.last - s.first);
+  const width = drawnWidth(svg);
+  const s = scale(heldOn(series.samples, series.until), series.states, width);
+  const ms = s.first + ((event.clientX - box.left) / box.width * width - PAD.left) / (width - PAD.left - PAD.right) * (s.last - s.first);
   const nearest = series.samples.reduce((best, sample) => (Math.abs(sample[0] - ms) < Math.abs(best[0] - ms) ? sample : best));
   const cross = svg.querySelector(".cross");
   const tip = chartElement.querySelector(".tip");
@@ -287,7 +316,7 @@ export function showCrosshair(event, noAnswer) {
   tip.hidden = false;
   const withDate = s.last - s.first > DAY_MS;
   tip.textContent = `${timeText(nearest[0], withDate)} · ${nearest[1] === null ? noAnswer : valueLabel(series.states, nearest[1], series.units)}`;
-  tip.style.left = `${Math.min(Math.max((x / WIDTH) * 100, 15), 85)}%`;
+  tip.style.left = `${Math.min(Math.max((x / width) * 100, 15), 85)}%`;
 }
 
 export function hideCrosshair(event) {

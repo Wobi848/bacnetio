@@ -558,6 +558,9 @@ test("chart axes: time marks at round times, states instead of numbers", async (
   const short = timeTicks(from, from + 60 * 1000);
   assert.equal(short.length, 7);
   assert.match(short[0].label, /10:03:20/);
+  // a narrow chart gets fewer marks, a step further apart: the labels never run into each other
+  const narrow = timeTicks(from, from + 60 * 1000, 3);
+  assert.ok(narrow.length <= 3, narrow.map((tick) => tick.label).join(", "));
   // a binary point is off or on, not −1 to 1; a multi-state point by its states
   assert.deepEqual(valueLevels("binary", 1, 1).labels, ["inactive", "active"]);
   assert.deepEqual(valueLevels("multi", 2, 3).labels, ["state 1", "state 2", "state 3"]);

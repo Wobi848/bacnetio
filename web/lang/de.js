@@ -31,7 +31,7 @@ export default {
     "pts.reading": "Der Datenpunkt wird gelesen …",
     "view.all": "Alle", "view.faults": "Störung", "view.overridden": "Übersteuert", "view.changed": "Geändert", "view.alarm": "Alarm", "view.outOfService": "Ausser Betrieb", "view.held": "Von dir gehalten", "filter.clearAll": "Alle Filter weg", "filter.remove": "Diesen Filter entfernen", "filter.hint": "Auch: #123 für eine Instanz, type:AO, value:>50", "filter.types": "Objekttypen",
     "ref.hint": "Merkt sich alle Werte von jetzt, um später zu sehen, was sich geändert hat (vor und nach der Inbetriebnahme).",
-    "rec.lead": "Werte über die Zeit, als Kurven und CSV.", "rec.interval": "Alle",
+    "rec.lead": "Gewählte Werte alle {interval} s, als Kurven und CSV. Punkte wählst du mit dem Aufzeichnen-Schalter in der Punktliste.", "rec.export": "CSV exportieren", "rec.samplesCount": "{count} Werte", "rec.points": "{n} Punkte", "rec.pointOne": "1 Punkt", "rec.measuredCov": "Gemessen {time} · bei Änderung", "rec.measured": "Gemessen {time} · alle {interval} s", "rec.interval": "Intervall",
     "rec.on": "Aufzeichnung", 
    
     "log.refusedShort": "Abgelehnt",
@@ -209,11 +209,11 @@ export default {
     notRunning: "bacnetio läuft nicht mehr. Bitte neu starten.",
 
     "rec.add": "Diesen Wert aufzeichnen", "rec.added": "Zur Aufzeichnung hinzugefügt", "rec.removeHere": "Diesen Wert nicht mehr aufzeichnen",
-    "rec.emptyTitle": "Noch nichts aufgezeichnet", "rec.emptyText": "Einen Datenpunkt öffnen und „Diesen Wert aufzeichnen“ tippen. Jeder aufgezeichnete Wert bekommt eine eigene Kurve.",
-    "rec.running": "Aufzeichnung alle {interval} s · {count} Werte", "rec.stopped": "Angehalten · {count} Werte",
+    "rec.emptyTitle": "Noch nichts aufgezeichnet", "rec.emptyText": "Schalte in der Punktliste den Aufzeichnen-Schalter eines Punkts ein.",
+    "rec.running": "Läuft", "rec.stopped": "Angehalten",
     "rec.every": "{seconds} s", "rec.start": "Aufzeichnung starten", "rec.stop": "Aufzeichnung anhalten",
     "rec.remove": "Aus der Aufzeichnung entfernen",
-    "rec.notStarted": "Die Aufzeichnung läuft noch nicht: Starte sie, dann misst sie alle {interval} s.", "rec.notStartedShort": "Noch nicht gestartet.", "rec.poll": "Abfragen", "rec.cov": "COV", "rec.covRefused": "COV abgelehnt, wird abgefragt", "rec.covRefusedHint": "Das Gerät meldet diesen Punkt nicht von selbst; er wird stattdessen im Intervall gelesen.", "rec.lastMeasured": "Zuletzt gemessen {time}", "rec.waiting": "Warte auf den ersten Wert …", "rec.noValues": "Noch kein Wert: Das Gerät antwortet nicht, oder der Wert ist keine Zahl.",
+    "rec.notStarted": "Die Aufzeichnung läuft nicht: Drücke oben „Aufzeichnung starten“, dann misst sie alle {interval} s.", "rec.notStartedShort": "Noch nicht gestartet.", "rec.poll": "Abfragen", "rec.cov": "COV", "rec.covRefused": "COV abgelehnt, wird abgefragt", "rec.covRefusedHint": "Das Gerät meldet diesen Punkt nicht von selbst; er wird stattdessen im Intervall gelesen.", "rec.waiting": "Warte auf den ersten Wert …", "rec.noValues": "Noch kein Wert: Das Gerät antwortet nicht, oder der Wert ist keine Zahl.",
     "rec.noAnswer": "keine Antwort",
     "trend.title": "Im Gerät aufgezeichnet",
     "trend.reading": "Die Trendaufzeichnung wird gelesen …", "trend.records": "{n} Einträge", "trend.empty": "Die Trendaufzeichnung enthält keine Werte.",

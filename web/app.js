@@ -626,3 +626,10 @@ async function start() {
 }
 
 start();
+
+// a chart is drawn for its width: a wider or narrower window draws the page again
+let resizing = 0;
+window.addEventListener("resize", () => {
+  cancelAnimationFrame(resizing);
+  resizing = requestAnimationFrame(() => render());
+});
