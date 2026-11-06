@@ -14,14 +14,14 @@ both are ignored by Git.
 ## Skills
 Recurring tasks have project skills in `.claude/skills/`: `browser-tests`, `review`, `field-data`,
 `concept`, `new-text`, `simulator`, `pull-request`, `api-route`, `plugin`, `standards`, `try-it`,
-and `builds` and `release` (only on the maintainer's explicit request). Keep them true when the commands, paths or rules they name
-change.
+and `builds` and `release` (only on the maintainer's explicit request). Keep them true when the
+commands, paths or rules they name change.
 
 ## Git and GitHub
 - Commits, branches, PRs, issues, tags, release notes, file names and identifiers in English.
 - No AI attribution: no `Co-Authored-By`, no "Generated with".
 - One short branch per topic, named after the topic. Never commit directly to `main`; changes reach
-  it through a pull request that the maintainer merges, with green CI.
+  it through a pull request with green CI, merged by the maintainer or on their explicit OK.
 - Stage your own files by name, never `git add -A`. Someone else may have changes in the same
   folder.
 - Separate commits per concern; the subject says what changes.
