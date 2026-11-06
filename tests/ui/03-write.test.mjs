@@ -25,6 +25,9 @@ export default {
     // the list shows the new value at once, not the one from before
     assert.match(await page.textContent(".row[data-point]:has-text('Heating valve') .value"), /42\.5/);
     assert.match(await page.textContent(".status .chips"), /1 held/);
+    // releasing is the next step, but a new search stays at hand beside it
+    assert.equal(await page.textContent("#next"), "Release the held value");
+    assert.equal(await page.textContent(".nextbar button[data-act=find]"), "Search again");
     // the problems and exports know the written value too, not the one from the last reading
     const site = await (await page.request.get(`${base}/api/site/points`)).json();
     assert.match(site["1001"].points.find((point) => point.name === "Heating valve").value, /42\.5/);

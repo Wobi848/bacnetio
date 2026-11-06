@@ -11,6 +11,7 @@ All notable changes for users of bacnetio.
 
 ### Changed
 
+- While a value is held, *Search again* stays beside *Release the held value* at the top, instead of giving way to it.
 - The note of a new version is filled green, so it catches the eye.
 
 ### Fixed
