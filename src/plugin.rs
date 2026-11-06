@@ -94,11 +94,11 @@ mod tests {
     #[test]
     fn a_plugin_names_itself() {
         let found = manifest(&page(
-            r#"{"id":"kbob","name":"KBOB check","version":"1.0.0","api":1,"description":"Checks"}"#,
+            r#"{"id":"check","name":"Site check","version":"1.0.0","api":1,"description":"Checks"}"#,
         ))
         .unwrap();
-        assert_eq!(found.id, "kbob");
-        assert_eq!(found.name, "KBOB check");
+        assert_eq!(found.id, "check");
+        assert_eq!(found.name, "Site check");
         assert_eq!(found.description, "Checks");
     }
 

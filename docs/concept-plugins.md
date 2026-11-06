@@ -1,6 +1,6 @@
 # Concept: plugins
 
-The maintainer wants extensions such as the KBOB check (`docs/concept-kbob-check.md`) to be
+The maintainer wants extensions such as a check of devices against a standard to be
 installed apart from bacnetio, not built in (5 November 2026: "ich will plugin system"). This
 concept says what a plugin is, what it may do and how it is installed. Built on 5 November
 2026 (`src/plugin.rs`, `src/server/plugins.rs`, `web/plugin*.js`); for authors: `docs/plugins.md`.
@@ -20,8 +20,8 @@ At the top it carries its description as JSON:
 
 ```html
 <script type="application/json" id="bacnetio-plugin">
-{ "id": "kbob", "name": "KBOB check", "version": "1.0.0", "api": 1,
-  "description": "Checks devices against the KBOB recommendation BACnet Anwendung V2.0" }
+{ "id": "check", "name": "Site check", "version": "1.0.0", "api": 1,
+  "description": "Checks the devices of a site against the owner's rules" }
 </script>
 ```
 
@@ -61,7 +61,7 @@ pages, and so through the same queue (`src/precedence.rs`):
 | `load()` / `save(data)` | a small store of the plugin's own, kept in the data folder beside the site |
 | `download(name, text)` | hand the user a file, such as a report as CSV |
 | `mark(marks)` | short marks on devices and objects that bacnetio shows in its own lists and details (see below) |
-| `priorities(names)` | names for the 16 priorities, shown under each number in the priority grid and in the choice when writing, before BACnet's own names (KBOB: table 10) |
+| `priorities(names)` | names for the 16 priorities, shown under each number in the priority grid and in the choice when writing, before BACnet's own names |
 
 **Marks** let a plugin point at what it found without a page of its own: a list of
 `{device, type?, instance?, text}`, shown as a small badge with the plugin's name in the device
@@ -71,7 +71,7 @@ plugin switched off or removed takes its marks with it.
 
 **Priority names** let a standard name what each priority is for. bacnetio shows BACnet's own
 names (1 Manual Life Safety, 2 Automatic Life Safety, 5 Critical Equipment Control, 6 Minimum
-On/Off, 8 Manual Operator); KBOB gives every priority a use or calls it free (table 10). A plugin
+On/Off, 8 Manual Operator); a standard may give every priority a use. A plugin
 gives `{ "7": "Manual on site", … }`, up to 24 characters each, in the interface's language; the
 details say which plugin named it. Switched off or removed, the names go with it.
 
@@ -86,8 +86,7 @@ The plugin gets bacnetio's colours and fonts as CSS variables, so it looks like 
 
 ## Where plugins come from
 
-- Plugins of this project live in the repo under `plugins/`, each with its own tests, and are
-  built into their single file for every release (`kbob.bacnetio-plugin.html` beside the exe).
+- Plugins are kept and released apart from bacnetio; the repo holds none (decided 6 November 2026).
 - Anyone can write one; the API is described in `docs/plugins.md`.
 - No plugin store in bacnetio for now.
 
@@ -98,7 +97,7 @@ file choice of Android, and runs in the same sandboxed frame.
 
 ## Never lose a function
 
-Nothing in bacnetio moves into a plugin; the KBOB check is new.
+Nothing in bacnetio moves into a plugin.
 
 ## Work
 
@@ -108,7 +107,7 @@ Nothing in bacnetio moves into a plugin; the KBOB check is new.
    API version 1.
 3. A small test plugin in the tests: installed, asks each question, cannot reach a write.
 4. `docs/plugins.md` for plugin authors.
-5. Then the KBOB check as the first plugin.
+5. Then a first plugin, kept apart from the repo.
 
 ## Decided
 

@@ -65,7 +65,7 @@ export function pluginMarksHtml(state, device, type = null, instance = null) {
     `<span class="chip mark${mark.state ? ` ${mark.state}` : ""}" title="${h(plugin.name)}: ${h(mark.text)}">${h(mark.label ?? plugin.name)}</span>`).join("");
 }
 
-/** A priority's name: a plugin's (KBOB: table 10) before BACnet's own, and which plugin gave it. */
+/** A priority's name: a plugin's (a standard's use of it) before BACnet's own, and which plugin gave it. */
 export function priorityLabel(state, priority) {
   for (const plugin of state.plugins.filter((entry) => entry.on)) {
     const name = state.priorityNames[plugin.id]?.[priority];

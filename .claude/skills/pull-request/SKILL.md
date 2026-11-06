@@ -11,7 +11,7 @@ merge without that OK, never tag or release (skill release).
 
 ## Branch and commits
 
-- One short branch per topic, named after it (`release-check`, `kbob-plugin`).
+- One short branch per topic, named after it (`release-check`, `sidebar-head`).
 - Stage your own files by name, never `git add -A`: another session may have changes in the folder.
   Check `git status` first and leave files you did not change alone.
 - Separate commits per concern; the subject says what changes, in English. No AI attribution: no

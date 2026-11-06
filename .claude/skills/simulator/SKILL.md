@@ -12,10 +12,6 @@ shows it, then a test against it.
 
 - `simulated_plant.rs`: AHU-01 (1001), mixed object types, trend log, schedule
 - `simulated_controller.rs`: a controller named by paths like a DDC4000, 170+ points, no segmentation
-- `simulated_kbob.rs` (1100, `3022_LU1_L01_D001`): an automation station that meets KBOB AS-CH in
-  full, with AKS names; the simulator library leaves out properties KBOB asks for, so a `Hull`
-  around each object adds them. Not part of the browser tests' plant: `tests/ui/36-kbob.test.mjs`
-  starts it itself on `127.0.0.4` and searches for three devices (`searchInUi(page, 3)`).
 
 The current list is `examples/`; README.md describes each one.
 

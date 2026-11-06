@@ -1,6 +1,6 @@
 ---
 name: plugin
-description: "Write or change a bacnetio plugin (one *.bacnetio-plugin.html file, plugin API 1) such as the KBOB check, or change the plugin API itself. Use for checks, reports or views that are installed apart from bacnetio, or when the maintainer asks for an extension, an add-on or \"ein Plugin\"."
+description: "Write or change a bacnetio plugin (one *.bacnetio-plugin.html file, plugin API 1) such as a check against a standard, or change the plugin API itself. Use for checks, reports or views that are installed apart from bacnetio, or when the maintainer asks for an extension, an add-on or \"ein Plugin\"."
 ---
 
 # bacnetio plugins
@@ -12,13 +12,13 @@ arrive with the plugin system; where they are missing, the plugin system is not 
 
 - **One HTML file** `<id>.bacnetio-plugin.html` with its script, style and data inside; it loads
   nothing from elsewhere.
-- The project's plugins live in `plugins/<id>/`: `page.html` with the description and
-  `<script src="x.js"></script>` lines, the logic as modules (`check.js` without I/O, testable with
-  `node --test`). `node plugins/build.mjs [folder]` puts each into its one file (default
-  `target/plugins/`); a release carries it beside the programs.
+- Plugins are kept and released apart from this repo, which holds none (6 November 2026); only the
+  plugin API and its test plugin (`tests/ui/fixtures/test.bacnetio-plugin.html`) live here. Keep a
+  plugin's logic in modules without I/O so `node --test` can test it, and build the one file from
+  them.
 - **The build puts every file of a plugin into one scope** (imports go, `export` goes): two files
   declaring the same top-level name break the plugin, and it shows nothing.
-  `tests/plugins/build.test.js` parses every built file; give names that could clash an own prefix.
+  Parse every built file in a test; give names that could clash an own prefix.
 - Its description as the first `<script type="application/json" id="bacnetio-plugin">` with
   `id`, `name`, `version`, `api: 1`, optional `description`, within the limits in `docs/plugins.md`.
 - It reads what bacnetio reads and marks devices and objects through the plugin API. It cannot
@@ -26,12 +26,11 @@ arrive with the plugin system; where they are missing, the plugin system is not 
   that, and report any you find as a security bug.
 - Its texts in the plugin (`texts.js`), in the interface's five languages like bacnetio's; French,
   Italian and Spanish are drafts that bacnetio shows only for review (`?lang=`) until someone from
-  the trade has read them. `tests/plugins/kbob.test.js` checks that every language has every text
-  with the same placeholders; a new plugin gets the same test.
-- Rules taken from a standard or recommendation (KBOB): skill standards.
-- Tests: logic in `tests/plugins/*.test.js`, the installed plugin in the browser tests
-  (`tests/ui/34-plugins.test.mjs`, `36-kbob.test.mjs`), against a simulator with matching data
-  (`examples/simulated_kbob.rs`; skill simulator).
+  the trade has read them. A test checks that every language has every text with the same
+  placeholders.
+- Rules taken from a standard or recommendation: skill standards.
+- Tests here: every question of the API through the test plugin in `tests/ui/34-plugins.test.mjs`;
+  a new question gets a line in the test plugin and an assertion there.
 
 ## Changing the plugin API
 

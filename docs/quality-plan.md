@@ -295,18 +295,13 @@ Open, in the maintainer's words where it helps. The larger ones are planned in
       names in the interface's language with a switch to the BACnet names, values by meaning (Yes/No,
       flags by name, time stamps, units). Concept: `docs/concept-properties.md`, mockup shown.
 - [ ] **Basics first, then extras** (2 November: "Alle Grundfunktionen müssen zuerst perfekt
-      funktionieren bevor wir irgendwelchen KBOB-Zeugs rein machen"). The KBOB check and similar
-      extras wait until finding, reading, writing, the point list, recording and sites work without
+      funktionieren"). Checks against standards and
+      similar extras wait until finding, reading, writing, the point list, recording and sites work without
       fault. Then they come as an *extension*, off by default and switched on under *Settings*,
       since not everyone needs them ("braucht ja nicht jeder"). The code keeps each extension in a
       module of its own; a loader for third-party plugins only when a second extension asks for it.
-      Sources for the KBOB check (5 November, public, not kept in the repo):
-      https://www.kbob.admin.ch/de/gebaeudetechnik-und-gebaeudeautomation, above all the
-      recommendation and guide *BACnet Anwendung* V2.0 and appendix C1, the checklist of object
-      types, properties and BIBBs per profile (MBE-CH, AS-CH). Most of C1 can be checked by reading
-      a device, without writing. Asked for on 5 November despite the rule above; concept:
-      `docs/concept-kbob-check.md`, as the first plugin ("ich will plugin system"; concept:
-      `docs/concept-plugins.md`), both agreed on 5 November.
+      The plugin system came on 5 November ("ich will plugin system"; concept:
+      `docs/concept-plugins.md`). Plugins are kept apart from the repo (6 November).
 - [x] **Phone test through a VPN app, 4 November:** a DDC4000 found over the VPN by asking each
       address (no broadcast passes). Wishes from it: a VPN chosen before mobile data, the note to
       name the VPN instead of the firewall, the Android back key to step back and to ask before

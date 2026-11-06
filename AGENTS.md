@@ -33,7 +33,7 @@ commands, paths or rules they name change.
 
 ## Before saying "done"
 - Run everything CI runs, plus the browser tests: `cargo fmt --check`, `cargo test`,
-  `cargo clippy --all-targets -- -D warnings`, `node --test tests/web/*.test.js tests/plugins/*.test.js`
+  `cargo clippy --all-targets -- -D warnings`, `node --test tests/web/*.test.js`
   and the browser tests in `tests/ui/` (see its README) in Chromium, Firefox and WebKit.
 - Say what could not be checked (real devices, real networks, other browsers).
 - Never say "done" while known points are open. Name them and work through them; do not stop at

@@ -14,7 +14,7 @@ network or device.
 cargo fmt --check
 cargo test
 cargo clippy --all-targets -- -D warnings
-node --test tests/web/*.test.js tests/plugins/*.test.js   # as CI (.github/workflows/build.yml)
+node --test tests/web/*.test.js   # as CI (.github/workflows/build.yml)
 cargo build --all-targets
 export PLAYWRIGHT=$(ls -d ~/.npm/_npx/*/node_modules/playwright 2>/dev/null | head -1)
 for browser in chromium firefox webkit; do
@@ -44,13 +44,13 @@ done
    unshare -Urn bash -c "ip link set lo up
      target/debug/examples/simulated_plant 127.0.0.2 47809 &
      target/debug/examples/simulated_controller 127.0.0.3 47809 &
-     target/debug/examples/simulated_kbob 127.0.0.4 47809 &
+     target/debug/examples/simulated_commands 127.0.0.4 47809 &
      target/debug/bacnetio --no-browser --web-port 18700 --data-dir $S/shots-data --test-loopback &
      sleep 2; node $S/shots.mjs; kill %1 %2 %3 %4"
    ```
    The Playwright script (`shots.mjs`, in the scratchpad) runs inside, as the browser must reach
-   the server in that network. Build the plugins first (`node plugins/build.mjs`) when a screen
-   shows one.
+   the server in that network. A screen with a plugin needs its built file, which is kept
+   apart from the repo.
 2. In Playwright, set the search settings before loading (subnet `127.0.0.0/29`, port `47809`,
    adapter `127.0.0.1`), as `tests/ui/helpers.mjs` (`open`) does, then search and open a device.
 3. Take each screen at 390 × 844 (phone), 1000 and 1440 wide, in light and dark
