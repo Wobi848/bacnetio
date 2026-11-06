@@ -1,6 +1,6 @@
 # Concept: a clear order on every page
 
-Status: proposal, 6 November 2026. Built only after the maintainer has approved it, one page per
+Status: approved on 6 November 2026, with yes to the three questions at the end. Built one page per
 branch, starting with the point list.
 
 ## Why
@@ -172,7 +172,10 @@ merges.
 5. Recording
 6. Settings
 
-## Open for the decision
+## Decided
+
+Answered by the maintainer on 6 November 2026: yes to 1, 2 and 3 as recommended.
+
 
 1. **Chosen segments not filled?** Recommended: yes, `accent-soft` ground, `accent` border, label in
    600. Otherwise the point list keeps three filled blocks and the recording five, and the next step
