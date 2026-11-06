@@ -6,6 +6,8 @@ All notable changes for users of bacnetio.
 
 ### Added
 
+- The priority grid names every priority under its number, not only the ones holding a value. With the KBOB check installed, the names follow KBOB table 10 (7 manual on site, 8 manual from the MBE, 12 central functions, 14 time programs, 16 automatic mode; the rest free, by agreement with the owner), also in the choice of priority when writing. Plugins can name priorities through plugin API 1 (`priorities`).
+- A simulated controller with commands at several priorities (`cargo run --example simulated_commands -- <IP>`).
 - The first extension, *KBOB* (`kbob.bacnetio-plugin.html` beside the programs in each release): checks every device of a search against the Swiss KBOB recommendation *BACnet Anwendung* V2.0, by reading only. Rules from the recommendation, its guide and checklist C1 (protocol revision, object types, properties per object type, names, units, state texts, notification classes and KBOB classes NC1–NC225, commands only at the priorities of table 10 and schedules at 14, services), and on request object names after the AKS pattern of the guide, per device met, not met or not checkable, with what is missing; devices and objects are marked in the device list, the tree and the point list, *KBOB ✓* in green or *KBOB ✗* in red with what is missing; a report as CSV. Profile AS-CH or MBE-CH per device.
 - Extensions (plugins): one file each, installed, switched and removed under *Settings → Extensions*. An extension gets a page in the sidebar, reads devices, objects and properties through bacnetio, and can mark devices and points in bacnetio's lists. It runs in a sandbox: it cannot write to the plant, reach bacnetio's server or the user's files. How to write one: `docs/plugins.md`.
 

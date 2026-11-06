@@ -35,7 +35,7 @@ label.button:hover { background: var(--accent-soft); border-color: var(--accent)
 .slot[role=button]:hover { border-color: var(--accent); }
 .slot .n { color: var(--muted); font-family: var(--mono); font-size: 11px; }
 .slot .v { font-weight: 650; overflow-wrap: anywhere; color: var(--muted); }
-.slot .who { color: var(--muted); font-size: 11px; line-height: 1.2; overflow-wrap: anywhere; }
+.slot .who { color: var(--muted); font-size: 11px; line-height: 1.2; overflow-wrap: break-word; hyphens: auto; }
 .slot.held { background: var(--sunken); }
 .slot.held .v { color: var(--text); }
 .slot.win { background: var(--accent-soft); border-color: var(--accent); }

@@ -66,6 +66,7 @@ Then, for example, `const devices = await ask("devices");`.
 | `ask("save", data)` | keeps `data` (JSON, up to 1 MB) in the plugin's store, in bacnetio's data folder |
 | `ask("download", name, text)` | hands the user a file, such as a report as CSV |
 | `ask("mark", marks)` | replaces the plugin's marks; answers how many it took (see below) |
+| `ask("priorities", names)` | names the priorities, such as a standard's use of them: `{ "7": "Manual on site", "16": "Automatic mode" }`, keys 1 to 16, up to 24 characters each, in the interface's language. bacnetio shows them under the numbers of the priority grid and in the choice of priority when writing, before BACnet's own names; replaces the plugin's names given before. Answers how many it took. bacnetio before 0.1.3 answers `unknown question` |
 
 Reading goes through bacnetio's own queue, so a slow network (MS/TP behind a router) is not
 flooded: ask one device after the other.

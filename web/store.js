@@ -179,6 +179,8 @@ export const state = {
   /** Installed plugins (plugins.js), the marks each one set, and the questions asked about them. */
   plugins: [],
   marks: {},
+  /** Names plugins give the 16 priorities (KBOB: table 10), by plugin. */
+  priorityNames: {},
   pluginReplacing: null,
   pluginRemoving: null,
   error: null,

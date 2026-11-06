@@ -61,6 +61,7 @@ pages, and so through the same queue (`src/precedence.rs`):
 | `load()` / `save(data)` | a small store of the plugin's own, kept in the data folder beside the site |
 | `download(name, text)` | hand the user a file, such as a report as CSV |
 | `mark(marks)` | short marks on devices and objects that bacnetio shows in its own lists and details (see below) |
+| `priorities(names)` | names for the 16 priorities, shown under each number in the priority grid and in the choice when writing, before BACnet's own names (KBOB: table 10) |
 
 **Marks** let a plugin point at what it found without a page of its own: a list of
 `{device, type?, instance?, text}`, shown as a small badge with the plugin's name in the device
@@ -68,8 +69,18 @@ list, the tree, the point list and the details, the text on hover and in the det
 *Marked by …* shows only marked rows. Marks change only what bacnetio shows, never the plant; a
 plugin switched off or removed takes its marks with it.
 
-No writing, no commands to devices, no network beyond bacnetio. What a plugin needs beyond this
-comes as API version 2, and plugins of version 1 keep working.
+**Priority names** let a standard name what each priority is for. bacnetio shows BACnet's own
+names (1 Manual Life Safety, 2 Automatic Life Safety, 5 Critical Equipment Control, 6 Minimum
+On/Off, 8 Manual Operator); KBOB gives every priority a use or calls it free (table 10). A plugin
+gives `{ "7": "Manual on site", … }`, up to 24 characters each, in the interface's language; the
+details say which plugin named it. Switched off or removed, the names go with it.
+
+bacnetio tells the plugin of changes as messages without `call` (`{ event: "devices" }`), which a
+plugin of version 1 passes over.
+
+No writing, no commands to devices, no network beyond bacnetio. A question added to version 1
+changes nothing for a plugin that does not ask it; a plugin that asks it of an older bacnetio gets
+`unknown question`. What would break version 1 plugins comes as API version 2.
 
 The plugin gets bacnetio's colours and fonts as CSS variables, so it looks like the rest.
 

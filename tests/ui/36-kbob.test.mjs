@@ -62,6 +62,13 @@ export default {
     assert.match(await mark.getAttribute("title"), /^KBOB: missing: .*device-type.* \(5\.3, C1\.2\)/);
     assert.equal(await page.textContent(".node[data-act=tree-device]:has-text('3022_LU1_L01_D001') .chip.mark.ok"), "KBOB ✓");
 
+    // the priority grid names each priority after KBOB table 10, and says the names come from it
+    await page.click(".row[data-point]:has-text('Heating valve')");
+    await page.waitForSelector(".slots .slot");
+    assert.equal(await page.textContent(".slots .slot:nth-child(8) .who"), "Manual from MBE");
+    assert.equal(await page.textContent(".slots .slot:nth-child(9) .who"), "free (owner)");
+    assert.equal(await page.getAttribute(".slots .slot:nth-child(16)", "title"), "Automatic mode (KBOB)");
+
     // started with bacnetio: after a reload the marks are there without opening the plugin
     await page.reload();
     await page.waitForSelector(".node[data-act=tree-device]:has-text('AHU-01') .chip.mark.bad");

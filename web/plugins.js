@@ -1,6 +1,7 @@
 // Plugins in the interface (docs/concept-plugins.md): the card in the settings, the entries in the
 // sidebar, a plugin's page and the marks plugins put on devices and objects.
 
+import { priorityName } from "./format.js";
 import { h } from "./html.js";
 import { t } from "./i18n.js";
 
@@ -62,4 +63,13 @@ export function pluginMarksHtml(state, device, type = null, instance = null) {
       .map((mark) => ({ plugin, mark })));
   return shown.map(({ plugin, mark }) =>
     `<span class="chip mark${mark.state ? ` ${mark.state}` : ""}" title="${h(plugin.name)}: ${h(mark.text)}">${h(mark.label ?? plugin.name)}</span>`).join("");
+}
+
+/** A priority's name: a plugin's (KBOB: table 10) before BACnet's own, and which plugin gave it. */
+export function priorityLabel(state, priority) {
+  for (const plugin of state.plugins.filter((entry) => entry.on)) {
+    const name = state.priorityNames[plugin.id]?.[priority];
+    if (name) return { name, by: plugin.name };
+  }
+  return { name: priorityName(priority), by: "" };
 }
