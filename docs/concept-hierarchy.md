@@ -30,8 +30,9 @@ of problems and watch list, charts by state, the backgrounds.
 Screenshots of every page (devices, data points, site problems, watch list, recording, held by
 you, settings), light and dark, at 390, 1366 and 1920 px, in German, 42 in all: four simulators
 (`simulated_plant`, `simulated_controller`, `simulated_kbob`, `simulated_commands`), one point on the
-watch list, one in the recording, one value held. State of `main` with the open pull requests
-#19, #21 and #22. The pictures were shown to the maintainer; they are not in the repo.
+watch list, one in the recording, one value held. The state: `main` with the open pull requests
+of the search beside the release (#19), the plugin events (#21) and the priority names (#22). The
+pictures were shown to the maintainer; they are not in the repo.
 
 ## Across all pages
 
