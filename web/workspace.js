@@ -12,18 +12,24 @@ export function nextStep(state) {
     return { act: "go", data: ' data-area="log"', label: state.held.length === 1 ? t("next.releaseOne") : t("next.release", { n: state.held.length }) };
   }
   if (state.scan.state === "running") return null;
-  if (state.scan.remembered_ms) return { act: "find", label: t("searchAgain") };
+  if (state.scan.remembered_ms) return searchStep(state);
   if (state.device) return null;
   if (state.selectedDevice !== null && state.scan.devices?.some((device) => device.instance === state.selectedDevice)) {
     return { act: "open-device", data: ` data-id="${state.selectedDevice}"`, label: t("dev.openPoints") };
   }
-  return { act: "find", label: state.scan.state === "idle" ? t("find") : t("searchAgain") };
+  return searchStep(state);
+}
+
+/** A search, named "Search again" once there is a result, kept from before a restart or not. */
+function searchStep(state) {
+  const searched = state.scan.state !== "idle" || state.scan.remembered_ms;
+  return { act: "find", label: searched ? t("searchAgain") : t("find") };
 }
 
 /** While values are held, releasing them is the next step, but a new search stays at hand beside it. */
 function searchBeside(state) {
   if (!state.held.length || state.scan.state === "running") return null;
-  return { act: "find", label: state.scan.state === "idle" ? t("find") : t("searchAgain") };
+  return searchStep(state);
 }
 
 export function viewWorkspace(state) {
