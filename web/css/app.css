@@ -102,20 +102,34 @@ button.chip { height: 22px; border: 0; cursor: pointer; }
 }
 .toast.error { background: var(--err); color: var(--err-ink); }
 
-/* The head of the sidebar (SidebarHead): one card, two parts built alike (label, value, detail,
-   one tool button), then the search on its own */
-.side-card { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
-.side-card .side-part { display: grid; justify-items: start; gap: 2px; min-width: 0; padding: 12px; }
-.side-card .side-part + .side-part { border-top: 1px solid var(--line); }
+/* The head of the sidebar (SidebarHead): one card, the site as a select field, below it the
+   network and the state beside the search settings; then the search on its own */
+.side-card { container-type: inline-size; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.side-card .side-part { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 10px 12px; }
 .side-card .cap { color: var(--muted); font-size: 11.5px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; }
-.side-card .side-val { max-width: 100%; font-size: 15px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
-.side-card .side-detail { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; min-width: 0; color: var(--muted); font-size: 12.5px; }
+.side-card .site-host { display: flex; margin: 2px 0 4px; }
+.side-card .site-switch { flex: 1; min-width: 0; justify-content: space-between; gap: 8px; padding: 0 10px; font-size: 15px; font-weight: 700; text-align: left; }
+.side-card .site-switch .site-now { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.side-card .site-switch .chevron { flex: none; width: 16px; height: 16px; color: var(--muted); }
+.side-card .side-meta { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.side-card .side-detail { display: grid; gap: 2px; min-width: 0; color: var(--muted); font-size: 12.5px; }
 .side-card .side-detail .mono { overflow-wrap: anywhere; }
 /* the state wraps rather than being cut off: it says what to do */
 .side-card .state { min-width: 0; line-height: 1.25; }
-.side-card .side-part > a.quiet, .side-card .side-part > .menu-host { margin-top: 8px; }
-.side-card .side-part > button.site-name { margin: 2px 0; }
-.side-card a.site-link[aria-current="page"] { border-color: var(--accent); background: var(--accent-soft); }
+/* the search settings: a framed icon, the word joins it where the card has room */
+.side-card .side-tool { width: 32px; padding: 0; justify-content: center; }
+.side-card .side-tool .nav-i { display: block; width: 18px; height: 18px; color: inherit; }
+.side-card .side-tool-label { display: none; }
+@container (min-width: 280px) {
+  .side-card .side-tool { width: auto; padding: 0 10px; }
+  .side-card .side-tool-label { display: inline; }
+}
+.menu.site-choices { display: grid; gap: 2px; min-width: 240px; max-width: 340px; padding: 6px; }
+.menu.site-choices button { justify-content: flex-start; min-width: 0; border-color: transparent; background: none; font-weight: 600; }
+.menu.site-choices button:hover { border-color: var(--accent); background: var(--accent-soft); }
+.menu.site-choices button[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.menu.site-choices .cut { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu.site-choices .all-sites { margin-top: 4px; border-color: var(--line-strong); }
 
 /* A newer release is out: a link to its page, below the site */
 /* filled green, apart from the blue of the chosen area: it has to catch the eye */

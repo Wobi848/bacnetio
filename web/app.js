@@ -18,6 +18,7 @@ import { editDay, editProperty, releaseHeld, releaseHere, releaseOther, selectPo
 import { installPlugin, installPluginBridge, loadPlugins, pluginsMayAsk, removePlugin, switchPlugin } from "./plugin-actions.js";
 import { pollRecording, recordHere, recordPoint, recordingRequest, removeRecorded, setRecordMode } from "./recording-actions.js";
 import { setAccent, setBackground, setTheme } from "./settings.js";
+import { siteName } from "./sites.js";
 import { nextSort } from "./sorting.js";
 import { checkForUpdate, setUpdateCheck } from "./update.js";
 import { TABLE_FILTERS, noTableFilter } from "./table-filter.js";
@@ -175,16 +176,24 @@ const actions = {
   "property-edit": (element) => editProperty(element.dataset.property),
   "property-cancel": () => { state.editProperty = null; render(); },
   "property-write": () => writeProperty(),
-  "site-open": (element) => { forgetDeviceReads(); openSite(state.sites[Number(element.dataset.index)].name); },
+  "site-open": (element) => { state.menu = null; forgetDeviceReads(); openSite(state.sites[Number(element.dataset.index)].name); },
   "site-ask-delete": (element) => { state.deletingSite = Number(element.dataset.index); render(); },
   "site-delete": () => deleteSite(state.sites[state.deletingSite].name),
   "site-keep": () => { state.deletingSite = null; render(); },
   "site-rename": (element) => startRename(Number(element.dataset.index)),
-  // the open site has no name yet: on the page of the sites, its name field ready to type
-  "site-name": async () => {
+  // the site field: the known sites to switch to, fetched again while it opens
+  "site-menu": () => {
+    state.menu = state.menu === "sites" ? null : "sites";
+    render();
+    document.querySelector(".site-choices [aria-selected=true], .site-choices button")?.focus();
+    if (state.menu === "sites") loadSites();
+  },
+  // the page of all sites; a site without a name has its name field ready to type there
+  "sites-all": async () => {
+    state.menu = null;
     go("sites");
     await loadSites();
-    const index = state.sites.findIndex((site) => site.open);
+    const index = state.sites.findIndex((site) => site.open && !siteName(site));
     if (index >= 0) startRename(index);
   },
   "site-rename-cancel": () => { state.renamingSite = null; render(); },
@@ -327,7 +336,7 @@ function toggleGroup(row) {
 
 document.addEventListener("click", (event) => {
   const target = event.target;
-  if (state.menu && !target.closest(".menu, [data-act=network], [data-act=locate-menu], [data-act=export-menu], [data-act=more-menu], [data-act=types-menu]")) {
+  if (state.menu && !target.closest(".menu, [data-act=network], [data-act=site-menu], [data-act=locate-menu], [data-act=export-menu], [data-act=more-menu], [data-act=types-menu]")) {
     state.menu = null;
     render();
   }

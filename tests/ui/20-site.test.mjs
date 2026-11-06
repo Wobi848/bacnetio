@@ -6,16 +6,25 @@ export default {
   async run({ page, base }) {
     await open(page, base);
     await searchInUi(page);
-    // the sidebar names the network once: the open site was searched where the next search looks
+    // a site without a name shows its network as its name, once: no placeholder, no naming button
     // the kept sites come in after the search, a moment later in some browsers
-    await page.waitForFunction(() => /127\.0\.0\.0\/29/.test(document.querySelector(".side .site-group .site-net")?.textContent ?? ""));
-    // the site is named, never by its network alone; the network is said once, not in the status bar
-    assert.equal(await page.$(".side .site-group .site-now"), null, "no placeholder name");
-    assert.equal(await page.textContent(".side .site-group button[data-act=site-name]"), "Give the site a name");
+    await page.waitForFunction(() => document.querySelector(".side .site-group .site-now")?.textContent === "127.0.0.0/29");
+    assert.equal(await page.$(".side .site-group .site-net"), null, "the network is said once");
+    assert.match(await page.textContent(".side .site-group .side-detail"), /2 devices found/);
     assert.doesNotMatch(await page.textContent(".status"), /127\.0\.0\./);
-    assert.equal(await page.textContent(".side .site-group .site-link"), "Switch site");
-    assert.equal(await page.textContent(".side button[data-act=network]"), "Search settings");
-    assert.equal(await page.$(".side .where"), null);
+    // the site is a select field; the search settings a framed icon with its name for the ear
+    assert.equal(await page.getAttribute(".side .site-switch", "aria-haspopup"), "listbox");
+    assert.equal(await page.getAttribute(".side button[data-act=network]", "aria-label"), "Search settings");
+    assert.equal(await page.getAttribute(".side button[data-act=network]", "title"), "Search settings");
+    assert.equal(await page.$(".side-card .adapter-name"), null, "the adapter is setup, in the search settings");
+    // reached with the keyboard: from the site field one Tab on, Enter opens the settings
+    await page.focus(".side .site-switch");
+    await page.keyboard.press("Tab");
+    assert.equal(await page.evaluate(() => document.activeElement.dataset.act), "network");
+    await page.keyboard.press("Enter");
+    await page.waitForSelector("#adapter");
+    await page.keyboard.press("Escape");
+    await page.waitForSelector("#adapter", { state: "detached" });
     await page.keyboard.press("2");
     await page.waitForSelector("#next");
     assert.equal(await page.textContent("#next"), "Read all devices");

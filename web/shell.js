@@ -5,7 +5,7 @@ import { t } from "./i18n.js";
 import { resizeHandle } from "./panels.js";
 import { pluginTabsHtml } from "./plugins.js";
 import { siteProblems } from "./problems.js";
-import { openSiteOf } from "./sites.js";
+import { openSiteOf, siteName } from "./sites.js";
 
 const ICON = (path) => `<svg class="nav-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
 export const AREA_ICONS = {
@@ -77,49 +77,37 @@ function networkMenu(state) {
   </div>`;
 }
 
-/** The open site was searched where the next search would look: the line below the adapter would
- *  only repeat its network. The server names an adapter's own subnet by the adapter's address. */
-function searchesOpenSite(state) {
-  const site = openSiteOf(state);
-  const scope = searchScope(state);
-  return Boolean(site) && (scope === site.name || scope.startsWith(`${site.name}/`));
+/** The site as a select field: the known sites, the open one marked, the page of all sites last. */
+function siteMenu(state) {
+  if (state.menu !== "sites") return "";
+  const sites = state.sites.map((site, index) => {
+    const name = siteName(site) ?? site.name;
+    const act = site.open ? 'data-act="close-menu"' : `data-act="site-open" data-index="${index}"`;
+    return `<button type="button" class="quiet" role="option" aria-selected="${Boolean(site.open)}" ${act} title="${h(site.name)}"><span class="cut">${h(name)}</span></button>`;
+  }).join("");
+  return `<div class="menu site-choices" role="listbox" aria-label="${t("side.site")}">${sites}
+    <button type="button" class="quiet all-sites" role="option" aria-selected="false" data-act="sites-all">${t("side.allSites")}</button></div>`;
 }
 
-/** A site is kept under the network it was searched in, or under a name given in its file. */
-const NETWORK = /^(BBMD )?\d{1,3}(\.\d{1,3}){3}(\/\d{1,2})?$/;
-
-/** The site's name as the technician gave it, or null while its only name is a network address. */
-function siteName(site) {
-  if (site.title) return site.title;
-  return NETWORK.test(site.name) ? null : site.name;
-}
+const CHEVRON = '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+const SLIDERS_ICON = ICON('<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>');
 
 /**
- * The head of the sidebar (SidebarHead): one card, two parts built alike, each a label, a value, a
- * detail and one tool button: which site this is, and what the search runs on.
+ * The head of the sidebar (SidebarHead): one card with the site as a select field, below it the
+ * network and how the search went, and beside them the search settings. The adapter is setup and
+ * sits in the search settings, not in the card.
  */
 function sideCard(state) {
   const site = openSiteOf(state);
-  const current = state.area === "sites" ? ' aria-current="page"' : "";
-  const name = site ? siteName(site) : t("side.noSite");
-  // a site known only by its network says what to do: give it a name; the network stays below
-  const named = name
-    ? `<span class="side-val site-now" title="${h(name)}">${h(name)}</span>`
-    : `<button type="button" class="quiet site-name" data-act="site-name" title="${t("side.giveNameHint")}">${t("side.giveName")}</button>`;
-  // the network once, below the name; not again when it is the name
+  // a site known only by its network shows that network as its name, said once
+  const name = site ? siteName(site) ?? site.name : t("side.noSite");
   const network = site && site.name !== name ? `<span class="site-net mono">${h(site.name)}</span>` : "";
-  const adapter = state.adapter;
-  // where the next search looks, only while that is not the open site's network
-  const scope = searchesOpenSite(state) ? "" : `<span class="where mono" title="${t("side.nextSearch")}">${h(searchScope(state))}</span>`;
   return `<div class="side-card">
     <section class="side-part site-group" aria-label="${t("side.site")}"><span class="cap">${t("side.site")}</span>
-      ${named}<span class="side-detail">${network}${connection(state)}</span>
-      <a class="quiet site-link" href="#/sites" data-area="sites"${current}>${t("side.switchSite")}</a></section>
-    <section class="side-part net" aria-label="${t("side.searchOn")}"><span class="cap">${t("side.searchOn")}</span>
-      <span class="side-val adapter-name" title="${h(adapter?.description ?? "")}">${h(adapter?.name ?? t("side.noAdapter"))}</span>
-      <span class="side-detail">${adapter ? `<span class="mono adapter-ip">${h(adapter.ip)}</span>` : ""}${scope}</span>
-      <div class="menu-host"><button type="button" class="quiet" data-act="network" aria-expanded="${state.menu === "network"}">${t("side.searchSettings")}</button>
-        ${networkMenu(state)}</div></section>
+      <div class="menu-host site-host"><button type="button" class="quiet site-switch" data-act="site-menu" aria-haspopup="listbox" aria-expanded="${state.menu === "sites"}" title="${h(name)}"><span class="site-now">${h(name)}</span>${CHEVRON}</button>${siteMenu(state)}</div>
+      <div class="side-meta"><span class="side-detail">${network}${connection(state)}</span>
+        <div class="menu-host"><button type="button" class="quiet side-tool" data-act="network" aria-expanded="${state.menu === "network"}" aria-label="${t("side.searchSettings")}" title="${t("side.searchSettings")}">${SLIDERS_ICON}<span class="side-tool-label">${t("side.searchSettings")}</span></button>
+          ${networkMenu(state)}</div></div></section>
   </div>`;
 }
 
@@ -150,13 +138,13 @@ export function sideHtml(state) {
 
 /** On a narrow screen the site, adapter and site search fold away until needed; before the first search they stay open. */
 function headOpen(state) {
-  return state.headOpen || state.scan.state === "idle" || Boolean(state.siteSearch) || state.menu === "network";
+  return state.headOpen || state.scan.state === "idle" || Boolean(state.siteSearch) || state.menu === "network" || state.menu === "sites";
 }
 
 /** The folded head in one line: the site and how many devices answered. Only shown on a narrow screen. */
 function headToggle(state, open) {
   const site = openSiteOf(state);
-  const name = !site ? t("side.noSite") : siteName(site) ?? `${t("side.site")} ${site.name}`;
+  const name = !site ? t("side.noSite") : siteName(site) ?? site.name;
   return `<button type="button" class="quiet head-toggle" data-act="toggle-head" aria-controls="head-more" aria-expanded="${open}" title="${t("head.toggle")}"><span class="cut">${h(name)}</span>${connection(state)}<span class="caret" aria-hidden="true">${open ? "▴" : "▾"}</span></button>`;
 }
 

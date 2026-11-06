@@ -65,3 +65,12 @@ export function viewSites(state) {
     </div>`,
   };
 }
+
+/** A site is kept under the network it was searched in, or under a name given in its file. */
+const NETWORK = /^(BBMD )?\d{1,3}(\.\d{1,3}){3}(\/\d{1,2})?$/;
+
+/** The site's name as the technician gave it, or null while its only name is a network address. */
+export function siteName(site) {
+  if (site.title) return site.title;
+  return NETWORK.test(site.name) ? null : site.name;
+}
