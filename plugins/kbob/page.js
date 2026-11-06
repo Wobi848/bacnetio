@@ -265,6 +265,7 @@ async function start() {
   devices = await ask("devices");
   render();
   await ask("mark", marks());
+  await ask("priorities", texts.priorityNames);
 }
 
 start().catch((error) => {

@@ -5,6 +5,8 @@
 export const TEXTS = {
   en: {
     lead: "Checks devices against the KBOB recommendation BACnet Anwendung V2.0 (2021), by reading only.",
+    /** Table 10 (6.3.2): the use of each priority, shown under its number in bacnetio. */
+    priorityNames: { 1: "Manual life safety", 2: "Auto life safety", 3: "free (owner)", 4: "free (owner)", 5: "Critical equipment", 6: "Minimum on/off", 7: "Manual on site", 8: "Manual from MBE", 9: "free (owner)", 10: "free (owner)", 11: "free (owner)", 12: "Central functions", 13: "free (owner)", 14: "Time programs", 15: "free (owner)", 16: "Automatic mode" },
     checkAll: "Check all devices",
     check: "Check",
     checkAgain: "Check again",
@@ -73,6 +75,7 @@ export const TEXTS = {
   },
   de: {
     lead: "Prüft Geräte gegen die KBOB-Empfehlung BACnet Anwendung V2.0 (2021), nur lesend.",
+    priorityNames: { 1: "Lebensschutz manuell", 2: "Lebensschutz autom.", 3: "frei (Bauherr)", 4: "frei (Bauherr)", 5: "Kritische Anlage", 6: "Min. Ein/Aus", 7: "Manuell ab Anlage", 8: "Manuell ab MBE", 9: "frei (Bauherr)", 10: "frei (Bauherr)", 11: "frei (Bauherr)", 12: "Zentrale Funktionen", 13: "frei (Bauherr)", 14: "Zeitschaltungen", 15: "frei (Bauherr)", 16: "Automatikbetrieb" },
     checkAll: "Alle Geräte prüfen",
     check: "Prüfen",
     checkAgain: "Erneut prüfen",
@@ -141,6 +144,7 @@ export const TEXTS = {
   },
   fr: {
     "lead": "Contrôle les appareils selon la recommandation KBOB BACnet Anwendung V2.0 (2021), en lecture seule.",
+    priorityNames: { 1: "Sécurité manuelle", 2: "Sécurité auto.", 3: "libre (maître d’ouvrage)", 4: "libre (maître d’ouvrage)", 5: "Équipement critique", 6: "Marche/arrêt min.", 7: "Manuel sur site", 8: "Manuel depuis GTB", 9: "libre (maître d’ouvrage)", 10: "libre (maître d’ouvrage)", 11: "libre (maître d’ouvrage)", 12: "Fonctions centrales", 13: "libre (maître d’ouvrage)", 14: "Programmes horaires", 15: "libre (maître d’ouvrage)", 16: "Mode automatique" },
     "checkAll": "Contrôler tous les appareils",
     "check": "Contrôler",
     "checkAgain": "Contrôler à nouveau",
@@ -219,6 +223,7 @@ export const TEXTS = {
   },
   it: {
     "lead": "Controlla i dispositivi secondo la raccomandazione KBOB BACnet Anwendung V2.0 (2021), solo in lettura.",
+    priorityNames: { 1: "Sicurezza manuale", 2: "Sicurezza autom.", 3: "libera (committente)", 4: "libera (committente)", 5: "Impianto critico", 6: "On/off minimo", 7: "Manuale da impianto", 8: "Manuale da BMS", 9: "libera (committente)", 10: "libera (committente)", 11: "libera (committente)", 12: "Funzioni centrali", 13: "libera (committente)", 14: "Programmi orari", 15: "libera (committente)", 16: "Funzionamento autom." },
     "checkAll": "Controlla tutti i dispositivi",
     "check": "Controlla",
     "checkAgain": "Controlla di nuovo",
@@ -297,6 +302,7 @@ export const TEXTS = {
   },
   es: {
     "lead": "Comprueba los dispositivos según la recomendación KBOB BACnet Anwendung V2.0 (2021), solo leyendo.",
+    priorityNames: { 1: "Seguridad manual", 2: "Seguridad autom.", 3: "libre (propietario)", 4: "libre (propietario)", 5: "Equipo crítico", 6: "Marcha/paro mín.", 7: "Manual en planta", 8: "Manual desde BMS", 9: "libre (propietario)", 10: "libre (propietario)", 11: "libre (propietario)", 12: "Funciones centrales", 13: "libre (propietario)", 14: "Programas horarios", 15: "libre (propietario)", 16: "Modo automático" },
     "checkAll": "Comprobar todos los dispositivos",
     "check": "Comprobar",
     "checkAgain": "Comprobar de nuevo",

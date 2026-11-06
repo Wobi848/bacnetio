@@ -9,6 +9,9 @@ export default {
     await openDevice(page, "AHU-01");
     await page.click(".row[data-point]:has-text('Heating valve')");
     await page.waitForSelector(".detail .big");
+    // every priority says what it is for, BACnet's names where the standard gives one
+    assert.equal(await page.textContent(".slots .slot:nth-child(8) .who"), "Manual operator");
+    assert.equal(await page.textContent(".slots .slot:nth-child(3) .who"), "");
     assert.equal(await page.$("#new-value"), null, "no input before the unlock");
     await page.click("text=Change value");
     // in the narrowest details beside the list the question breaks into lines, it does not stick out

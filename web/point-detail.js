@@ -3,9 +3,10 @@
 
 import { figures } from "./analysis.js";
 import { chartHtml, numberText } from "./chart.js";
-import { MULTISTATE, RECORDABLE, TREND_LOG_TYPE, chips, errorStrip, has, isBinary, priorityName, split, stateWord, valueHtml } from "./format.js";
+import { MULTISTATE, RECORDABLE, TREND_LOG_TYPE, chips, errorStrip, has, isBinary, split, stateWord, valueHtml } from "./format.js";
 import { h } from "./html.js";
 import { currentLocale, objectText, statusText, t, valueWord } from "./i18n.js";
+import { priorityLabel } from "./plugins.js";
 import { propertiesBarHtml, propertySectionsHtml } from "./properties.js";
 
 /** Schedule and calendar objects. */
@@ -25,9 +26,11 @@ function slotsHtml(state, object, stateTexts) {
   const cells = slots.map((slot) => {
     const held = slot.value !== null;
     const classes = ["slot", held ? "held" : "", slot === winner ? "win" : "", slot.mine ? "mine" : "", state.writeUnlocked && state.writePriority === slot.priority ? "chosen" : ""].filter(Boolean).join(" ");
-    return `<li class="${classes}"${state.writeUnlocked ? ` data-act="choose-priority" data-priority="${slot.priority}" role="button"` : ""}>
+    const label = priorityLabel(state, slot.priority);
+    const title = label.name ? ` title="${h(label.by ? `${label.name} (${label.by})` : label.name)}"` : "";
+    return `<li class="${classes}"${title}${state.writeUnlocked ? ` data-act="choose-priority" data-priority="${slot.priority}" role="button"` : ""}>
       <span class="n">${slot.priority}</span><span class="v">${held ? h(stateWord(slot.value, stateTexts)) : "–"}</span>
-      <span class="who">${h(slot.mine ? t("you") : held ? priorityName(slot.priority) : "")}</span></li>`;
+      <span class="who">${h(slot.mine ? t("you") : label.name)}</span></li>`;
   }).join("");
   const fallback = object.relinquish_default === null ? "?" : stateWord(object.relinquish_default, stateTexts);
   const sentence = winner
@@ -71,7 +74,7 @@ function writeHtml(state, object, stateTexts) {
     return `<div class="ask"><b>${t("unlock.title")}</b><span>${t("unlock.text")}</span>
       <div class="actions"><button type="button" data-act="unlock">${t("unlock.allow")}</button><button type="button" class="quiet" data-act="cancel-write">${t("cancel")}</button></div></div>`;
   }
-  const priorities = PRIORITIES.map((priority) => `<option value="${priority}"${priority === state.writePriority ? " selected" : ""}>${[priority, priorityName(priority)].filter(Boolean).join(" · ")}</option>`).join("");
+  const priorities = PRIORITIES.map((priority) => `<option value="${priority}"${priority === state.writePriority ? " selected" : ""}>${[priority, priorityLabel(state, priority).name].filter(Boolean).join(" · ")}</option>`).join("");
   const priority = object.commandable ? `<label>${t("priority")}<select id="priority">${priorities}</select></label>` : "";
   if (state.confirm) return confirmHtml(state, stateTexts);
   // someone else's value, chosen in the grid: the plant may depend on it, hence the question

@@ -55,7 +55,9 @@ uses is described in [docs/api.md](docs/api.md).
 
 To try it without a plant: `cargo run --example simulated_plant -- <IP>` starts a simulated device
 on that address; `simulated_controller` is one named by paths with about a hundred points, and
-`simulated_kbob` an automation station that meets the KBOB profile AS-CH in full. They have to run
+`simulated_kbob` an automation station that meets the KBOB profile AS-CH in full, and
+`simulated_commands` a controller whose outputs are held at several priorities, some of them free
+in KBOB table 10. They have to run
 on another machine or network namespace than bacnetio, because two programs on one host cannot
 both use port 47808 properly; the browser tests run them on loopback addresses with port 47809.
 

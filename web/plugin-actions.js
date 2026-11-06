@@ -15,6 +15,8 @@ const MOST_MARK_CHARS = 200;
 /** A mark's own word on its badge: short, as the badge sits beside a name. */
 const MOST_LABEL_CHARS = 16;
 const MARK_STATES = ["ok", "bad"];
+/** A priority's name sits under its number in a narrow cell. */
+const MOST_PRIORITY_NAME_CHARS = 24;
 
 export async function loadPlugins() {
   try {
@@ -61,7 +63,7 @@ export async function switchPlugin(id, on) {
     toast(error.message, true);
   }
   // a plugin switched off takes its marks with it
-  if (!on) delete state.marks[id];
+  if (!on) forget(id);
   await loadPlugins();
   render();
 }
@@ -72,7 +74,7 @@ export async function removePlugin(id) {
   } catch (error) {
     toast(error.message, true);
   }
-  delete state.marks[id];
+  forget(id);
   state.pluginRemoving = null;
   await loadPlugins();
   render();
@@ -111,6 +113,23 @@ function setMarks(id, marks) {
   return state.marks[id].length;
 }
 
+/** What a plugin put into bacnetio's lists goes with it. */
+function forget(id) {
+  delete state.marks[id];
+  delete state.priorityNames[id];
+}
+
+/** Replaces the plugin's names for priorities 1 to 16; answers how many it took. */
+function setPriorityNames(id, names) {
+  if (!names || typeof names !== "object" || Array.isArray(names)) throw new Error("names must be an object of priority and name");
+  const taken = Object.entries(names)
+    .filter(([priority, name]) => /^([1-9]|1[0-6])$/.test(priority) && typeof name === "string" && name.trim())
+    .map(([priority, name]) => [Number(priority), name.trim().slice(0, MOST_PRIORITY_NAME_CHARS)]);
+  state.priorityNames[id] = Object.fromEntries(taken);
+  render();
+  return taken.length;
+}
+
 function download(name, text) {
   const link = document.createElement("a");
   link.href = URL.createObjectURL(new Blob([String(text)], { type: "text/plain;charset=utf-8" }));
@@ -135,6 +154,7 @@ const QUESTIONS = {
   save: (id, [data]) => api.savePluginStore(id, data),
   download: (id, [name, text]) => download(name, text),
   mark: (id, [marks]) => setMarks(id, marks),
+  priorities: (id, [names]) => setPriorityNames(id, names),
 };
 
 /** A plugin opened by a reload starts at once; it gets answers once bacnetio has its own state back. */
