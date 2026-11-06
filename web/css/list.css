@@ -95,8 +95,9 @@ mark { border-radius: 2px; background: var(--warn-soft); color: inherit; border-
 /* a row moved to by key must not end under the sticky heads */
 .row.points { scroll-margin-top: 72px; }
 /* fixed value and state columns: sized by their content, every row would split its width anew */
-.row.problem { grid-template-columns: minmax(110px, 1fr) minmax(160px, 2fr) 120px 270px; cursor: pointer; }
-.row.problem.watch { grid-template-columns: minmax(110px, 1fr) minmax(160px, 2fr) 120px 240px 104px; }
+/* the name is the data and takes the free width; the state column is as wide as a state chip */
+.row.problem { grid-template-columns: minmax(110px, 1fr) minmax(160px, 3fr) 120px 200px; cursor: pointer; }
+.row.problem.watch { grid-template-columns: minmax(110px, 1fr) minmax(160px, 3fr) 120px 150px 104px; }
 .row.problem.head { cursor: default; }
 .row.problem .chips { flex-wrap: wrap; justify-content: flex-start; align-items: center; }
 .row.problem.watch > button { justify-self: end; }

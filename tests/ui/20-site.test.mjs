@@ -54,6 +54,10 @@ export default {
     await page.click(".row[data-point]:has-text('Supply air temp') button[data-act=quick-watch]");
     await page.keyboard.press("3");
     await page.waitForFunction(() => /\d/.test(document.querySelector(".row.problem:not(.head) .value")?.textContent ?? ""));
+    // the head says what a click does; the name is the data and is not cut beside an empty state
+    assert.match(await page.textContent(".pagehead p"), /Choose one to open it in its device\./);
+    const cut = await page.$$eval(".row.problem:not(.head) .name", (cells) => cells.filter((cell) => cell.scrollWidth > cell.clientWidth).length);
+    assert.equal(cut, 0);
     await page.reload();
     await page.waitForSelector(".row.problem:has-text('Heating valve')");
     await page.fill("#table-filter", "supply");
