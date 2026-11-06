@@ -27,6 +27,8 @@ const ask = (method, ...args) => new Promise((resolve, reject) => {
 
 let texts = TEXTS.en;
 let locale = "en-GB";
+/** As bacnetio writes dates (docs/concept-languages.md). */
+const LOCALES = { en: "en-GB", de: "de-CH", fr: "fr-CH", it: "it-CH", es: "es-ES" };
 const t = (key, values = {}) => String(key.split(".").reduce((part, name) => part?.[name], texts) ?? key)
   .replace(/\{(\w+)\}/g, (_, name) => values[name] ?? "");
 const h = (text) => String(text ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -253,7 +255,7 @@ async function start() {
   texts = TEXTS[context.language] ?? TEXTS.en;
   document.documentElement.lang = context.language;
   for (const [name, value] of Object.entries(context.tokens)) if (value) document.documentElement.style.setProperty(name, value);
-  locale = context.language === "de" ? "de-CH" : "en-GB";
+  locale = LOCALES[context.language] ?? "en-GB";
   document.getElementById("lead").textContent = t("lead");
   kept = { profiles: {}, devices: {}, ...(await ask("load") ?? {}) };
   // the rules chosen; before there was a choice, only AKS could be switched on

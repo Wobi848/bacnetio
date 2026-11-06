@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import { aksProblem, followsAks, splitName } from "../../plugins/kbob/aks.js";
 import { checkDevice, countNames, kbobClass } from "../../plugins/kbob/check.js";
 import { PROPERTIES } from "../../plugins/kbob/rules.js";
+import { TEXTS } from "../../plugins/kbob/texts.js";
 
 const ALL_BITS = (length) => Array.from({ length }, () => true);
 const prop = (property, value = "x", extra = {}) => ({ property, value, error: null, ...extra });
@@ -141,4 +142,19 @@ test("only what the recommendation asks counts: no-units is a unit, outputs need
   device.objects[1].properties.find((p) => p.property === "units").value = "no-units";
   device.objects.push(object(4, 1, "Fan 1", { "active-text": { value: "" }, "inactive-text": { value: "" } }));
   assert.deepEqual(failing(check(device)), []);
+});
+
+test("every language of the plugin has every text, with the same placeholders", () => {
+  const entries = (texts, prefix = "") => Object.entries(texts).flatMap(([key, value]) =>
+    (typeof value === "object" ? entries(value, `${prefix}${key}.`) : [[`${prefix}${key}`, value]]));
+  const english = new Map(entries(TEXTS.en));
+  assert.deepEqual(Object.keys(TEXTS), ["en", "de", "fr", "it", "es"]);
+  for (const [language, texts] of Object.entries(TEXTS)) {
+    const own = new Map(entries(texts));
+    assert.deepEqual([...own.keys()].sort(), [...english.keys()].sort(), language);
+    for (const [key, text] of own) {
+      const holes = (words) => (words.match(/\{\w+\}/g) ?? []).sort().join();
+      assert.equal(holes(text), holes(english.get(key)), `${language} ${key}`);
+    }
+  }
 });
