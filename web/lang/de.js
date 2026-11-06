@@ -189,7 +189,7 @@ export default {
     "locate.open": "Gerät öffnen", "properties.change": "Eigenschaften ändern", "properties.reading": "Alle Eigenschaften werden gelesen …",
     
     release: "Freigeben",
-    "log.wrote": "{value} geschrieben", "log.released": "freigegeben", "log.clock": "Zeit {value} gesendet", "log.atPriority": " auf Priorität {priority}",
+    "log.wrote": "auf {value} gesetzt", "log.released": "freigegeben", "log.clock": "Zeit {value} gesendet", "log.atPriority": " auf Priorität {priority}",
     "log.empty": "Noch nichts geschrieben.",
     device: "Gerät {n}",
     "clock.set": "Geräteuhr auf die Zeit dieses Computers stellen", "clock.done": "Zeit {time} an das Gerät gesendet. Es bestätigt das nicht; prüfe die Gerätezeit.", "clock.confirm": "Die Zeit dieses Computers an das Gerät senden?",

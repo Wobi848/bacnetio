@@ -189,7 +189,7 @@ export default {
     "locate.open": "Open device", "properties.change": "Change properties", "properties.reading": "Reading all properties …",
     
     release: "Release",
-    "log.wrote": "wrote {value}", "log.released": "released", "log.clock": "sent the time {value}", "log.atPriority": " at priority {priority}",
+    "log.wrote": "set to {value}", "log.released": "released", "log.clock": "sent the time {value}", "log.atPriority": " at priority {priority}",
     "log.empty": "Nothing written yet.",
     device: "Device {n}",
     "clock.set": "Set device clock to this computer's time", "clock.done": "Time {time} sent to the device. It does not confirm this; check the device's time.", "clock.confirm": "Send this computer's time to the device?",

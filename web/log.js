@@ -36,13 +36,17 @@ function heldSince(entry) {
   return today ? clock : `${time.toLocaleDateString(currentLocale())} ${clock}`;
 }
 
-/** The value held, with the unit the point list read for it. */
+/** The value written and the unit the point list read for it: ["50", "%"], ["On", ""]. */
+function writtenValue(state, entry) {
+  const unit = state.objectUnits[`${entry.device}:${entry.type}:${entry.instance}`];
+  return [valueWord(entry.value ?? ""), unit && /^-?\d/.test(entry.value ?? "") ? unit : ""];
+}
+
+/** The value held, the unit apart so it can be quieter. */
 function heldValue(state, entry) {
   if (!entry.priority) return "";
-  const unit = state.objectUnits[`${entry.device}:${entry.type}:${entry.instance}`];
-  const value = valueWord(entry.value ?? "");
-  const number = /^-?\d/.test(entry.value ?? "");
-  return `${h(value)}${unit && number ? `<span class="unit">${h(unit)}</span>` : ""}`;
+  const [value, unit] = writtenValue(state, entry);
+  return `${h(value)}${unit ? `<span class="unit">${h(unit)}</span>` : ""}`;
 }
 
 function heldRows(state) {
@@ -56,9 +60,9 @@ function heldRows(state) {
   }).join("");
 }
 
-/** What a log entry did, in words: "wrote 50 at priority 8". */
-function logWhat(entry) {
-  const actions = { write: () => t("log.wrote", { value: valueWord(entry.value) }), release: () => t("log.released"), clock: () => t("log.clock", { value: entry.value }), property: () => t("log.property", { value: entry.value }), command: () => entry.value ?? "" };
+/** What a log entry did, in words: "set to 50 % at priority 8". */
+function logWhat(state, entry) {
+  const actions = { write: () => t("log.wrote", { value: writtenValue(state, entry).filter(Boolean).join(" ") }), release: () => t("log.released"), clock: () => t("log.clock", { value: entry.value }), property: () => t("log.property", { value: entry.value }), command: () => entry.value ?? "" };
   const what = actions[entry.action]?.() ?? entry.action;
   return entry.priority ? what + t("log.atPriority", { priority: entry.priority }) : what;
 }
@@ -70,7 +74,7 @@ function logRows(state) {
     const time = new Date(entry.time * 1000).toLocaleTimeString(currentLocale());
     const refused = entry.error ? `<span class="chip err">${t("log.refusedShort")}</span>` : "";
     const reason = entry.error ? `<span class="desc reason" title="${h(entry.error)}">${h(entry.error)}</span>` : "<span></span>";
-    return `<div class="row log${entry.error ? " refused" : ""}"><span class="when">${h(time)}</span><span class="name">${h(pointName(state, entry))}<span class="desc">${h([pointPlace(state, entry), logWhat(entry)].filter(Boolean).join(" · "))}</span></span>
+    return `<div class="row log${entry.error ? " refused" : ""}"><span class="when">${h(time)}</span><span class="name">${h(pointName(state, entry))}<span class="desc">${h([pointPlace(state, entry), logWhat(state, entry)].filter(Boolean).join(" · "))}</span></span>
       <span class="chips">${refused}</span>${reason}</div>`;
   }).join("");
 }

@@ -178,7 +178,7 @@ export default {
     "locate.open": "Abrir el dispositivo", "properties.change": "Cambiar propiedades", "properties.reading": "Leyendo todas las propiedades …",
     
     release: "Liberar",
-    "log.wrote": "{value} escrito", "log.released": "liberado", "log.clock": "hora {value} enviada", "log.atPriority": " con prioridad {priority}",
+    "log.wrote": "puesto a {value}", "log.released": "liberado", "log.clock": "hora {value} enviada", "log.atPriority": " con prioridad {priority}",
     "log.empty": "Aún no se ha escrito nada.",
     device: "Dispositivo {n}",
     "clock.set": "Ajustar el reloj del dispositivo a la hora de este ordenador", "clock.done": "Hora {time} enviada al dispositivo. No lo confirma; compruebe su hora.", "clock.confirm": "¿Enviar la hora de este ordenador al dispositivo?",

@@ -49,7 +49,7 @@ export default {
     assert.match(site["1001"].points.find((point) => point.name === "Heating valve").value, /42\.5/);
     await page.keyboard.press("5");
     await page.waitForSelector(".row.held button[data-act=release-held]");
-    await page.waitForFunction(() => /wrote 42\.5 at priority 8/.test(document.querySelector(".rows").textContent));
+    await page.waitForFunction(() => /set to 42\.5 % at priority 8/.test(document.querySelector(".rows").textContent));
     // the page says how much is held and what to do; the next step names it
     assert.match(await page.textContent(".pagehead .lead"), /^1 value you still hold in the plant\. Release it when you are done\.$/);
     assert.equal(await page.textContent("#next"), "Release the held value");

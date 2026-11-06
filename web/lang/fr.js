@@ -178,7 +178,7 @@ export default {
     "locate.open": "Ouvrir l’appareil", "properties.change": "Modifier des propriétés", "properties.reading": "Lecture de toutes les propriétés …",
     
     release: "Libérer",
-    "log.wrote": "{value} écrit", "log.released": "libéré", "log.clock": "heure {value} envoyée", "log.atPriority": " en priorité {priority}",
+    "log.wrote": "réglé sur {value}", "log.released": "libéré", "log.clock": "heure {value} envoyée", "log.atPriority": " en priorité {priority}",
     "log.empty": "Rien d’écrit pour l’instant.",
     device: "Appareil {n}",
     "clock.set": "Régler l’horloge de l’appareil sur l’heure de cet ordinateur", "clock.done": "Heure {time} envoyée à l’appareil. Il ne le confirme pas ; vérifiez son heure.", "clock.confirm": "Envoyer l’heure de cet ordinateur à l’appareil ?",
