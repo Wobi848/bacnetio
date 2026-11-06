@@ -105,6 +105,17 @@ values in the list", "Read the device again" (place unchanged), "Open or close a
 Built on 6 November 2026 (branch `hierarchy-devices`): below 760 px of list width the vendor column
 goes and stays in the device's details, so the name is shown whole beside ID, address and objects.
 
+### Sidebar (asked for by the maintainer after the devices)
+
+On wide screens the area you are on was filled in the accent colour: a second filled block beside
+the page's next step, on every page. Then, as the design system's *SidebarNav*: `accent-soft`
+ground, a 3 px bar in `brand` on the left, the icon in `accent`, the label in `text` 650. The same
+for *Settings* when it is open. The count of site problems carried a class with no style and showed
+in neutral blue; it takes the warning colour as the count of held values. On a phone the row of
+areas keeps its underline. Nothing moves.
+
+Built on 6 November 2026 (branch `hierarchy-sidebar`).
+
 ### 3. Site problems
 
 The page closest to the rule: device in `muted`, name 600, value right-aligned, a chip only for what
