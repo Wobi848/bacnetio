@@ -71,9 +71,9 @@ count and chips; the point names are then the boldest thing in the list.
 **G. Phone (390 px).** On the point list the page head takes two lines (two buttons), the tools
 five rows (back, search, views on two lines, *Object types*, *Read again · Live values · More …*):
 the first point starts at half the screen. Then: the next step alone in the head as the design
-system says (question 2), back and search in one row, the views in one row that scrolls sideways
-inside itself with their counts, the tools in one row (*Object types* behind *More …* on a phone
-only). The first point starts in the upper third.
+system says (question 2), back and search in one row. The views wrap onto a second line as the
+design system's *SegmentedControl* asks, rather than scrolling sideways and hiding a view; the
+tools take two rows. Built so: the first point starts at about 45 % of the screen instead of half.
 
 ## Page by page
 
@@ -87,8 +87,9 @@ only). The first point starts in the upper third.
 | Tools | at 1366 px two rows: search and views, then *Object types* alone on the left and *Read again · Live values · More …* on the right; *By type · Plant* and *All 22* filled | views not filled (A); *Object types* moves to the right group: *Object types · Read again · Live values · More …*, one quiet row |
 | Details | device facts until a point is chosen | unchanged |
 
-Nothing moves out of the page; *Object types* changes its place in the toolbar only (and goes
-behind *More …* on a phone). Rows of `concept.md` 3.3 touched: "Search points; filter …", "Live
+Nothing moves out of the page; *Object types* changes its place in the toolbar only.
+
+Built on 6 November 2026 (branch `hierarchy-points`). Rows of `concept.md` 3.3 touched: "Search points; filter …", "Live
 values in the list", "Read the device again" (place unchanged), "Open or close all groups".
 
 ### 2. Devices
@@ -150,8 +151,7 @@ the sentence, readable on hover, so the plain sentence leads.
 
 No function goes away. What moves or changes its look, for `concept.md` 3.3:
 
-- *Object types*: within the toolbar of the point list to the right group; on a phone behind
-  *More …*.
+- *Object types*: within the toolbar of the point list to the right group.
 - *Start recording* in the recording's note: the copy goes, the button in the head stays.
 - *Look now*: from filled to tool button, same place.
 - Chosen segments everywhere: from filled to `accent-soft` with `accent` border (question 1).
