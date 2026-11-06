@@ -58,9 +58,12 @@ export default {
     await page.setViewportSize({ width: 1500, height: 900 });
 
     // heads and rows of the point list share their columns, whatever a row holds
-    const tracks = (selector) => page.$eval(selector, (row) => getComputedStyle(row).gridTemplateColumns);
+    // read anew each time, head and rows at once: the page may be drawn again between two reads
+    const tracks = (selector) => page.evaluate((row) => getComputedStyle(document.querySelector(row)).gridTemplateColumns, selector);
+    const shared = () => page.evaluate(() => [".row.points.head", ".row.points:not(.head)"].map((row) => getComputedStyle(document.querySelector(row)).gridTemplateColumns));
     await page.waitForSelector(".row.points:not(.head)");
-    assert.equal(await tracks(".row.points.head"), await tracks(".row.points:not(.head)"));
+    const [headTracks, rowTracks] = await shared();
+    assert.equal(headTracks, rowTracks);
     // a column border dragged: that column wider, in the head and the rows, remembered, and back
     // the value column, wherever it is: a narrow list hides the descriptions
     const value = () => page.$eval(".row.points.head", (head) => [...head.children].filter((cell) => cell.offsetParent).indexOf(head.children[4]));
@@ -72,7 +75,8 @@ export default {
     await page.mouse.move(border.x + border.width / 2 + 50, border.y + border.height / 2, { steps: 5 });
     await page.mouse.up();
     assert.ok(Math.abs(await column() - (before + 50)) <= 2, "value column wider by the drag");
-    assert.equal(await tracks(".row.points.head"), await tracks(".row.points:not(.head)"));
+    const [headAgain, rowAgain] = await shared();
+    assert.equal(headAgain, rowAgain);
     await page.reload();
     await page.waitForSelector(".row.points:not(.head)");
     // the list settles after the reload, as its points come in, and is drawn anew meanwhile: a

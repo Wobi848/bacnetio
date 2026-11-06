@@ -43,7 +43,8 @@ function apply(panel) {
 
 /** The border of a panel, to drag. `panel` is one of side, tree, detail. */
 export function resizeHandle(panel) {
-  return `<div class="resize" data-panel="${panel}" role="separator" aria-orientation="vertical" tabindex="0" title="${t("panel.resize")}" aria-label="${t("panel.resize")}"></div>`;
+  // an id, so the keyboard focus stays on the border when the page is drawn again
+  return `<div class="resize" id="resize-${panel}" data-panel="${panel}" role="separator" aria-orientation="vertical" tabindex="0" title="${t("panel.resize")}" aria-label="${t("panel.resize")}"></div>`;
 }
 
 /** The two borders of the list in the workspace: to the tree on its left, to the details on its right. */
