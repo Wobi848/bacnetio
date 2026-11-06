@@ -10,7 +10,7 @@ export default {
     "col.device": "Device", "col.id": "ID", "col.address": "Address", "col.vendor": "Vendor",
     "col.name": "Name", "col.type": "Type", "col.value": "Value", "col.state": "State",
     "conn.ready": "Ready to search", "conn.searching": "Searching", "conn.failed": "Search failed",
-    "status.ready": "Ready", net: "network", "net.title": "Search settings",
+    "status.ready": "Ready", net: "network", "net.title": "Search settings", "net.lead": "Where bacnetio looks for devices. Changes apply to the next search.",
     "next.releaseOne": "Release the held value", "next.release": "Release {n} held values",
     found: "{n} found", "filter.devices": "Search devices", "locate.short": "Device by IP …",
     "dev.lead": "The BACnet devices in the network. Choose one to see its data points.",

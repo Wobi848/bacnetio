@@ -60,21 +60,26 @@ function adapterField(state) {
   return `<select id="adapter" aria-label="${t("adapter.title")}" title="${h(state.adapter?.description ?? state.adapter?.name ?? "")}">${options}</select>`;
 }
 
-function networkMenu(state) {
+/** Search settings (Dialog): where the search looks, with the adapter; on a dimmed page, focus kept inside. */
+export function searchDialog(state) {
   if (state.menu !== "network") return "";
   const value = (key) => h(state.settings[key]);
-  return `<div class="menu dialog" role="dialog" aria-label="${t("net.title")}">
-    <h3>${t("net.title")}</h3>
-    <label class="row"><span>${t("adapter.title")}</span>${adapterField(state)}</label>
-    <p class="hint">${t("vpn.hint")}</p>
-    <label class="row"><span>${t("subnet")}</span><input id="subnet" class="mono" placeholder="192.168.10.0/24" value="${value("subnet")}"></label>
-    <label class="row"><span>${t("bbmd")}</span><input id="bbmd" class="mono" placeholder="10.20.0.10" value="${value("bbmd")}"></label>
-    <label class="row"><span>${t("port")}</span><input id="port" class="mono" inputmode="numeric" value="${value("port")}"></label>
-    <label class="row"><span>${t("range.from")}</span><input id="id-from" class="mono" inputmode="numeric" placeholder="0" value="${value("idFrom")}"></label>
-    <label class="row"><span>${t("range.to")}</span><input id="id-to" class="mono" inputmode="numeric" placeholder="4194302" value="${value("idTo")}"></label>
-    <p class="hint">${t("range.hint")}</p>
-    <div class="row end"><button type="button" class="quiet" data-act="close-menu">${t("cancel")}</button><button type="button" data-act="find">${t("searchWithSettings")}</button></div>
-  </div>`;
+  const field = (id, label, input) => `<dt><label for="${id}">${label}</label></dt><dd>${input}</dd>`;
+  return `<div class="modal"><div class="modal-box search-settings" role="dialog" aria-modal="true" aria-labelledby="net-title">
+    <h2 id="net-title">${t("net.title")}</h2>
+    <p class="sub">${t("net.lead")}</p>
+    <dl class="facts">
+      ${field("adapter", t("adapter.title"), adapterField(state))}
+      <dd class="hint">${t("vpn.hint")}</dd>
+      ${field("subnet", t("subnet"), `<input id="subnet" class="mono" placeholder="192.168.10.0/24" value="${value("subnet")}">`)}
+      ${field("bbmd", t("bbmd"), `<input id="bbmd" class="mono" placeholder="10.20.0.10" value="${value("bbmd")}">`)}
+      ${field("port", t("port"), `<input id="port" class="mono" inputmode="numeric" value="${value("port")}">`)}
+      ${field("id-from", t("range.from"), `<input id="id-from" class="mono" inputmode="numeric" placeholder="0" value="${value("idFrom")}">`)}
+      ${field("id-to", t("range.to"), `<input id="id-to" class="mono" inputmode="numeric" placeholder="4194302" value="${value("idTo")}">`)}
+      <dd class="hint">${t("range.hint")}</dd>
+    </dl>
+    <div class="acts"><button type="button" class="quiet" data-act="close-menu">${t("cancel")}</button><button type="button" data-act="find">${t("searchWithSettings")}</button></div>
+  </div></div>`;
 }
 
 /** The site as a select field: the known sites, the open one marked, the page of all sites last. */
@@ -83,10 +88,10 @@ function siteMenu(state) {
   const sites = state.sites.map((site, index) => {
     const name = siteName(site) ?? site.name;
     const act = site.open ? 'data-act="close-menu"' : `data-act="site-open" data-index="${index}"`;
-    return `<button type="button" class="quiet" role="option" aria-selected="${Boolean(site.open)}" ${act} title="${h(site.name)}"><span class="cut">${h(name)}</span></button>`;
+    return `<button type="button" id="site-choice-${index}" class="quiet" role="option" aria-checked="${Boolean(site.open)}" ${act} title="${h(site.name)}"><span class="cut">${h(name)}</span></button>`;
   }).join("");
   return `<div class="menu site-choices" role="listbox" aria-label="${t("side.site")}">${sites}
-    <button type="button" class="quiet all-sites" role="option" aria-selected="false" data-act="sites-all">${t("side.allSites")}</button></div>`;
+    <hr role="separator"><button type="button" id="site-choice-all" class="quiet all-sites" role="option" aria-checked="false" data-act="sites-all">${t("side.allSites")}</button></div>`;
 }
 
 const CHEVRON = '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
@@ -104,10 +109,9 @@ function sideCard(state) {
   const network = site && site.name !== name ? `<span class="site-net mono">${h(site.name)}</span>` : "";
   return `<div class="side-card">
     <section class="side-part site-group" aria-label="${t("side.site")}"><span class="cap">${t("side.site")}</span>
-      <div class="menu-host site-host"><button type="button" class="quiet site-switch" data-act="site-menu" aria-haspopup="listbox" aria-expanded="${state.menu === "sites"}" title="${h(name)}"><span class="site-now">${h(name)}</span>${CHEVRON}</button>${siteMenu(state)}</div>
+      <div class="menu-host site-host"><button type="button" id="site-switch" class="quiet site-switch" data-act="site-menu" aria-haspopup="listbox" aria-expanded="${state.menu === "sites"}" title="${h(name)}"><span class="site-now">${h(name)}</span>${CHEVRON}</button>${siteMenu(state)}</div>
       <div class="side-meta"><span class="side-detail">${network}${connection(state)}</span>
-        <div class="menu-host"><button type="button" class="quiet side-tool" data-act="network" aria-expanded="${state.menu === "network"}" aria-label="${t("side.searchSettings")}" title="${t("side.searchSettings")}">${SLIDERS_ICON}<span class="side-tool-label">${t("side.searchSettings")}</span></button>
-          ${networkMenu(state)}</div></div></section>
+        <button type="button" id="search-settings" class="quiet side-tool" data-act="network" aria-expanded="${state.menu === "network"}" aria-label="${t("side.searchSettings")}" title="${t("side.searchSettings")}">${SLIDERS_ICON}<span class="side-tool-label">${t("side.searchSettings")}</span></button></div></section>
   </div>`;
 }
 

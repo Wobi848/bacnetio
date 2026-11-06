@@ -74,6 +74,18 @@ label.button:hover { background: var(--accent-soft); border-color: var(--accent)
 .modal-box { display: grid; gap: 10px; width: min(520px, 100%); max-height: 90vh; overflow: auto; padding: 20px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: var(--shadow); }
 .modal-box h2 { font-size: 17px; }
 .modal-box ul { margin: 0; padding-left: 18px; }
+.modal-box .sub { margin: 0; color: var(--muted); }
+.modal-box .acts { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+/* the dialogs float above the page, outside the sidebar and its dark colours */
+.dialog-host { display: contents; }
+.search-settings .facts { grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 8px 10px; }
+.search-settings .facts dd input, .search-settings .facts dd select { width: 100%; }
+.search-settings .facts dd.hint { grid-column: 2; margin-top: -4px; }
+@media (max-width: 560px) {
+  .search-settings .facts { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .search-settings .facts dd { margin-bottom: 6px; }
+  .search-settings .facts dd.hint { grid-column: 1; }
+}
 
 /* ---------------------------------------------------------------- Charts */
 

@@ -110,7 +110,7 @@ const actions = {
   locate: () => locate(),
   network: () => { state.menu = state.menu === "network" ? null : "network"; render(); document.getElementById("subnet")?.focus(); },
   "locate-menu": () => { state.menu = state.menu === "locate" ? null : "locate"; render(); document.getElementById("locate-address")?.focus(); },
-  "close-menu": () => { state.menu = null; render(); },
+  "close-menu": () => closeMenu(),
   "toggle-head": () => { state.headOpen = !state.headOpen; render(); },
   // the adapter is chosen in the search settings: open them with the choice in focus
   "focus-adapter": () => {
@@ -185,7 +185,7 @@ const actions = {
   "site-menu": () => {
     state.menu = state.menu === "sites" ? null : "sites";
     render();
-    document.querySelector(".site-choices [aria-selected=true], .site-choices button")?.focus();
+    document.querySelector(".site-choices [aria-checked=true], .site-choices button")?.focus();
     if (state.menu === "sites") loadSites();
   },
   // the page of all sites; a site without a name has its name field ready to type there
@@ -336,7 +336,7 @@ function toggleGroup(row) {
 
 document.addEventListener("click", (event) => {
   const target = event.target;
-  if (state.menu && !target.closest(".menu, [data-act=network], [data-act=site-menu], [data-act=locate-menu], [data-act=export-menu], [data-act=more-menu], [data-act=types-menu]")) {
+  if (state.menu && !target.closest(".menu, .modal-box, [data-act=network], [data-act=site-menu], [data-act=locate-menu], [data-act=export-menu], [data-act=more-menu], [data-act=types-menu]")) {
     state.menu = null;
     render();
   }
@@ -451,10 +451,49 @@ window.bacnetioBack = () => {
   return JSON.stringify({ stepped: true, held: state.held.length });
 };
 
+/** The button each menu or dialog opens from: the focus goes back to it when it closes. */
+const OPENERS = { sites: "site-menu", network: "network", export: "export-menu", more: "more-menu", types: "types-menu", locate: "locate-menu" };
+
+/** Up and down move through a list menu, as through the rows of a list. */
+function moveInMenu(event) {
+  const menu = event.target.closest(".menu[role=listbox], .menu[role=menu]");
+  if (!menu || (event.key !== "ArrowDown" && event.key !== "ArrowUp")) return false;
+  const items = [...menu.querySelectorAll("button, a")];
+  const at = items.indexOf(document.activeElement);
+  const next = event.key === "ArrowDown" ? Math.min(at + 1, items.length - 1) : Math.max(at - 1, 0);
+  items[next]?.focus();
+  return true;
+}
+
+/** Tab stays inside an open dialog. */
+function keepInDialog(event) {
+  const box = document.querySelector(".modal-box");
+  if (!box || event.key !== "Tab") return false;
+  const fields = [...box.querySelectorAll("button, select, input, a[href]")].filter((field) => !field.disabled);
+  const [first, last] = [fields[0], fields[fields.length - 1]];
+  if (!box.contains(document.activeElement)) first?.focus();
+  else if (event.shiftKey && document.activeElement === first) last.focus();
+  else if (!event.shiftKey && document.activeElement === last) first.focus();
+  else return false;
+  return true;
+}
+
+/** Closes the open menu or dialog and gives the focus back to the button that opened it. */
+function closeMenu() {
+  const opener = OPENERS[state.menu];
+  state.menu = null;
+  render();
+  if (opener) document.querySelector(`[data-act="${opener}"]`)?.focus();
+}
+
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
-    closeTopmost();
-    render();
+    if (state.menu) closeMenu();
+    else if (closeTopmost()) render();
+    return;
+  }
+  if (moveInMenu(event) || keepInDialog(event)) {
+    event.preventDefault();
     return;
   }
   if (event.key === "Enter" && typing()) {

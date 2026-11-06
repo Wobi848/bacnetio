@@ -124,12 +124,13 @@ button.chip { height: 22px; border: 0; cursor: pointer; }
   .side-card .side-tool { width: auto; padding: 0 10px; }
   .side-card .side-tool-label { display: inline; }
 }
-.menu.site-choices { display: grid; gap: 2px; min-width: 240px; max-width: 340px; padding: 6px; }
-.menu.site-choices button { justify-content: flex-start; min-width: 0; border-color: transparent; background: none; font-weight: 600; }
-.menu.site-choices button:hover { border-color: var(--accent); background: var(--accent-soft); }
-.menu.site-choices button[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); }
+/* Menu: items 32 px, a sunken hover, the chosen site light and bold; all sites below a hairline */
+.menu.site-choices { display: grid; gap: 2px; min-width: 100%; max-width: 340px; padding: 6px; border-radius: 10px; }
+.menu.site-choices button { height: 32px; justify-content: flex-start; min-width: 0; padding: 0 10px; border-color: transparent; border-radius: 6px; background: none; font-weight: 500; }
+.menu.site-choices button:hover { background: var(--sunken); }
+.menu.site-choices button[aria-checked="true"] { background: var(--accent-soft); font-weight: 700; }
 .menu.site-choices .cut { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.menu.site-choices .all-sites { margin-top: 4px; border-color: var(--line-strong); }
+.menu.site-choices hr { width: 100%; margin: 4px 0; border: 0; border-top: 1px solid var(--line); }
 
 /* A newer release is out: a link to its page, below the site */
 /* filled green, apart from the blue of the chosen area: it has to catch the eye */

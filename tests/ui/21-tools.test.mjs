@@ -97,7 +97,7 @@ export default {
     await page.waitForFunction(() => document.querySelector(".site-group .site-now")?.textContent === "Sample School");
     // another kept site opens from the site field, the open one marked
     await page.click(".site-switch");
-    assert.match(await page.textContent(".site-choices [aria-selected=true]"), /Sample School/);
+    assert.match(await page.textContent(".site-choices [aria-checked=true]"), /Sample School/);
     await page.click(".site-choices button:has-text('Plant B')");
     await page.waitForFunction(() => document.querySelector(".site-group .site-now")?.textContent === "Plant B");
     // its devices follow the name, a moment later in some browsers

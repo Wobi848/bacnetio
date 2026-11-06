@@ -10,7 +10,7 @@ export default {
     "col.device": "Dispositivo", "col.id": "ID", "col.address": "Indirizzo", "col.vendor": "Produttore",
     "col.name": "Nome", "col.type": "Tipo", "col.value": "Valore", "col.state": "Stato",
     "conn.ready": "Pronto per cercare", "conn.searching": "Ricerca in corso", "conn.failed": "Ricerca non riuscita",
-    "status.ready": "Pronto", net: "rete", "net.title": "Impostazioni di ricerca",
+    "status.ready": "Pronto", net: "rete", "net.title": "Impostazioni di ricerca", "net.lead": "Dove bacnetio cerca i dispositivi. Le modifiche valgono dalla prossima ricerca.",
     "next.releaseOne": "Rilasciare il valore mantenuto", "next.release": "Rilasciare {n} valori forzati",
     found: "{n} trovati", "filter.devices": "Cercare dispositivi", "locate.short": "Dispositivo per IP …",
     "dev.lead": "I dispositivi BACnet della rete. Sceglierne uno per vedere i suoi punti dati.",

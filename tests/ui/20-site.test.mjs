@@ -22,9 +22,22 @@ export default {
     await page.keyboard.press("Tab");
     assert.equal(await page.evaluate(() => document.activeElement.dataset.act), "network");
     await page.keyboard.press("Enter");
-    await page.waitForSelector("#adapter");
+    // a dialog on a dimmed page: the focus goes in, Tab keeps it inside, Escape gives it back
+    await page.waitForSelector(".modal .search-settings #adapter");
+    assert.equal(await page.evaluate(() => document.activeElement.id), "subnet");
+    for (let step = 0; step < 12; step += 1) await page.keyboard.press("Tab");
+    assert.ok(await page.evaluate(() => document.querySelector(".modal-box").contains(document.activeElement)), "Tab stays in the dialog");
     await page.keyboard.press("Escape");
     await page.waitForSelector("#adapter", { state: "detached" });
+    assert.equal(await page.evaluate(() => document.activeElement.dataset.act), "network");
+    // the site field: the arrows move through the sites, Escape closes it and gives the focus back
+    await page.click(".side .site-switch");
+    assert.equal(await page.evaluate(() => document.activeElement.getAttribute("aria-checked")), "true");
+    await page.keyboard.press("ArrowDown");
+    assert.equal(await page.evaluate(() => document.activeElement.dataset.act), "sites-all");
+    await page.keyboard.press("Escape");
+    assert.equal(await page.$(".site-choices"), null);
+    assert.equal(await page.evaluate(() => document.activeElement.dataset.act), "site-menu");
     await page.keyboard.press("2");
     await page.waitForSelector("#next");
     assert.equal(await page.textContent("#next"), "Read all devices");

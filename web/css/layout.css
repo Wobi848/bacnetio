@@ -116,6 +116,8 @@
   .side .settings-link[aria-current="page"], .side .settings-link[aria-current="page"]:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
   .side .settings-link[aria-current="page"] .nav-i { color: var(--accent); }
   .side .menu { left: calc(100% + 8px); top: 0; }
+  /* the site list opens under its field, as wide as it */
+  .side .menu.site-choices { left: 0; top: calc(100% + 4px); }
 }
 
 /* from 1200 px the details stand beside the list instead of covering it */
