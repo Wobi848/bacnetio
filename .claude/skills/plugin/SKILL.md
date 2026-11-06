@@ -12,12 +12,22 @@ arrive with the plugin system; where they are missing, the plugin system is not 
 
 - **One HTML file** `<id>.bacnetio-plugin.html` with its script, style and data inside; it loads
   nothing from elsewhere.
+- The project's plugins live in `plugins/<id>/`: `page.html` with the description and
+  `<script src="x.js"></script>` lines, the logic as modules (`check.js` without I/O, testable with
+  `node --test`). `node plugins/build.mjs [folder]` puts each into its one file (default
+  `target/plugins/`); a release carries it beside the programs.
+- **The build puts every file of a plugin into one scope** (imports go, `export` goes): two files
+  declaring the same top-level name break the plugin, and it shows nothing.
+  `tests/plugins/build.test.js` parses every built file; give names that could clash an own prefix.
 - Its description as the first `<script type="application/json" id="bacnetio-plugin">` with
   `id`, `name`, `version`, `api: 1`, optional `description`, within the limits in `docs/plugins.md`.
 - It reads what bacnetio reads and marks devices and objects through the plugin API. It cannot
   write to the plant, reach bacnetio's server or the user's files; do not look for ways around
   that, and report any you find as a security bug.
-- Its texts in all five languages, like bacnetio's (skill new-text).
+- Its texts in the plugin (`texts.js`), at least English and German; another interface language
+  falls back to English until someone from the trade has read a translation (AGENTS.md: a language
+  enters only after review). The KBOB plugin has en and de.
+- Rules taken from a standard or recommendation (KBOB): skill standards.
 - Tests: logic in `tests/plugins/*.test.js`, the installed plugin in the browser tests
   (`tests/ui/34-plugins.test.mjs`, `36-kbob.test.mjs`), against a simulator with matching data
   (`examples/simulated_kbob.rs`; skill simulator).

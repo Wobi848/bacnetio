@@ -18,7 +18,7 @@ description: "Add or change a route of bacnetio's local web API in src/server/, 
 - **Check input at the server**, not only in the page: ranges, finite numbers (`NaN`, `inf`), empty
   fields, IDs in range; answer `400` in words.
 - **Errors** as `ApiError` with the status from `docs/api.md` (400 wrong request, 403 foreign page,
-  409 not possible now, 502 the device did not); English text, and a pattern plus texts in every
+  404 nothing of that name, 409 not possible now, 502 the device did not); English text, and a pattern plus texts in every
   language when the interface shows it (skill new-text).
 - **Anything that changes a device** goes through `writing::journaled` (or records a log entry), so
   it lands in the log refused or not, is covered by "held by you" and the leaving check when it
