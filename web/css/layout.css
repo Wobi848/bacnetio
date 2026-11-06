@@ -109,12 +109,13 @@
   :root[data-background="warm"] .side { --surface: #1a1610; --sunken: #2a241b; --line: #3a3226; --line-strong: #7a6d5a; --text: #f1ece4; --muted: #b9ae9d; color: #f1ece4; }
   .side .tabs { flex: 1; min-height: 0; flex-direction: column; overflow-y: auto; }
   .side .tabs a { height: 38px; color: var(--text); font-weight: 500; }
-  /* the page you are on: filled, seen at once */
-  .side .tabs a[aria-current="page"], .side .tabs a[aria-current="page"]:hover { color: var(--accent-ink); background: var(--accent); box-shadow: none; font-weight: 650; }
-  .side .tabs a[aria-current="page"] .nav-i { color: var(--accent-ink); }
-  .side .tabs a[aria-current="page"] .n { background: rgba(10, 18, 48, .18); color: var(--accent-ink); }
+  /* the page you are on: a bar, a light ground and the icon in the accent, seen at once but not
+     filled, so the page's next step stays the one filled thing (SidebarNav, concept-hierarchy.md) */
+  .side .tabs a[aria-current="page"], .side .tabs a[aria-current="page"]:hover { color: var(--text); background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--brand); font-weight: 650; }
+  .side .tabs a[aria-current="page"] .nav-i { color: var(--accent); }
   .side .settings-link { width: 100%; justify-content: flex-start; }
-  .side .settings-link[aria-current="page"], .side .settings-link[aria-current="page"]:hover { background: var(--accent); color: var(--accent-ink); }
+  .side .settings-link[aria-current="page"], .side .settings-link[aria-current="page"]:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
+  .side .settings-link[aria-current="page"] .nav-i { color: var(--accent); }
   .side .menu { left: calc(100% + 8px); top: 0; }
 }
 

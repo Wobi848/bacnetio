@@ -21,7 +21,8 @@ const SETTINGS_ICON = ICON('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7
 
 function badge(state, area) {
   if (area === "workspace") return `<span class="n">${state.scan.devices?.length || ""}</span>`;
-  if (area === "problems") return `<span class="n err">${siteProblems(state).length || ""}</span>`;
+  // a count that means a problem in the warning colour, as the held values (SidebarNav)
+  if (area === "problems") return `<span class="n warn">${siteProblems(state).length || ""}</span>`;
   if (area === "watch") return `<span class="n">${state.watch.length || ""}</span>`;
   if (area === "recording") return `<span class="n">${state.recording?.running ? "●" : ""}</span>`;
   if (area === "log") return `<span class="n warn">${state.held.length || ""}</span>`;

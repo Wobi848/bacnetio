@@ -18,6 +18,8 @@ export default {
     await page.waitForSelector(".row.problem:has-text('Out of service')", { timeout: 60000 });
     // a table with heads like the point list, sorted by a click on one
     assert.match(await page.textContent(".row.problem.head"), /Device[\s\S]*Name[\s\S]*Value[\s\S]*State/);
+    // the count of problems in the sidebar says it is about problems: in the warning colour
+    assert.ok(await page.isVisible(".tabs a[data-area=problems] .n.warn"));
     await page.click(".row.problem.head button[data-key=device]");
     await page.click(".row.problem.head button[data-key=device]");
     const devices = await page.$$eval(".row.problem:not(.head) > :first-child", (cells) => cells.map((cell) => cell.textContent));

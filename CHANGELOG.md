@@ -15,6 +15,7 @@ All notable changes for users of bacnetio.
 - While a value is held, *Search again* stays beside *Release the held value* at the top, instead of giving way to it.
 - The data points page has a clear order (`docs/concept-hierarchy.md`): only the next step is filled; a chosen view or toggle everywhere is a framed light blue instead of a second filled button. The page head says what to do, with the count ("22 data points, 1 of them held by you. Choose one to see its details."). Group heads are quieter than the point names, a row's state and its watch and record buttons stay on one line, and *Object types* sits with the other tools on the right. On a phone the way back and the search share a row, and *Search again* moves from the page head into the toolbar.
 - The devices page follows the same order: the device name takes the room first and is shown whole, the vendor gives way in a narrow list (it stays in the device's details); in the tree the device names are a step lighter than in the list, the chosen one bold. A note on what bacnetio already worked around (no answer to the broadcast, devices asked directly) is a blue note now, not an orange warning; orange stays for what the user must act on.
+- The sidebar marks the area you are on with a bar, a light ground and the icon in the accent colour instead of a filled block, so the page's next step stays the one filled button. The count of site problems is in the warning colour, like the count of held values.
 - The note of a new version is filled green, so it catches the eye.
 
 ### Fixed
