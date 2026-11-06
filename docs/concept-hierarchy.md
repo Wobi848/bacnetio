@@ -102,6 +102,9 @@ values in the list", "Read the device again" (place unchanged), "Open or close a
 | Notes | two orange strips above the list, also the one that says bacnetio worked around the problem | a note that bacnetio solved by itself (no answer to broadcast, devices asked directly) as an info strip (`.info`), orange only where the user must act |
 | Tools | *Device by IP …*, *Export …* | unchanged (quiet) |
 
+Built on 6 November 2026 (branch `hierarchy-devices`): below 760 px of list width the vendor column
+goes and stays in the device's details, so the name is shown whole beside ID, address and objects.
+
 ### 3. Site problems
 
 The page closest to the rule: device in `muted`, name 600, value right-aligned, a chip only for what
