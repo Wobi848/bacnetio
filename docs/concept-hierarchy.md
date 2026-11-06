@@ -135,6 +135,12 @@ chosen in *Search settings* now, where the other search settings are (an empty d
 offers it directly). The dark sidebar gets a card ground of its own in every background. The
 search stays below the card, on its own.
 
+Last, on the *SidebarHead* as it stands now (6 November): one card with one part. *Site* as a
+select field (the name in 15 px bold, or the network while the site has none; it opens the known
+sites and *All sites …*, where a site without a name has its name field ready), below it the
+network once and the state, beside them *Search settings* as a framed sliders button (its word
+joins it from 280 px of card width). The adapter is setup and sits only in *Search settings*.
+
 ### 3. Site problems
 
 The page closest to the rule: device in `muted`, name 600, value right-aligned, a chip only for what
@@ -174,6 +180,23 @@ Nothing moves out. Row of 3.3: "Recording: add, interval, start, stop, remove, c
 | Tools | *Leave the site* alone in the toolbar | unchanged |
 
 The missing space is a bug and gets fixed with this page. Nothing moves.
+
+Built on 6 November 2026 after the design system's *PageHeld* (branch `hierarchy-held`): the head
+says how many values are held and what to do, the next step names how many it releases (*Release
+the held value*, *Release 3 held values*); held rows: the point's name 600, below it device, object
+and *held since*, the value with its unit, the priority as a `warn` chip, *Release*; the log newest
+first with a chip only for a refused write and the device's reason beside it. *Export log (CSV)*
+is new (`GET /api/log.csv`). Functions of the page, each with its test:
+
+| Function | Where | Test |
+|---|---|---|
+| See what is held, also after a restart | *Held now* | `ui/03-write`, `storage.rs` |
+| Release one held value, only while the slot is still ours | *Release* per row | `ui/35-release-check` |
+| Release all | the page's next step | `ui/03-write` |
+| Every write, release, clock and command, newest first | *Written* | `ui/03-write`, `ui/09-device`, `ui/22-commands` |
+| A refused write with the reason | *Written*, chip *Refused* | `ui/21-tools` |
+| The log as CSV | *Export log (CSV)* | `ui/03-write`, `export.rs` |
+| Leave the site, asked first, releasing what is held | *Leave the site* | `ui/15-leaving`, `ui/20-site` |
 
 ### 7. Settings
 
