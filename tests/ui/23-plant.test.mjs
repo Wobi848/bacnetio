@@ -1,12 +1,28 @@
-import { assert, open, openDevice, searchInUi } from "./helpers.mjs";
+import { spawn } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { SIM_PORT, assert, open, openDevice, searchInUi } from "./helpers.mjs";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 // The plant view a device carries itself (Structured View objects) stands in the tree, a branch
 // shows its points, nothing is lost, and a device without such objects keeps the grouping by names.
 export default {
   name: "Plant view from Structured View objects",
   async run({ page, base }) {
+    // beside the plant a controller with neither a plant view nor path names
+    const exe = process.platform === "win32" ? ".exe" : "";
+    const flat = spawn(path.join(root, `target/debug/examples/simulated_commands${exe}`), ["127.0.0.4", String(SIM_PORT)], { stdio: "ignore" });
+    try {
+      await this.check(page, base);
+    } finally {
+      flat.kill();
+    }
+  },
+
+  async check(page, base) {
     await open(page, base);
-    await searchInUi(page);
+    await searchInUi(page, 3);
     await openDevice(page, "AHU-01");
     await page.click("button[data-act=tree-view][data-view=plant]");
     await page.waitForSelector(".node[data-node='view:1']", { timeout: 20000 });
@@ -41,5 +57,10 @@ export default {
     assert.equal(await page.$$eval(".tree .node[data-node^='view:']", (rows) => rows.length), 0);
     const parts = await page.$$eval(".tree .node[data-node^='part:'] .label", (cells) => cells.map((cell) => cell.textContent));
     assert.ok(parts.includes("SY_Datsi.01"), parts.join(", "));
+    // a device read but without a plant view or path names says so in the plant tree, whole
+    await openDevice(page, "Commands-01");
+    const note = page.locator(".tree .tree-note");
+    assert.match(await note.textContent(), /^No plant parts: .* All its objects are under By type\.$/);
+    assert.ok(await note.evaluate((element) => element.scrollWidth <= element.clientWidth), "not cut off");
   },
 };

@@ -140,7 +140,7 @@ export default {
     "port.taken": "another program uses {address}",
     "list.all": "Show all {n} rows", "list.more": "… {n} more",
     "more": "More …", "live.off": "Live values", "live.on": "Live values on", "live.hint": "Reads the rows on screen every 5 s.", "groups.open": "Open all groups", "groups.close": "Close all groups",
-    "tree.plantView": "Plant", "tree.plantEmpty": "Plant parts show once the device is read.",
+    "tree.plantView": "Plant", "tree.plantNone": "No plant parts: the device has no plant view of its own, and its names hold no path. All its objects are under By type.", "tree.plantEmpty": "Plant parts show once the device is read.",
     "rec.all": "All", "rec.last60": "60 min", "rec.last15": "15 min", "rec.last5": "5 min", "rec.zoomOut": "Zoom out", "rec.compare": "Compare", "rec.oneByOne": "One by one", "rec.clear": "Clear values", "rec.figures": "Figures in this window", "rec.last": "Last", "rec.low": "Lowest", "rec.high": "Highest", "rec.mean": "Mean / on", "rec.samples": "Samples", "rec.gaps": "{n} without answer", "rec.changes": "{n} changes", "rec.removeShort": "Remove", "rec.state": "States", "rec.noUnit": "Without unit",
     "liveMode.title": "Value updates", "liveMode.auto": "COV if offered", "liveMode.read": "Ask every 2 s",
     "phase.details": "Reading the names of the devices",

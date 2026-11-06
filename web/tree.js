@@ -36,6 +36,9 @@ const nodeHtml = (level, active, attributes, label, end = "") =>
 const headingHtml = (label, end = "", title = "") =>
   `<div class="node level-2 heading" role="presentation"${title ? ` title="${h(title)}"` : ""}><span class="label">${label}</span><span class="end">${end}</span></div>`;
 
+/** Why a device shows no plant parts: a sentence that wraps, not a heading that is cut off. */
+const plantNoteHtml = (text) => `<p class="node level-2 tree-note" role="presentation">${h(text)}</p>`;
+
 /** One plant part or view: its marks, what it holds, and what sits on another device. */
 function partHtml(state, device, key, level, title, items, extra = "") {
   const isOpen = state.device?.instance === device.instance;
@@ -74,7 +77,7 @@ function childrenHtml(state, device, points) {
   else for (const [type, count] of Object.entries(device.objects?.types ?? {})) if (Number(type) !== DEVICE_TYPE) counts.set(Number(type), count);
   const types = [...counts].sort(([first], [second]) => first - second).map(([type, count]) =>
     nodeHtml(3, isOpen && state.node === `type:${type}`, `data-act="tree-node" data-device="${device.instance}" data-node="type:${type}"`, `<span class="type mono">${typeShort(type)}</span> ${h(objectTypeName(type))}`, `<span class="count">${count}</span>`));
-  if (state.treeView === "plant") return parts || headingHtml(t("tree.plantEmpty"));
+  if (state.treeView === "plant") return parts || plantNoteHtml(t(points ? "tree.plantNone" : "tree.plantEmpty"));
   return types.join("");
 }
 
