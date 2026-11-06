@@ -14,13 +14,19 @@ network or device.
 cargo fmt --check
 cargo test
 cargo clippy --all-targets -- -D warnings
-node --test tests/web/*.test.js   # plus every other node --test folder CI runs (.github/workflows/build.yml)
+node --test tests/web/*.test.js tests/plugins/*.test.js   # as CI (.github/workflows/build.yml)
 cargo build --all-targets
 export PLAYWRIGHT=$(ls -d ~/.npm/_npx/*/node_modules/playwright 2>/dev/null | head -1)
-node tests/ui/run.mjs
-BACNETIO_TEST_BROWSER=firefox node tests/ui/run.mjs
-BACNETIO_TEST_BROWSER=webkit node tests/ui/run.mjs
+for browser in chromium firefox webkit; do
+  BACNETIO_TEST_BROWSER=$browser unshare -Urn bash -c 'ip link set lo up; node tests/ui/run.mjs'
+done
 ```
+
+- **Run them in a network of their own** (`unshare -Urn`, Linux): the tests start the simulators on
+  `127.0.0.2` and `127.0.0.3`, port 47809. Simulators already running there for the maintainer
+  (a demo, see skill try-it) would answer too and break counts. Inside `unshare` only `lo` exists,
+  so nothing outside is touched. `cargo test` the same way when simulators run:
+  `unshare -Urn bash -c 'ip link set lo up; cargo test'`.
 
 - Without a Playwright in the npm cache: `npm i -D playwright && npx playwright install chromium firefox webkit`.
 - One test only: `node tests/ui/run.mjs <part of its name or file>`.
@@ -31,14 +37,20 @@ BACNETIO_TEST_BROWSER=webkit node tests/ui/run.mjs
 
 ## Screenshots of the interface
 
-1. Start the simulators and a bacnetio with its own data folder and port, so a running one is not
-   disturbed:
+1. Start the simulators and a bacnetio with its own data folder and port in a network of their
+   own, so a running one is not disturbed:
    ```sh
    S=<scratchpad>; cargo build --all-targets
-   target/debug/examples/simulated_plant 127.0.0.2 47809 &
-   target/debug/examples/simulated_controller 127.0.0.3 47809 &
-   target/debug/bacnetio --no-browser --web-port 18700 --data-dir $S/shots-data --test-loopback &
+   unshare -Urn bash -c "ip link set lo up
+     target/debug/examples/simulated_plant 127.0.0.2 47809 &
+     target/debug/examples/simulated_controller 127.0.0.3 47809 &
+     target/debug/examples/simulated_kbob 127.0.0.4 47809 &
+     target/debug/bacnetio --no-browser --web-port 18700 --data-dir $S/shots-data --test-loopback &
+     sleep 2; node $S/shots.mjs; kill %1 %2 %3 %4"
    ```
+   The Playwright script (`shots.mjs`, in the scratchpad) runs inside, as the browser must reach
+   the server in that network. Build the plugins first (`node plugins/build.mjs`) when a screen
+   shows one.
 2. In Playwright, set the search settings before loading (subnet `127.0.0.0/29`, port `47809`,
    adapter `127.0.0.1`), as `tests/ui/helpers.mjs` (`open`) does, then search and open a device.
 3. Take each screen at 390 × 844 (phone), 1000 and 1440 wide, in light and dark
@@ -50,4 +62,7 @@ BACNETIO_TEST_BROWSER=webkit node tests/ui/run.mjs
 ## Rules
 
 - Do not change the tests to make them pass; fix the cause, or say why the test is wrong.
+- A test that fails once and passes on the same commit elsewhere: read the log before calling it
+  flaky. Known: WebKit "internal error" on `page.reload` (avoid reloads; load a new address
+  instead), a list redrawn between finding and clicking a row (wait for the box, ask again).
 - Say what could not be checked: real devices, real networks, Windows, Android.
