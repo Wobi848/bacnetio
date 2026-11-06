@@ -49,6 +49,9 @@ jobs:
       - run: cargo build --all-targets
       - run: npm install --no-save playwright@1.62.1 && npx playwright install --with-deps ${{ matrix.browser }}
       - run: node tests/ui/run.mjs
+        # a whole run takes 5 to 8 minutes; a browser that hangs (seen with WebKit) would otherwise
+        # hold the job until GitHub's six-hour limit, so it fails here and can be run again
+        timeout-minutes: 20
         env:
           BACNETIO_TEST_BROWSER: ${{ matrix.browser }}
 
