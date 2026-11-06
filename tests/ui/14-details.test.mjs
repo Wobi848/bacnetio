@@ -5,8 +5,11 @@ export default {
   name: "Point details: live, all properties, read again, adapter",
   async run({ page, base }) {
     await open(page, base);
+    // the adapters to choose from are in the search settings
+    await page.click(".side button[data-act=network]");
     const adapters = await page.$$eval("#adapter option", (options) => options.map((option) => option.textContent));
     assert.ok(adapters.some((label) => label.includes("127.0.0.1")), adapters.join(", "));
+    await page.click("button[data-act=close-menu]");
     await searchInUi(page);
     await openDevice(page, "AHU-01");
     await page.click(".row[data-point]:has-text('Supply air temp')");

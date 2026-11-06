@@ -45,7 +45,7 @@ export default {
     assert.match(await page.textContent(".update-status"), /does not go online/);
     const before = asked;
     await page.reload();
-    await page.waitForSelector("#adapter", { state: "attached" });
+    await page.waitForSelector(".side-card", { state: "attached" });
     await page.waitForTimeout(300);
     assert.equal(asked, before);
 

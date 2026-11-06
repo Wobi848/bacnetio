@@ -111,7 +111,12 @@ const actions = {
   "locate-menu": () => { state.menu = state.menu === "locate" ? null : "locate"; render(); document.getElementById("locate-address")?.focus(); },
   "close-menu": () => { state.menu = null; render(); },
   "toggle-head": () => { state.headOpen = !state.headOpen; render(); },
-  "focus-adapter": () => document.getElementById("adapter")?.focus(),
+  // the adapter is chosen in the search settings: open them with the choice in focus
+  "focus-adapter": () => {
+    state.menu = "network";
+    render();
+    document.getElementById("adapter")?.focus();
+  },
   go: (element) => enter(element.dataset.area),
   "tree-site": () => showSite(),
   "tree-device": (element) => {

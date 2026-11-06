@@ -12,8 +12,7 @@
   .side .head-more { display: none; }
   .side .head-more.open { display: contents; }
   .side .site-search { grid-column: 1 / -1; }
-  .side .side-group, .side .side-rule { grid-column: 1 / -1; }
-  .side .net .where { display: none; }
+  .side .side-card { grid-column: 1 / -1; }
   /* one line to swipe; the fade at the end says more tabs follow */
   .side .tabs { grid-column: 1 / -1; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; mask-image: linear-gradient(to right, #000 85%, transparent); }
   .side .tabs::-webkit-scrollbar { display: none; }
@@ -91,7 +90,7 @@
   .side {
     color-scheme: dark;
     color: #e9eef6;
-    --surface: #0a1120; --sunken: #18233a; --line: #222e45; --line-strong: #56668a;
+    --surface: #0a1120; --bg: #0f182b; --sunken: #18233a; --line: #222e45; --line-strong: #56668a;
     --text: #e8edf5; --muted: #a3aec2;
     --accent: #8ea8ff; --accent-strong: #b0c2ff; --accent-ink: #0a1230; --accent-soft: #1e2c55;
     --brand: #8ea8ff; --ok: #8fdb52; --ok-soft: #1f3313; --warn: #f0a548; --warn-soft: #33240f; --err: #ff8378; --err-soft: #3b1815;
@@ -104,9 +103,9 @@
   :root[data-accent="violet"] .side { --accent: #a98bfa; --accent-strong: #c4b5fd; --accent-ink: #1a0b3d; --accent-soft: #2a1d4d; --brand: #a98bfa; }
   :root[data-accent="teal"] .side { --accent: #2dd4bf; --accent-strong: #5eead4; --accent-ink: #042f2c; --accent-soft: #10302d; --brand: #2dd4bf; }
   /* the sidebar follows the background, darker than the content in every choice */
-  :root[data-background="grey"] .side, :root[data-background="graphite"] .side { --surface: #0c0d0f; --sunken: #1b1d20; --line: #26282c; --line-strong: #5f636b; --text: #ececee; --muted: #adb0b8; color: #ececee; }
-  :root[data-background="black"] .side { --surface: #000000; --sunken: #141416; --line: #232327; --line-strong: #5a5a63; --text: #f0f0f2; --muted: #a9a9b2; color: #f0f0f2; }
-  :root[data-background="warm"] .side { --surface: #1a1610; --sunken: #2a241b; --line: #3a3226; --line-strong: #7a6d5a; --text: #f1ece4; --muted: #b9ae9d; color: #f1ece4; }
+  :root[data-background="grey"] .side, :root[data-background="graphite"] .side { --surface: #0c0d0f; --bg: #131416; --sunken: #1b1d20; --line: #26282c; --line-strong: #5f636b; --text: #ececee; --muted: #adb0b8; color: #ececee; }
+  :root[data-background="black"] .side { --surface: #000000; --bg: #0b0b0d; --sunken: #141416; --line: #232327; --line-strong: #5a5a63; --text: #f0f0f2; --muted: #a9a9b2; color: #f0f0f2; }
+  :root[data-background="warm"] .side { --surface: #1a1610; --bg: #211c15; --sunken: #2a241b; --line: #3a3226; --line-strong: #7a6d5a; --text: #f1ece4; --muted: #b9ae9d; color: #f1ece4; }
   .side .tabs { flex: 1; min-height: 0; flex-direction: column; overflow-y: auto; }
   .side .tabs a { height: 38px; color: var(--text); font-weight: 500; }
   /* the page you are on: a bar, a light ground and the icon in the accent, seen at once but not

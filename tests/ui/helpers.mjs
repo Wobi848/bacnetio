@@ -21,8 +21,8 @@ export async function open(page, base, { language = "en", area = "overview", the
     }
   }, [language, SEARCH, theme]);
   await page.goto(`${base}/#/${area}`);
-  // on a narrow screen the adapter sits in the folded head, present but hidden
-  await page.waitForSelector("#adapter", { state: "attached" });
+  // on a narrow screen the head of the sidebar is folded, present but hidden
+  await page.waitForSelector(".side-card", { state: "attached" });
 }
 
 /** Searches through the API, as the UI would, and waits until it is done. */

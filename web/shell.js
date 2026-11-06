@@ -50,11 +50,22 @@ export function searchScope(state) {
   return state.adapter ? `${state.adapter.ip}/${state.adapter.prefix_len}` : "";
 }
 
+/** The network adapter to search on, chosen in the search settings. */
+function adapterField(state) {
+  if (!state.adapters.length) return `<span class="hint">${t("start.noAdapter")}</span>`;
+  const options = state.adapters.map((adapter, index) => {
+    const label = `${adapter.name} · ${adapter.ip}`;
+    return `<option value="${index}"${adapter === state.adapter ? " selected" : ""}>${h(label)}</option>`;
+  }).join("");
+  return `<select id="adapter" aria-label="${t("adapter.title")}" title="${h(state.adapter?.description ?? state.adapter?.name ?? "")}">${options}</select>`;
+}
+
 function networkMenu(state) {
   if (state.menu !== "network") return "";
   const value = (key) => h(state.settings[key]);
   return `<div class="menu dialog" role="dialog" aria-label="${t("net.title")}">
     <h3>${t("net.title")}</h3>
+    <label class="row"><span>${t("adapter.title")}</span>${adapterField(state)}</label>
     <p class="hint">${t("vpn.hint")}</p>
     <label class="row"><span>${t("subnet")}</span><input id="subnet" class="mono" placeholder="192.168.10.0/24" value="${value("subnet")}"></label>
     <label class="row"><span>${t("bbmd")}</span><input id="bbmd" class="mono" placeholder="10.20.0.10" value="${value("bbmd")}"></label>
@@ -84,22 +95,32 @@ function siteName(site) {
 }
 
 /**
- * Which site this is (SidebarHead): its name, never the network alone; the network once below it;
- * how the search went; and the way to the other sites.
+ * The head of the sidebar (SidebarHead): one card, two parts built alike, each a label, a value, a
+ * detail and one tool button: which site this is, and what the search runs on.
  */
-function siteGroup(state) {
+function sideCard(state) {
   const site = openSiteOf(state);
   const current = state.area === "sites" ? ' aria-current="page"' : "";
   const name = site ? siteName(site) : t("side.noSite");
   // a site known only by its network says what to do: give it a name; the network stays below
   const named = name
-    ? `<b class="site-now" title="${h(name)}">${h(name)}</b>`
+    ? `<span class="side-val site-now" title="${h(name)}">${h(name)}</span>`
     : `<button type="button" class="quiet site-name" data-act="site-name" title="${t("side.giveNameHint")}">${t("side.giveName")}</button>`;
   // the network once, below the name; not again when it is the name
   const network = site && site.name !== name ? `<span class="site-net mono">${h(site.name)}</span>` : "";
-  return `<section class="side-group site-group" aria-label="${t("side.site")}"><span class="cap">${t("side.site")}</span>
-    ${named}${network}${connection(state)}
-    <a class="quiet site-link" href="#/sites" data-area="sites"${current}>${t("side.switchSite")}</a></section>`;
+  const adapter = state.adapter;
+  // where the next search looks, only while that is not the open site's network
+  const scope = searchesOpenSite(state) ? "" : `<span class="where mono" title="${t("side.nextSearch")}">${h(searchScope(state))}</span>`;
+  return `<div class="side-card">
+    <section class="side-part site-group" aria-label="${t("side.site")}"><span class="cap">${t("side.site")}</span>
+      ${named}<span class="side-detail">${network}${connection(state)}</span>
+      <a class="quiet site-link" href="#/sites" data-area="sites"${current}>${t("side.switchSite")}</a></section>
+    <section class="side-part net" aria-label="${t("side.searchOn")}"><span class="cap">${t("side.searchOn")}</span>
+      <span class="side-val adapter-name" title="${h(adapter?.description ?? "")}">${h(adapter?.name ?? t("side.noAdapter"))}</span>
+      <span class="side-detail">${adapter ? `<span class="mono adapter-ip">${h(adapter.ip)}</span>` : ""}${scope}</span>
+      <div class="menu-host"><button type="button" class="quiet" data-act="network" aria-expanded="${state.menu === "network"}">${t("side.searchSettings")}</button>
+        ${networkMenu(state)}</div></section>
+  </div>`;
 }
 
 /** The note in the sidebar: only when a newer release is out. */
@@ -110,13 +131,6 @@ export function updateNoteHtml(state) {
 }
 
 export function sideHtml(state) {
-  const options = state.adapters.map((adapter, index) => {
-    const label = `${adapter.name} · ${adapter.ip}`;
-    return `<option value="${index}"${adapter === state.adapter ? " selected" : ""}>${h(label)}</option>`;
-  }).join("");
-  const adapterField = state.adapters.length
-    ? `<select id="adapter" aria-label="${t("adapter.title")}" title="${h(state.adapter?.description ?? state.adapter?.name ?? "")}">${options}</select>`
-    : `<span class="hint">${t("start.noAdapter")}</span>`;
   // the keys 1 to 6 choose the areas in this order, settings last (app.js)
   const listed = ["workspace", "problems", "watch", "recording", "log"];
   const areas = listed.map((area, index) => tab(state, area, index + 1)).join("");
@@ -126,14 +140,7 @@ export function sideHtml(state) {
     ${headToggle(state, open)}
     ${updateNoteHtml(state)}
     <div class="head-more${open ? " open" : ""}" id="head-more">
-    ${siteGroup(state)}
-    <section class="side-group net" aria-label="${t("side.searchOn")}"><span class="cap">${t("side.searchOn")}</span>
-      ${adapterField}
-      <div class="menu-host"><button type="button" class="quiet" data-act="network" aria-expanded="${state.menu === "network"}">${t("side.searchSettings")}</button>
-        ${networkMenu(state)}</div>
-      ${searchesOpenSite(state) ? "" : `<div class="where mono">${h(searchScope(state))}</div>`}
-    </section>
-    <hr class="side-rule">
+    ${sideCard(state)}
     <label class="site-search"><input id="site-search" type="search" placeholder="${t("search.site")}" aria-keyshortcuts="/" value="${h(state.siteSearch)}" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
     </div>
     <nav class="tabs" aria-label="${t("areas")}">${areas}${pluginTabsHtml(state)}</nav>
