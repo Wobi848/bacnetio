@@ -38,6 +38,10 @@ export default {
     answer = { status: 502, json: { error: "no connection to GitHub" } };
     await page.click("button[data-act=update-now]");
     await page.waitForFunction(() => /No answer from GitHub/.test(document.querySelector(".update-status").textContent));
+    // the plain sentence leads; the technical text only on request
+    assert.equal(await page.locator(".update-details").count(), 0);
+    await page.click("button[data-act=update-details]");
+    assert.match(await page.textContent(".update-details"), /no connection to GitHub/);
     assert.equal(await page.locator(".update-note").count(), 0);
 
     // switched off: no asking, also after a reload

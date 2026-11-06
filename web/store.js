@@ -4,7 +4,7 @@
 import { api } from "./api.js";
 import { viewLog } from "./log.js";
 import { syncFrames } from "./plugin-frames.js";
-import { isPluginArea, viewPlugin } from "./plugins.js";
+import { isPluginArea, pluginDialogHtml, viewPlugin } from "./plugins.js";
 import { viewProblems } from "./problems.js";
 import { viewRecording } from "./recording.js";
 import { viewSettings } from "./settings.js";
@@ -176,6 +176,8 @@ export const state = {
   version: null,
   /** What the last look for a new version found (update.js). */
   update: null,
+  /** The technical text of a failed check for a new version, shown on request. */
+  updateDetails: false,
   /** The pointer is on a chart; a redraw would drop the crosshair. */
   onChart: false,
   /** Installed plugins (plugins.js), the marks each one set, and the questions asked about them. */
@@ -222,7 +224,7 @@ export function render() {
   document.getElementById("nextbar").innerHTML = nextbarHtml(view);
   document.getElementById("work").innerHTML = view.html;
   document.getElementById("status").innerHTML = statusHtml(state);
-  document.getElementById("dialog").innerHTML = searchDialog(state);
+  document.getElementById("dialog").innerHTML = searchDialog(state) + pluginDialogHtml(state);
   document.title = `${view.title} · bacnetio`;
   syncFrames(state);
   restore(kept);

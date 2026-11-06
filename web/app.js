@@ -312,8 +312,9 @@ const actions = {
   theme: (element) => { setTheme(element.dataset.theme); render(); },
   "update-check": (element) => setUpdateCheck(element.dataset.on === "true"),
   "update-now": () => checkForUpdate(true),
+  "update-details": () => { state.updateDetails = !state.updateDetails; render(); },
   "plugin-switch": (element) => switchPlugin(element.dataset.id, element.dataset.on === "true"),
-  "plugin-remove": (element) => { state.pluginRemoving = element.dataset.id; render(); },
+  "plugin-remove": (element) => { state.pluginRemoving = element.dataset.id; render(); document.querySelector(".modal-box button")?.focus(); },
   "plugin-remove-yes": (element) => removePlugin(element.dataset.id),
   "plugin-remove-no": () => { state.pluginRemoving = null; render(); },
   "plugin-replace-yes": () => installPlugin(state.pluginReplacing.page, true),
@@ -426,6 +427,7 @@ const typing = () => document.activeElement?.matches?.("input, select, textarea"
 /** Closes the menu, dialog, search or details on top; false when nothing was open. */
 function closeTopmost() {
   if (state.menu) state.menu = null;
+  else if (state.pluginRemoving || state.pluginReplacing) { state.pluginRemoving = null; state.pluginReplacing = null; }
   else if (state.leaving) state.leaving = false;
   else if (state.renamingSite !== null) state.renamingSite = null;
   else if (state.siteSearch || document.activeElement?.id === "site-search") {

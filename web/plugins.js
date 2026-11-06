@@ -30,27 +30,29 @@ export function viewPlugin(state) {
 
 function pluginRow(state, plugin) {
   const name = `<b>${h(plugin.name)}</b> <span class="sub mono">${h(plugin.version)}</span>`;
-  if (state.pluginRemoving === plugin.id) {
-    return `<li class="plugin">${name}<p>${t("plugins.removeAsk", { name: h(plugin.name) })}</p>
-      <span class="acts"><button type="button" data-act="plugin-remove-yes" data-id="${h(plugin.id)}">${t("plugins.remove")}</button><button type="button" class="quiet" data-act="plugin-remove-no">${t("cancel")}</button></span></li>`;
-  }
   return `<li class="plugin">${name}${plugin.description ? `<p class="hint">${h(plugin.description)}</p>` : ""}
     <span class="acts"><span class="seg"><button type="button" data-act="plugin-switch" data-id="${h(plugin.id)}" data-on="true" aria-pressed="${plugin.on}">${t("update.on")}</button><button type="button" data-act="plugin-switch" data-id="${h(plugin.id)}" data-on="false" aria-pressed="${!plugin.on}">${t("update.off")}</button></span>
     <button type="button" class="quiet" data-act="plugin-remove" data-id="${h(plugin.id)}">${t("plugins.remove")}</button></span></li>`;
 }
 
-function replaceHtml(state) {
-  const asked = state.pluginReplacing;
-  if (!asked) return "";
-  return `<div class="strip warn">${t("plugins.replaceAsk", { name: h(asked.name), version: h(asked.version) })}
-    <span class="acts"><button type="button" data-act="plugin-replace-yes">${t("plugins.replace")}</button><button type="button" class="quiet" data-act="plugin-replace-no">${t("cancel")}</button></span></div>`;
+/** A decision about a plugin (Dialog): removing it, or replacing it with the file just chosen. */
+export function pluginDialogHtml(state) {
+  const removing = state.plugins.find((plugin) => plugin.id === state.pluginRemoving);
+  const replacing = state.pluginReplacing;
+  if (!removing && !replacing) return "";
+  const [question, yes, no] = removing
+    ? [t("plugins.removeAsk", { name: h(removing.name) }), `<button type="button" data-act="plugin-remove-yes" data-id="${h(removing.id)}">${t("plugins.remove")}</button>`, "plugin-remove-no"]
+    : [t("plugins.replaceAsk", { name: h(replacing.name), version: h(replacing.version) }), `<button type="button" data-act="plugin-replace-yes">${t("plugins.replace")}</button>`, "plugin-replace-no"];
+  return `<div class="modal"><div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="plugin-ask">
+    <h2 id="plugin-ask">${question}</h2>
+    <div class="acts"><button type="button" class="quiet" data-act="${no}">${t("cancel")}</button>${yes}</div></div></div>`;
 }
 
 /** Settings → Extensions. */
 export function pluginsCardHtml(state) {
   const list = state.plugins.length ? `<ul class="plugins">${state.plugins.map((plugin) => pluginRow(state, plugin)).join("")}</ul>` : `<p class="hint">${t("plugins.none")}</p>`;
   return `<section class="card"><h2>${t("plugins.title")}</h2>
-    ${list}${replaceHtml(state)}
+    ${list}
     <div class="acts"><label class="button">${t("plugins.install")}<input id="plugin-file" type="file" accept=".html,text/html" hidden></label></div>
     <p class="hint">${t("plugins.safety")}</p></section>`;
 }

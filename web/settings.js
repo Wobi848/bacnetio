@@ -72,7 +72,7 @@ export function setBackground(theme, choice) {
 function backgroundsHtml(theme) {
   const buttons = BACKGROUNDS[theme].map((name) =>
     `<button type="button" data-act="background" data-scheme="${theme}" data-background="${name}" aria-pressed="${backgroundChoice(theme) === name}"><span class="swatch background-${name}"></span>${t(`set.background.${name}`)}</button>`).join("");
-  return `<h3>${t(`set.background.${theme}`)}</h3><span class="choices">${buttons}</span>`;
+  return `<div class="choice-row"><span class="hint">${t("set.background")} · ${t(`set.background.${theme}`)}</span><span class="choices">${buttons}</span></div>`;
 }
 
 export function updateCheckOn() {
@@ -83,25 +83,30 @@ export function updateCheckOn() {
   }
 }
 
-function statusText(update) {
-  if (!updateCheckOn()) return t("update.offHint");
-  if (!update || update.checking) return t("update.checking");
-  if (update.error) return `${t("update.failed")} <span class="mono">${h(update.error)}</span>`;
-  if (update.newer) return `${t("update.newer", { version: h(update.version) })} <a href="${h(update.url)}" target="_blank" rel="noopener">${t("update.page")}</a>`;
-  return update.version ? t("update.current") : t("update.none");
+/** What the last check found, in one sentence; a failure as a strip, its technical text on demand. */
+function statusHtml(state) {
+  const update = state.update;
+  if (!updateCheckOn()) return `<p class="update-status">${t("update.offHint")}</p>`;
+  if (!update || update.checking) return `<p class="update-status">${t("update.checking")}</p>`;
+  if (update.error) {
+    const details = state.updateDetails ? `<p class="mono update-details">${h(update.error)}</p>` : "";
+    return `<div class="strip update-status">${t("update.failed")}
+      <span class="acts"><button type="button" class="quiet" data-act="update-details" aria-expanded="${Boolean(state.updateDetails)}">${t(state.updateDetails ? "update.hideDetails" : "update.showDetails")}</button></span>${details}</div>`;
+  }
+  if (update.newer) return `<p class="update-status">${t("update.newer", { version: h(update.version) })}</p><span class="acts"><a class="quiet" href="${h(update.url)}" target="_blank" rel="noopener">${t("update.page")}</a></span>`;
+  return `<p class="update-status">${update.version ? t("update.current") : t("update.none")}</p>`;
 }
 
-/** The settings card: this version, what the last check found, and the switch. */
+/** The settings card (Card): this version large, what the last check found, the switch and the tool. */
 export function updateCardHtml(state) {
   const on = updateCheckOn();
-  const look = on ? `<button type="button" data-act="update-now"${state.update?.checking ? " disabled" : ""}>${t("update.now")}</button>` : "";
+  const look = on ? `<div class="acts"><button type="button" class="quiet" data-act="update-now"${state.update?.checking ? " disabled" : ""}>${t("update.now")}</button></div>` : "";
   return `<section class="card"><h2>${t("update.title")}</h2>
-    <p>bacnetio ${h(state.version ?? "")}</p>
-    <p class="hint update-status">${statusText(state.update)}</p>
-    <h3>${t("update.check")}</h3>
-    <span class="seg"><button type="button" data-act="update-check" data-on="true" aria-pressed="${on}">${t("update.on")}</button><button type="button" data-act="update-check" data-on="false" aria-pressed="${!on}">${t("update.off")}</button></span>
-    ${look}
-    <p class="hint">${t("update.privacy")}</p></section>`;
+    <div class="figure">${h(state.version ?? "")}</div>
+    ${statusHtml(state)}
+    <span class="choices" role="group" aria-label="${t("update.check")}"><button type="button" data-act="update-check" data-on="true" aria-pressed="${on}">${t("update.checkOn")}</button><button type="button" data-act="update-check" data-on="false" aria-pressed="${!on}">${t("update.checkOff")}</button></span>
+    <p class="hint">${t("update.privacy")}</p>
+    ${look}</section>`;
 }
 
 export function viewSettings(state) {
@@ -117,11 +122,13 @@ export function viewSettings(state) {
     title: t("tab.settings"),
     lead: t("set.lead"),
     next: null,
+    // no next step on this page, so nothing is filled: every choice is light (PageSettings)
     html: `<div class="page"><div class="cards">
-      <section class="card"><h2>${t("language")}</h2><span class="seg">${languages}</span><p class="hint">${t("set.languageHint")}</p></section>
-      <section class="card"><h2>${t("set.theme")}</h2><span class="seg">${themes}</span>
-        <h2>${t("set.accent")}</h2><span class="choices">${accents}</span>
-        <h2>${t("set.background")}</h2>${backgroundsHtml("light")}${backgroundsHtml("dark")}</section>
+      <section class="card"><h2>${t("language")}</h2><span class="choices">${languages}</span><p class="hint">${t("set.languageHint")}</p></section>
+      <section class="card"><h2>${t("set.look")}</h2>
+        <div class="choice-row"><span class="hint">${t("set.theme")}</span><span class="seg">${themes}</span></div>
+        <div class="choice-row"><span class="hint">${t("set.accent")}</span><span class="choices">${accents}</span></div>
+        ${backgroundsHtml("light")}${backgroundsHtml("dark")}</section>
       ${updateCardHtml(state)}
       ${pluginsCardHtml(state)}
       <section class="card"><h2>${t("set.keys")}</h2><dl class="facts">${keys}</dl></section>

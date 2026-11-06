@@ -239,6 +239,24 @@ question 3), the choices as in A. The version card shows a technical second line
 from GitHub" (*no connection to GitHub: failed to lookup address …*): it goes into the tooltip of
 the sentence, readable on hover, so the plain sentence leads.
 
+Built on 7 November 2026 after the design system's *PageSettings* and *Card* (branch
+`hierarchy-settings`): nothing on the page is filled. Language as light choices; *Look* with the
+theme as segments, the accent and the backgrounds of both themes as choices with their swatch;
+*Version* with the version large, one sentence for what the check found (*Open the download page*
+as a tool beside a newer version), a failure as a strip with the technical text behind *Show
+details*, *Check on · Check off*, and *Look now* as a tool button; *Extensions* as before, asking in a
+dialog before an extension is removed or replaced (a card never holds a filled button); *Keys* as
+a list. Cards in a row keep their own height. Functions, each with its test:
+
+| Function | Where | Test |
+|---|---|---|
+| Language, automatic or chosen; French, Italian and Spanish only with `?lang=` until reviewed | *Language* | `ui/07-settings` |
+| Theme, accent, background per theme, kept after a reload | *Look* | `ui/07-settings` |
+| This version, look for a new one now or once a day, switched off, the download page | *Version*, the note in the sidebar | `ui/30-update` |
+| What went wrong, in words and on request technically | *Version*, *Show details* | `ui/30-update` |
+| Install, switch, replace and remove extensions | *Extensions* and its dialogs | `ui/34-plugins` |
+| The keys | *Keys* | `ui/07-settings` (the page), `ui/11-keys` |
+
 ## Functions
 
 No function goes away. What moves or changes its look, for `concept.md` 3.3:
