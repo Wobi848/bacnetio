@@ -328,6 +328,11 @@ Open, in the maintainer's words where it helps. The larger ones are planned in
       the second, without BACnet port 47808, finds fewer devices. Per data folder, and only for a
       start that opens the browser (not the Android app, not the tests). Two networks at once would
       be a feature of one bacnetio, later and only if asked.
+- [x] **Release only what is still ours** (5 November: a value held for three days on a simulator;
+      "in 3 tagen kann viel passieren, auf einer live Anlage ist das tödlich"). Releasing from *Held
+      by you* reads the slot first and releases only while it holds what bacnetio wrote; otherwise
+      it says who has the slot and takes nothing. Each held value shows since when. Left open: a
+      write taken over within the first 10 s (`SETTLE_TIME`) still counts as ours.
 - Decided: the instance of other objects cannot be changed (devices rarely allow it, and
   references break). Revisit only for a concrete case.
 

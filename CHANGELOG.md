@@ -14,6 +14,7 @@ All notable changes for users of bacnetio.
 
 ### Fixed
 
+- Releasing from *Held by you* first reads the slot from the device and releases only while it still holds what bacnetio wrote. If another system has written over it or released it since, bacnetio says so and takes nothing away. Each held value shows since when it is held.
 - After an update the note no longer offers the version now running: the kept answer of the check counts only for the version that asked.
 
 ## v0.1.2 (05.11.2026)

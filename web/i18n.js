@@ -95,6 +95,9 @@ const ERROR_PATTERNS = [
   [/^the plugin's version must be 1 to (\d+) characters$/, "pluginVersion"],
   [/^the plugin's description must be at most (\d+) characters$/, "pluginDescription"],
   [/^the plugin needs plugin API version (\d+); this bacnetio has version (\d+)$/, "pluginApi"],
+  [/^the priority array cannot be read, so the value was not released$/, "releaseUnread"],
+  [/^priority (\d+) holds (.+) now, not what bacnetio wrote: another system wrote over it, so it was not released$/, "releaseTaken"],
+  [/^priority (\d+) is free now: another system released it already$/, "releaseFree"],
 ];
 
 function stored() {
