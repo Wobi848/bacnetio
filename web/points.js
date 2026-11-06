@@ -8,6 +8,7 @@ import { h, marked } from "./html.js";
 import { currentLocale, objectText, objectTypeName, t } from "./i18n.js";
 import { listBorders } from "./panels.js";
 import { detailHtml } from "./point-detail.js";
+import { pluginMarksHtml } from "./plugins.js";
 import { matchesQuery, parseQuery } from "./point-query.js";
 import { AREA_ICONS, readingText } from "./shell.js";
 import { sortHead, sortRows } from "./sorting.js";
@@ -175,7 +176,7 @@ function pointRow(state, item, inGroup) {
   const winner = wins ? `<span class="chip accent">${t("chip.priority", { n: wins })}</span>` : "";
   const { words } = parseQuery(state.filter);
   return `<div class="row points${active}" data-point="${pointKey(point)}" role="option" aria-selected="${Boolean(active)}" title="${h(point.name ?? "")}">
-    <span class="name${inGroup ? " indent" : ""}">${marked(name || objectText(point), words)}</span><span class="desc cut" title="${h(point.description ?? "")}">${marked(point.description ?? "", words)}</span>
+    <span class="name${inGroup ? " indent" : ""}">${marked(name || objectText(point), words)}${pluginMarksHtml(state, state.device.instance, point.type, point.instance)}</span><span class="desc cut" title="${h(point.description ?? "")}">${marked(point.description ?? "", words)}</span>
     <span class="id mono sub">${point.instance}</span><span class="type mono sub">${typeShort(point.type)}</span>
     <span class="value mono">${valueHtml(point, point.state_texts)}</span><span class="chips">${winner}${chips(point, heldHere(state, point))}${was}${quickHtml(state, point)}</span></div>`;
 }

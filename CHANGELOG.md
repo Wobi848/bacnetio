@@ -4,6 +4,10 @@ All notable changes for users of bacnetio.
 
 ## Unreleased
 
+### Added
+
+- Extensions (plugins): one file each, installed, switched and removed under *Settings → Extensions*. An extension gets a page in the sidebar, reads devices, objects and properties through bacnetio, and can mark devices and points in bacnetio's lists. It runs in a sandbox: it cannot write to the plant, reach bacnetio's server or the user's files. How to write one: `docs/plugins.md`.
+
 ### Changed
 
 - The note of a new version is filled green, so it catches the eye.

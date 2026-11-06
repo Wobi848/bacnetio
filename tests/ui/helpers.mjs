@@ -11,6 +11,8 @@ export const SEARCH = { subnet: "127.0.0.0/29", bbmd: "", port: String(SIM_PORT)
 /** Opens bacnetio in `language` with the search settings for the simulators. */
 export async function open(page, base, { language = "en", area = "overview", theme = "light" } = {}) {
   await page.addInitScript(([lang, search, look]) => {
+    // bacnetio's page only: a plugin's sandboxed frame has no storage to set
+    if (window !== window.top) return;
     // only the first time: a test may change them and reload
     if (!localStorage.getItem("bacnetio.language")) localStorage.setItem("bacnetio.language", lang);
     if (!localStorage.getItem("bacnetio.theme")) localStorage.setItem("bacnetio.theme", look);

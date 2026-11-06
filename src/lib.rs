@@ -14,6 +14,7 @@ pub mod limits;
 pub mod object;
 pub mod object_list;
 pub mod observe;
+pub mod plugin;
 pub mod points;
 pub mod precedence;
 pub mod present;

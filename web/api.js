@@ -2,11 +2,11 @@
 
 import { errorText, t } from "./i18n.js";
 
-async function call(method, path, body) {
+async function call(method, path, body, contentType = "application/json") {
   const options = { method, headers: {} };
   if (body !== undefined) {
-    options.headers["content-type"] = "application/json";
-    options.body = JSON.stringify(body);
+    options.headers["content-type"] = contentType;
+    options.body = contentType === "application/json" ? JSON.stringify(body) : body;
   }
   let response;
   try {
@@ -22,7 +22,11 @@ async function call(method, path, body) {
     // not an answer of this bacnetio's API: a proxy, or a program older than this page
     throw new Error(t("badAnswer", { path }));
   }
-  if (!response.ok) throw new Error(data?.error ? errorText(data.error) : `${response.status} ${response.statusText}`);
+  if (!response.ok) {
+    const error = new Error(data?.error ? errorText(data.error) : `${response.status} ${response.statusText}`);
+    error.status = response.status;
+    throw error;
+  }
   return data;
 }
 
@@ -30,6 +34,12 @@ const objectPath = (device, type, instance) => `/api/devices/${device}/objects/$
 
 export const api = {
   info: () => call("GET", "/api/info"),
+  plugins: () => call("GET", "/api/plugins"),
+  installPlugin: (page, replace) => call("POST", `/api/plugins${replace ? "?replace=true" : ""}`, page, "text/html"),
+  switchPlugin: (id, on) => call("POST", `/api/plugins/${encodeURIComponent(id)}/switch`, { on }),
+  removePlugin: (id) => call("POST", `/api/plugins/${encodeURIComponent(id)}/remove`),
+  pluginStore: (id) => call("GET", `/api/plugins/${encodeURIComponent(id)}/store`),
+  savePluginStore: (id, data) => call("POST", `/api/plugins/${encodeURIComponent(id)}/store`, data),
   update: () => call("GET", "/api/update"),
   adapters: () => call("GET", "/api/adapters"),
   startScan: (settings) => call("POST", "/api/scan", settings),

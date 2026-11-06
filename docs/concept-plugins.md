@@ -2,8 +2,8 @@
 
 The maintainer wants extensions such as the KBOB check (`docs/concept-kbob-check.md`) to be
 installed apart from bacnetio, not built in (5 November 2026: "ich will plugin system"). This
-concept says what a plugin is, what it may do and how it is installed. Shown to the maintainer
-before it is built.
+concept says what a plugin is, what it may do and how it is installed. Built on 5 November
+2026 (`src/plugin.rs`, `src/server/plugins.rs`, `web/plugin*.js`); for authors: `docs/plugins.md`.
 
 ## Aims
 

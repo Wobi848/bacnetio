@@ -6,6 +6,7 @@ mod devices;
 mod exports;
 mod guard;
 mod json;
+mod plugins;
 mod reading;
 mod recording;
 mod references;
@@ -103,6 +104,21 @@ pub fn router(state: Shared) -> Router {
             get(site::export)
                 .post(site::import)
                 .layer(DefaultBodyLimit::max(MOST_SITE_BYTES)),
+        )
+        .route(
+            "/api/plugins",
+            get(plugins::list)
+                .post(plugins::install)
+                .layer(DefaultBodyLimit::max(crate::plugin::MOST_PLUGIN_BYTES)),
+        )
+        .route("/api/plugins/{id}/switch", post(plugins::switch))
+        .route("/api/plugins/{id}/remove", post(plugins::remove))
+        .route("/api/plugins/{id}/page", get(plugins::page))
+        .route(
+            "/api/plugins/{id}/store",
+            get(plugins::store)
+                .post(plugins::save_store)
+                .layer(DefaultBodyLimit::max(plugins::MOST_STORE_BYTES)),
         )
         .route("/api/site.ede.csv", get(exports::site_ede))
         .route("/api/site.ede-states.csv", get(exports::site_ede_states))
@@ -280,6 +296,11 @@ impl ApiError {
     /// Not possible right now, e.g. before the first scan.
     pub fn conflict(message: impl ToString) -> Self {
         Self::new(StatusCode::CONFLICT, message)
+    }
+
+    /// Nothing of that name is there.
+    pub fn not_found(message: impl ToString) -> Self {
+        Self::new(StatusCode::NOT_FOUND, message)
     }
 
     /// The network or a device did not do what was asked.

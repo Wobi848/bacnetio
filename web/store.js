@@ -3,6 +3,8 @@
 
 import { api } from "./api.js";
 import { viewLog } from "./log.js";
+import { syncFrames } from "./plugin-frames.js";
+import { isPluginArea, viewPlugin } from "./plugins.js";
 import { viewProblems } from "./problems.js";
 import { viewRecording } from "./recording.js";
 import { viewSettings } from "./settings.js";
@@ -21,6 +23,7 @@ const FORMER_AREAS = ["overview", "devices", "points"];
 export function areaOfHash(hash) {
   const area = hash.replace("#/", "");
   if (FORMER_AREAS.includes(area)) return "workspace";
+  if (isPluginArea(area)) return area;
   return AREAS.includes(area) ? area : "workspace";
 }
 
@@ -173,6 +176,11 @@ export const state = {
   update: null,
   /** The pointer is on a chart; a redraw would drop the crosshair. */
   onChart: false,
+  /** Installed plugins (plugins.js), the marks each one set, and the questions asked about them. */
+  plugins: [],
+  marks: {},
+  pluginReplacing: null,
+  pluginRemoving: null,
   error: null,
 };
 
@@ -205,12 +213,13 @@ function restore({ scroll, focus }) {
 
 export function render() {
   const kept = remember();
-  const view = state.siteSearch.trim() ? viewSearch(state) : VIEWS[state.area](state);
+  const view = state.siteSearch.trim() ? viewSearch(state) : (isPluginArea(state.area) ? viewPlugin : VIEWS[state.area])(state);
   document.getElementById("side").innerHTML = sideHtml(state);
   document.getElementById("nextbar").innerHTML = nextbarHtml(view);
   document.getElementById("work").innerHTML = view.html;
   document.getElementById("status").innerHTML = statusHtml(state);
   document.title = `${view.title} · bacnetio`;
+  syncFrames(state);
   restore(kept);
 }
 
