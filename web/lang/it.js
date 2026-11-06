@@ -137,7 +137,7 @@ export default {
     "port.taken": "un altro programma usa {address}",
     "list.all": "Mostra tutte le {n} righe", "list.more": "… altri {n}",
     "more": "Altro …", "live.off": "Valori in tempo reale", "live.on": "Valori in tempo reale attivi", "live.hint": "Legge le righe visibili ogni 5 s.", "groups.open": "Apri tutti i gruppi", "groups.close": "Chiudi tutti i gruppi",
-    "tree.plantView": "Impianto", "tree.plantEmpty": "Le parti dell’impianto appaiono dopo la lettura del dispositivo.",
+    "tree.plantView": "Impianto", "tree.plantNone": "Nessuna parte d’impianto: il dispositivo non ha una vista d’impianto propria e i suoi nomi non contengono un percorso. Tutti i suoi oggetti sono sotto Per tipo.", "tree.plantEmpty": "Le parti dell’impianto appaiono dopo la lettura del dispositivo.",
     "rec.all": "Tutto", "rec.last60": "60 min", "rec.last15": "15 min", "rec.last5": "5 min", "rec.zoomOut": "Annulla zoom", "rec.compare": "Confronta", "rec.oneByOne": "Uno per uno", "rec.clear": "Cancella i valori", "rec.figures": "Dati in questo periodo", "rec.last": "Ultimo", "rec.low": "Minimo", "rec.high": "Massimo", "rec.mean": "Media / attivo", "rec.samples": "Misure", "rec.gaps": "{n} senza risposta", "rec.changes": "{n} cambi", "rec.removeShort": "Rimuovi", "rec.state": "Stati", "rec.noUnit": "Senza unità",
     "liveMode.title": "Aggiornamento", "liveMode.auto": "COV se possibile", "liveMode.read": "Chiedi ogni 2 s",
     "phase.details": "Lettura dei nomi dei dispositivi",

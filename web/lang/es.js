@@ -137,7 +137,7 @@ export default {
     "port.taken": "otro programa usa {address}",
     "list.all": "Mostrar las {n} filas", "list.more": "… {n} más",
     "more": "Más …", "live.off": "Valores en directo", "live.on": "Valores en directo activos", "live.hint": "Lee las filas visibles cada 5 s.", "groups.open": "Abrir todos los grupos", "groups.close": "Cerrar todos los grupos",
-    "tree.plantView": "Instalación", "tree.plantEmpty": "Las partes de la instalación aparecen cuando se lee el dispositivo.",
+    "tree.plantView": "Instalación", "tree.plantNone": "Sin partes de instalación: el dispositivo no tiene vista de instalación propia y sus nombres no contienen una ruta. Todos sus objetos están en Por tipo.", "tree.plantEmpty": "Las partes de la instalación aparecen cuando se lee el dispositivo.",
     "rec.all": "Todo", "rec.last60": "60 min", "rec.last15": "15 min", "rec.last5": "5 min", "rec.zoomOut": "Quitar zoom", "rec.compare": "Comparar", "rec.oneByOne": "Uno a uno", "rec.clear": "Borrar valores", "rec.figures": "Cifras en este periodo", "rec.last": "Último", "rec.low": "Mínimo", "rec.high": "Máximo", "rec.mean": "Media / activo", "rec.samples": "Muestras", "rec.gaps": "{n} sin respuesta", "rec.changes": "{n} cambios", "rec.removeShort": "Quitar", "rec.state": "Estados", "rec.noUnit": "Sin unidad",
     "liveMode.title": "Actualización", "liveMode.auto": "COV si es posible", "liveMode.read": "Preguntar cada 2 s",
     "phase.details": "Leyendo los nombres de los dispositivos",

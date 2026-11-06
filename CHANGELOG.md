@@ -18,6 +18,7 @@ All notable changes for users of bacnetio.
 
 ### Fixed
 
+- The plant tree of a device that has no plant view and no path names no longer says the parts appear once the device is read, when it has been read: it says why there are no plant parts and that all objects are under *By type*, in a sentence that wraps instead of a cut-off heading.
 - An extension's page follows a search started after it was opened: the KBOB check lists the devices found without reloading the page (plugin API 1 gains the event `devices`).
 - Rules that come with a new version of the KBOB check are on, also where a choice of rules was saved before; rules switched off stay off.
 - Releasing from *Held by you* first reads the slot from the device and releases only while it still holds what bacnetio wrote. If another system has written over it or released it since, bacnetio says so and takes nothing away. Each held value shows since when it is held.

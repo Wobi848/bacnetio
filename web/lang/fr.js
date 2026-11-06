@@ -137,7 +137,7 @@ export default {
     "port.taken": "un autre programme utilise {address}",
     "list.all": "Afficher les {n} lignes", "list.more": "… {n} de plus",
     "more": "Plus …", "live.off": "Valeurs en direct", "live.on": "Valeurs en direct activées", "live.hint": "Lit les lignes visibles toutes les 5 s.", "groups.open": "Ouvrir tous les groupes", "groups.close": "Fermer tous les groupes",
-    "tree.plantView": "Installation", "tree.plantEmpty": "Les parties de l’installation apparaissent une fois l’appareil lu.",
+    "tree.plantView": "Installation", "tree.plantNone": "Aucune partie d’installation : l’appareil n’a pas de vue d’installation propre et ses noms ne contiennent pas de chemin. Tous ses objets sont sous Par type.", "tree.plantEmpty": "Les parties de l’installation apparaissent une fois l’appareil lu.",
     "rec.all": "Tout", "rec.last60": "60 min", "rec.last15": "15 min", "rec.last5": "5 min", "rec.zoomOut": "Annuler le zoom", "rec.compare": "Comparer", "rec.oneByOne": "Un par un", "rec.clear": "Effacer les valeurs", "rec.figures": "Chiffres sur cette période", "rec.last": "Dernière", "rec.low": "Minimum", "rec.high": "Maximum", "rec.mean": "Moyenne / actif", "rec.samples": "Mesures", "rec.gaps": "{n} sans réponse", "rec.changes": "{n} changements", "rec.removeShort": "Retirer", "rec.state": "États", "rec.noUnit": "Sans unité",
     "liveMode.title": "Mise à jour", "liveMode.auto": "COV si possible", "liveMode.read": "Interroger toutes les 2 s",
     "phase.details": "Lecture des noms des appareils",
