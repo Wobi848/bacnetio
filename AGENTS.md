@@ -13,8 +13,8 @@ both are ignored by Git.
 
 ## Skills
 Recurring tasks have project skills in `.claude/skills/`: `browser-tests`, `review`, `field-data`,
-`concept`, `new-text`, `simulator`, `pull-request`, `api-route`, `plugin`, and `builds` (only on
-the maintainer's explicit request). Keep them true when the commands, paths or rules they name
+`concept`, `new-text`, `simulator`, `pull-request`, `api-route`, `plugin`, `standards`, `try-it`,
+and `builds` and `release` (only on the maintainer's explicit request). Keep them true when the commands, paths or rules they name
 change.
 
 ## Git and GitHub
