@@ -10,7 +10,8 @@ export default {
     // the kept sites come in after the search, a moment later in some browsers
     await page.waitForFunction(() => /127\.0\.0\.0\/29/.test(document.querySelector(".side .site-group .site-net")?.textContent ?? ""));
     // the site is named, never by its network alone; the network is said once, not in the status bar
-    assert.equal(await page.textContent(".side .site-group .site-now"), "Site without a name");
+    assert.equal(await page.$(".side .site-group .site-now"), null, "no placeholder name");
+    assert.equal(await page.textContent(".side .site-group button[data-act=site-name]"), "Give the site a name");
     assert.doesNotMatch(await page.textContent(".status"), /127\.0\.0\./);
     assert.equal(await page.textContent(".side .site-group .site-link"), "Switch site");
     assert.equal(await page.textContent(".side button[data-act=network]"), "Search settings");

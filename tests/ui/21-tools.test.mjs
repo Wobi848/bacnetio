@@ -61,9 +61,12 @@ export default {
     await page.reload();
     await page.waitForSelector(".sites .site.open");
     assert.match(await page.textContent(".sites .site.open"), /127\.0\.0\.0\/29/);
-    // the site gets a name of the technician's, which the sidebar shows
-    await page.click("button[data-act=site-rename]");
-    await page.fill("#site-title", "Sample School");
+    // the site gets a name of the technician's, which the sidebar shows: asked for in the sidebar
+    // while it is known only by its network, the name field opens ready to type
+    await page.goto(`${base}/#/workspace`);
+    await page.click(".site-group button[data-act=site-name]");
+    await page.waitForFunction(() => location.hash === "#/sites" && document.activeElement?.id === "site-title");
+    await page.keyboard.type("Sample School");
     await page.keyboard.press("Enter");
     await page.waitForFunction(() => document.querySelector(".site-group .site-now")?.textContent === "Sample School");
     assert.equal((await api("sites"))[0].title, "Sample School");

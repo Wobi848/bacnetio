@@ -163,7 +163,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Change any property with a plain value, logged; the device decides | technical details, after the unlock | `ui/21-tools`, `ui/22-commands`, `storage.rs` |
 | The priority that wins on each point | table of a device, *Read priorities* | `ui/21-tools` |
 | Values reported unasked (unconfirmed COV) count as live | point details | `watch.rs` |
-| Several sites kept, opened again, removed, saved to and loaded from a file | *Sites*, top of the sidebar | `ui/21-tools`, `site.rs` |
+| Several sites kept, opened again, named, removed, saved to and loaded from a file | *Sites*, *Switch site* in the sidebar; a site without a name: *Give the site a name* in the sidebar | `ui/21-tools`, `site.rs` |
 | Android app with the same UI | phone | not automated (concept section 9) |
 
 ## 4. Scope

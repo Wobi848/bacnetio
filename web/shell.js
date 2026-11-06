@@ -77,12 +77,10 @@ function searchesOpenSite(state) {
 /** A site is kept under the network it was searched in, or under a name given in its file. */
 const NETWORK = /^(BBMD )?\d{1,3}(\.\d{1,3}){3}(\/\d{1,2})?$/;
 
-/** The site's name as the technician gave it; a network address is never its only name. */
-function siteName(state) {
-  const site = openSiteOf(state);
-  if (!site) return t("side.noSite");
+/** The site's name as the technician gave it, or null while its only name is a network address. */
+function siteName(site) {
   if (site.title) return site.title;
-  return NETWORK.test(site.name) ? t("side.unnamed") : site.name;
+  return NETWORK.test(site.name) ? null : site.name;
 }
 
 /**
@@ -92,11 +90,15 @@ function siteName(state) {
 function siteGroup(state) {
   const site = openSiteOf(state);
   const current = state.area === "sites" ? ' aria-current="page"' : "";
-  const name = siteName(state);
+  const name = site ? siteName(site) : t("side.noSite");
+  // a site known only by its network says what to do: give it a name; the network stays below
+  const named = name
+    ? `<b class="site-now" title="${h(name)}">${h(name)}</b>`
+    : `<button type="button" class="quiet site-name" data-act="site-name" title="${t("side.giveNameHint")}">${t("side.giveName")}</button>`;
   // the network once, below the name; not again when it is the name
   const network = site && site.name !== name ? `<span class="site-net mono">${h(site.name)}</span>` : "";
   return `<section class="side-group site-group" aria-label="${t("side.site")}"><span class="cap">${t("side.site")}</span>
-    <b class="site-now" title="${h(name)}">${h(name)}</b>${network}${connection(state)}
+    ${named}${network}${connection(state)}
     <a class="quiet site-link" href="#/sites" data-area="sites"${current}>${t("side.switchSite")}</a></section>`;
 }
 
@@ -146,7 +148,8 @@ function headOpen(state) {
 
 /** The folded head in one line: the site and how many devices answered. Only shown on a narrow screen. */
 function headToggle(state, open) {
-  const name = siteName(state);
+  const site = openSiteOf(state);
+  const name = !site ? t("side.noSite") : siteName(site) ?? `${t("side.site")} ${site.name}`;
   return `<button type="button" class="quiet head-toggle" data-act="toggle-head" aria-controls="head-more" aria-expanded="${open}" title="${t("head.toggle")}"><span class="cut">${h(name)}</span>${connection(state)}<span class="caret" aria-hidden="true">${open ? "▴" : "▾"}</span></button>`;
 }
 

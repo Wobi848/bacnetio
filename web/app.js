@@ -56,6 +56,14 @@ const FILTERS = {
 /** The chosen device's name as last read, to start a new one from. */
 const deviceNameNow = () => (state.scan.devices ?? []).find((device) => device.instance === state.selectedDevice)?.name ?? "";
 
+/** Opens the name field of a kept site, with its name so far. */
+function startRename(index) {
+  state.renamingSite = index;
+  state.siteTitle = state.sites[index].title ?? "";
+  render();
+  document.getElementById("site-title")?.focus();
+}
+
 /** Goes to an area, with what that area needs loaded. */
 function enter(area) {
   go(area);
@@ -166,12 +174,13 @@ const actions = {
   "site-ask-delete": (element) => { state.deletingSite = Number(element.dataset.index); render(); },
   "site-delete": () => deleteSite(state.sites[state.deletingSite].name),
   "site-keep": () => { state.deletingSite = null; render(); },
-  "site-rename": (element) => {
-    const index = Number(element.dataset.index);
-    state.renamingSite = index;
-    state.siteTitle = state.sites[index].title ?? "";
-    render();
-    document.getElementById("site-title")?.focus();
+  "site-rename": (element) => startRename(Number(element.dataset.index)),
+  // the open site has no name yet: on the page of the sites, its name field ready to type
+  "site-name": async () => {
+    go("sites");
+    await loadSites();
+    const index = state.sites.findIndex((site) => site.open);
+    if (index >= 0) startRename(index);
   },
   "site-rename-cancel": () => { state.renamingSite = null; render(); },
   // a new site starts with a search; the network form says where
