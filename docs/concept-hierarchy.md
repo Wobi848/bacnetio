@@ -126,6 +126,15 @@ search looks at, only when it is not the open site's), then the search below a h
 status bar drops the adapter and address and keeps the port. Below 1000 px the folded head names
 the site the same way. Branch `sidebar-head`.
 
+Then, on the maintainer's renewed *SidebarHead* (6 November: the three full-width buttons looked
+thrown together): one card (`bg` ground, `line` frame, rounded) with two parts built the same way,
+each four lines: label, value in 15 px bold, detail in `muted` (network or address in `mono`, for
+the site the state), one tool button of natural width on the left. *Site*: the name, or *Give the
+site a name* in its place. *Searching on*: the adapter's name and its address; the adapter is
+chosen in *Search settings* now, where the other search settings are (an empty device list still
+offers it directly). The dark sidebar gets a card ground of its own in every background. The
+search stays below the card, on its own.
+
 ### 3. Site problems
 
 The page closest to the rule: device in `muted`, name 600, value right-aligned, a chip only for what
