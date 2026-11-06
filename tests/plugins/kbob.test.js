@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { aksProblem, followsAks, splitName } from "../../plugins/kbob/aks.js";
-import { checkDevice, countNames, kbobClass } from "../../plugins/kbob/check.js";
+import { RULES, checkDevice, countNames, defaultRules, kbobClass, withNewRules } from "../../plugins/kbob/check.js";
 import { PROPERTIES } from "../../plugins/kbob/rules.js";
 import { TEXTS } from "../../plugins/kbob/texts.js";
 
@@ -180,4 +180,18 @@ test("every language of the plugin has every text, with the same placeholders", 
       assert.equal(holes(text), holes(english.get(key)), `${language} ${key}`);
     }
   }
+});
+
+test("a rule that came with an update is on, one the user switched off stays off", () => {
+  // as if kbobClasses came with an update, and the user had switched off units
+  const before = RULES.filter((rule) => rule !== "kbobClasses");
+  const chosen = before.filter((rule) => rule !== "units" && rule !== "aks");
+  const now = withNewRules({ rules: chosen, offered: before });
+  assert.ok(now.includes("kbobClasses"), "the new rule is on");
+  assert.ok(!now.includes("units"), "switched off by the user");
+  assert.ok(!now.includes("aks"), "off by default");
+  assert.deepEqual(withNewRules({ rules: RULES, offered: RULES }), RULES, "AKS chosen stays");
+  assert.deepEqual(withNewRules({ rules: defaultRules(), offered: RULES }), defaultRules());
+  // kept before rules were offered: every default rule not chosen counts as new
+  assert.deepEqual(withNewRules({ rules: ["revision"] }), defaultRules());
 });

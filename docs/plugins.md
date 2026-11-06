@@ -71,6 +71,16 @@ Then, for example, `const devices = await ask("devices");`.
 Reading goes through bacnetio's own queue, so a slow network (MS/TP behind a router) is not
 flooded: ask one device after the other.
 
+bacnetio also tells the plugin when something changed, as a message without `call`:
+`{ event: "devices" }` when the devices to ask for change (a search found more, another site was
+opened). Ask `devices` again then. The listener above passes over it until the plugin looks for it:
+
+```js
+addEventListener("message", (event) => {
+  if (event.source === parent && event.data?.event === "devices") showDevices();
+});
+```
+
 A question bacnetio does not answer fails with `unknown question …`. There is no question that
 writes to the plant, and there will not be one in version 1.
 
