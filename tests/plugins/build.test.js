@@ -27,3 +27,26 @@ test("every plugin builds into one file with a script that parses", () => {
     fs.rmSync(out, { recursive: true, force: true });
   }
 });
+
+test("the build works with Windows line endings too", () => {
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), "bacnetio-plugins-crlf-"));
+  try {
+    // a copy of the plugins with \r\n, as Git checks them out on Windows
+    const copy = path.join(out, "plugins");
+    fs.cpSync("plugins", copy, { recursive: true });
+    for (const folder of fs.readdirSync(copy).filter((name) => fs.statSync(path.join(copy, name)).isDirectory())) {
+      for (const file of fs.readdirSync(path.join(copy, folder))) {
+        const at = path.join(copy, folder, file);
+        fs.writeFileSync(at, fs.readFileSync(at, "utf8").replace(/\r?\n/g, "\r\n"));
+      }
+    }
+    execFileSync(process.execPath, [path.join(copy, "build.mjs"), path.join(out, "built")]);
+    const page = fs.readFileSync(path.join(out, "built", "kbob.bacnetio-plugin.html"), "utf8");
+    assert.doesNotMatch(page, /^import /m);
+    const script = path.join(out, "kbob.mjs");
+    fs.writeFileSync(script, page.split(/<script type="module">\r?\n/)[1].split("</script>")[0]);
+    execFileSync(process.execPath, ["--check", script]);
+  } finally {
+    fs.rmSync(out, { recursive: true, force: true });
+  }
+});
