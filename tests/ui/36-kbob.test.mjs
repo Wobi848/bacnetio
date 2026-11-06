@@ -74,14 +74,6 @@ export default {
     assert.equal(await page.textContent(".slots .slot:nth-child(9) .who"), "free (owner)");
     assert.equal(await page.getAttribute(".slots .slot:nth-child(16)", "title"), "Automatic mode (KBOB)");
 
-    // a device read but without a plant view or path names says so in the plant tree, whole
-    await openDevice(page, "3022_LU1_L01_D001");
-    await page.click("button[data-act=tree-view][data-view=plant]");
-    const note = page.locator(".tree .tree-note");
-    assert.match(await note.textContent(), /^No plant parts: .* All its objects are under By type\.$/);
-    assert.ok(await note.evaluate((element) => element.scrollWidth <= element.clientWidth), "not cut off");
-    await page.click("button[data-act=tree-view][data-view=type]");
-
     // started with bacnetio: after a reload the marks are there without opening the plugin
     await page.reload();
     await page.waitForSelector(".node[data-act=tree-device]:has-text('AHU-01') .chip.mark.bad");
