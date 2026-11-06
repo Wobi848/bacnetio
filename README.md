@@ -34,8 +34,9 @@ light and dark theme, the system's language (English or German), keys `1`–`6`,
 - **Site problems**: everything faulty, in alarm, overridden, out of service or offline across the
   devices read, and a search across the site in the sidebar.
 - **Watch list**: points across devices with their values live.
-- **Held by you**: values you still hold, also after a restart, every write of the session, and
-  leaving the site with what you hold released.
+- **Held by you**: values you still hold, also after a restart, with their unit and priority; every
+  write, with the device's reason where it refused, also as CSV; leaving the site with what you
+  hold released.
 - **Exports**: device list and points as CSV, also with priorities; EDE files with state texts, per
   device or for the whole site.
 - **Sites**: each site searched is kept, named by you, opened again, saved to and read from a file.

@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { assert, open, openDevice, searchInUi } from "./helpers.mjs";
 
 // Writing needs the unlock, shows who holds the value, lands in the log and is released there.
@@ -47,8 +48,21 @@ export default {
     const site = await (await page.request.get(`${base}/api/site/points`)).json();
     assert.match(site["1001"].points.find((point) => point.name === "Heating valve").value, /42\.5/);
     await page.keyboard.press("5");
-    await page.waitForSelector(".row.log button[data-act=release-held]");
+    await page.waitForSelector(".row.held button[data-act=release-held]");
     await page.waitForFunction(() => /wrote 42\.5 at priority 8/.test(document.querySelector(".rows").textContent));
+    // the page says how much is held and what to do; the next step names it
+    assert.match(await page.textContent(".pagehead .lead"), /^1 value you still hold in the plant\. Release it when you are done\.$/);
+    assert.equal(await page.textContent("#next"), "Release the held value");
+    // the held value: the point's name first, its value with the unit, the priority as a warning
+    const held = page.locator(".row.held");
+    assert.match(await held.locator(".name").textContent(), /^Heating valveAHU-01 · Analog output 1 · held since \d\d:\d\d$/);
+    assert.equal(await held.locator(".val").textContent(), "42.5%");
+    assert.equal(await held.locator(".chip.warn").textContent(), "Priority 8");
+    // a write that went through gets no chip in the log
+    assert.equal(await page.locator(".row.log .chip").count(), 0);
+    const [log] = await Promise.all([page.waitForEvent("download"), page.click("a[href^='/api/log.csv']")]);
+    assert.equal(log.suggestedFilename(), "log.csv");
+    assert.match(fs.readFileSync(await log.path(), "utf8"), /;1001;Analog output;1;8;write;42\.5;\r\n/);
     await page.click("#next");
     await page.waitForFunction(() => !document.querySelector("button[data-act=release-held]"));
     assert.equal(await page.$(".status .chips .chip"), null);

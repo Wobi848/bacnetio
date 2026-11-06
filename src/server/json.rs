@@ -11,9 +11,9 @@ use crate::interfaces::{Adapter, AdapterKind};
 use crate::object::ObjectDetail;
 use crate::points::Point;
 use crate::present;
-use crate::property_text;
+
 use crate::scan::{Device, Phase};
-use crate::write::{Action, Entry};
+use crate::write::Entry;
 
 /// A note with its code and values for the UI to translate, and the English text as fallback.
 #[derive(Serialize, Clone)]
@@ -243,27 +243,7 @@ pub struct EntryView {
 
 impl EntryView {
     pub fn new(entry: &Entry) -> Self {
-        let (action, value) = match &entry.action {
-            Action::Write(value) => (
-                "write",
-                Some(present::value_with_unit(
-                    entry.object.object_type(),
-                    value,
-                    None,
-                )),
-            ),
-            Action::Release => ("release", None),
-            Action::Command { text, .. } | Action::Noted(text) => ("command", Some(text.clone())),
-            Action::WriteProperty { property, value } => (
-                "property",
-                Some(format!(
-                    "{} = {}",
-                    property_text::property_name(*property),
-                    present::value_with_unit(entry.object.object_type(), value, None),
-                )),
-            ),
-            Action::SetClock { date, time } => ("clock", Some(present::date_time_text(date, time))),
-        };
+        let (action, value) = present::entry_action(entry);
         EntryView {
             time: entry
                 .time
@@ -288,11 +268,11 @@ mod tests {
 
     use super::*;
     use crate::commands::Restart;
-    use crate::write::Command;
+    use crate::write::{Action, Command};
 
     /// Every action the log can carry is in docs/api.md: a page that shows the log switches on it,
     /// and one it does not know breaks that page. One entry per variant of `Action`, so a variant
-    /// added to the exhaustive match above belongs in this list too.
+    /// added to the exhaustive match in `present::entry_action` belongs in this list too.
     #[test]
     fn every_action_of_the_log_is_documented() {
         let object = ObjectIdentifier::new(ObjectType::ANALOG_OUTPUT, 1).expect("valid object");

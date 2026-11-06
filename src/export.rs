@@ -7,12 +7,13 @@ use bacnet_types::primitives::PropertyValue;
 
 use crate::points::Point;
 use crate::present::{
-    address_text, date_time_text as device_time_text, hex, object_text, object_type_text,
-    shown_plain_value, status_text, unit_text, value_with_unit,
+    address_text, date_time_text as device_time_text, entry_action, hex, object_text,
+    object_type_text, shown_plain_value, status_text, unit_text, value_with_unit,
 };
 use crate::record::{Mode, RecordedPoint, Recording};
 use crate::scan::Device;
 use crate::trend::TrendRecord;
+use crate::write::Entry;
 
 const COLUMNS: [&str; 9] = [
     "Device",
@@ -191,6 +192,40 @@ fn column_title(point: &RecordedPoint) -> String {
     }
 }
 
+const LOG_COLUMNS: [&str; 8] = [
+    "Time",
+    "Device",
+    "Object type",
+    "Instance",
+    "Priority",
+    "Action",
+    "Value",
+    "Refused",
+];
+
+/// Every write of the session, oldest first, as the page lists it; `offset_minutes` as above.
+pub fn log_csv(entries: &[Entry], offset_minutes: i32) -> String {
+    let mut out = String::from("\u{FEFF}");
+    out.push_str(&row(&LOG_COLUMNS));
+    for entry in entries {
+        let (action, value) = entry_action(entry);
+        out.push_str(&row(&[
+            date_time_text(entry.time, offset_minutes),
+            entry.device.to_string(),
+            object_type_text(entry.object.object_type()),
+            entry.object.instance_number().to_string(),
+            entry
+                .priority
+                .map(|priority| priority.to_string())
+                .unwrap_or_default(),
+            action.to_string(),
+            value.unwrap_or_default(),
+            entry.error.clone().unwrap_or_default(),
+        ]));
+    }
+    out
+}
+
 /// "2026-11-01 09:30:00" at the given offset from UTC.
 pub(crate) fn date_time_text(time: SystemTime, offset_minutes: i32) -> String {
     let seconds = time
@@ -247,6 +282,43 @@ fn quoted(field: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn log_lists_each_write_with_its_refusal() {
+        use crate::write::Action;
+        let object = bacnet_types::primitives::ObjectIdentifier::new(
+            bacnet_types::enums::ObjectType::ANALOG_OUTPUT,
+            1,
+        )
+        .unwrap();
+        let entry = |action, error: Option<&str>| Entry {
+            time: SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(3600),
+            device: 1001,
+            address: None,
+            object,
+            priority: Some(8),
+            action,
+            error: error.map(String::from),
+        };
+        let log = log_csv(
+            &[
+                entry(Action::Write(PropertyValue::Real(50.0)), None),
+                entry(Action::Release, Some("write access denied")),
+            ],
+            60,
+        );
+        assert!(
+            log.starts_with(
+                "\u{FEFF}Time;Device;Object type;Instance;Priority;Action;Value;Refused\r\n"
+            ),
+            "{log}"
+        );
+        assert!(
+            log.contains("1970-01-01 02:00:00;1001;Analog output;1;8;write;50;\r\n"),
+            "{log}"
+        );
+        assert!(log.contains(";8;release;;write access denied\r\n"), "{log}");
+    }
 
     #[test]
     fn priorities_name_the_winner_and_every_set_slot() {

@@ -5,7 +5,9 @@ use std::net::SocketAddrV4;
 use std::time::{Duration, SystemTime};
 
 use axum::Json;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
+use axum::http::header;
+use axum::response::IntoResponse;
 use bacnet_types::enums::{ObjectType, PropertyIdentifier};
 use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
 use serde::Deserialize;
@@ -13,8 +15,10 @@ use serde::Deserialize;
 use super::ApiError;
 use super::devices::{object_id, object_view};
 use super::json::{EntryView, ObjectView};
+use super::recording::CsvQuery;
 use super::session::Shared;
 use crate::connection::socket_address;
+use crate::export;
 use crate::object::PRIORITIES;
 use crate::property_text;
 use crate::scan;
@@ -340,6 +344,24 @@ pub async fn held(State(state): State<Shared>) -> Json<Vec<EntryView>> {
 pub async fn log(State(state): State<Shared>) -> Json<Vec<EntryView>> {
     let journal = state.journal.lock().expect("journal lock");
     Json(journal.entries().iter().map(EntryView::new).collect())
+}
+
+/// The log as CSV for Excel; `offset_min` is the viewer's time zone, as for the recording.
+pub async fn log_csv(
+    State(state): State<Shared>,
+    Query(query): Query<CsvQuery>,
+) -> impl IntoResponse {
+    let journal = state.journal.lock().expect("journal lock");
+    (
+        [
+            (header::CONTENT_TYPE, "text/csv; charset=utf-8"),
+            (
+                header::CONTENT_DISPOSITION,
+                "attachment; filename=\"log.csv\"",
+            ),
+        ],
+        export::log_csv(journal.entries(), query.offset_min),
+    )
 }
 
 fn checked_priority(priority: u8) -> Result<u8, ApiError> {

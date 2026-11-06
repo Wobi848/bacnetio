@@ -55,6 +55,11 @@ export default {
     assert.equal(entry.error, null);
     await page.keyboard.press("5");
     await page.waitForFunction(() => /wrote out-of-service/.test(document.querySelector(".rows").textContent));
+    // only the refused change gets a chip, with the device's reason beside it
+    const refusedRow = page.locator(".row.log.refused:has-text('Device 1234')");
+    assert.equal(await refusedRow.locator(".chip.err").textContent(), "Refused");
+    assert.match(await refusedRow.locator(".reason").textContent(), /write-access-denied|refused/i);
+    assert.equal(await page.locator(".row.log:not(.refused) .chip").count(), 0);
     // the search is kept as a site, shown again after a restart
     await restart();
     await page.goto(`${base}/#/sites`);

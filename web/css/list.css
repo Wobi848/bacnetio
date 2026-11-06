@@ -101,8 +101,18 @@ mark { border-radius: 2px; background: var(--warn-soft); color: inherit; border-
 .row.problem.head { cursor: default; }
 .row.problem .chips { flex-wrap: wrap; justify-content: flex-start; align-items: center; }
 .row.problem.watch > button { justify-self: end; }
-.row.log { grid-template-columns: 110px minmax(140px, 1.4fr) minmax(140px, 1.4fr) 110px; }
-.row.log > :last-child { justify-self: end; }
+/* Held by you (PageHeld): the name first in 600, place and time below in muted; the value right
+   with its unit, the priority as a warning chip, release per row. The log: only a refusal gets a chip */
+.row.held { grid-template-columns: minmax(0, 1fr) 120px 110px auto; padding-block: 6px; }
+.row.log { grid-template-columns: 84px minmax(0, 1fr) auto minmax(0, 260px); padding-block: 6px; }
+.row.held .name, .row.log .name { font-weight: 600; min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.row.held .desc, .row.log .desc { display: block; color: var(--muted); font-size: 12.5px; font-weight: 400; }
+.row.held .val { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.row.held .val .unit { margin-left: 3px; color: var(--muted); font-weight: 500; }
+.row.held .chips, .row.log .chips { display: flex; justify-content: flex-end; }
+.row.held .act { justify-self: end; }
+.row.log .when { color: var(--muted); font-family: var(--mono); font-size: 12.5px; }
+.row.log .reason { text-align: right; overflow-wrap: anywhere; }
 /* in a narrow table the vendor gives way: name, ID, address and objects are what you work with */
 @container (max-width: 760px) {
   .row.devices { grid-template-columns: minmax(140px, 1fr) 66px 150px 80px; }

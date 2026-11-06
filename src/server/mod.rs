@@ -146,6 +146,7 @@ pub fn router(state: Shared) -> Router {
         .route(&format!("{object}/release"), post(writing::release))
         .route("/api/held", get(writing::held))
         .route("/api/log", get(writing::log))
+        .route("/api/log.csv", get(writing::log_csv))
         .route("/api/recording", get(recording::recording))
         .route("/api/recording/points", post(recording::add_point))
         .route(

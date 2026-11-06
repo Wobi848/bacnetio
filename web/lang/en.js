@@ -33,14 +33,14 @@ export default {
     "ref.hint": "Remembers all values now, to see later what changed (before and after commissioning).",
     "rec.lead": "Values over time, as charts and CSV.", "rec.interval": "Every",
     "rec.on": "Recording", 
-    "log.lead": "What you still hold in the plant, and every value written in this session.",
-    "log.ok": "done", "log.refusedShort": "refused",
+   
+    "log.refusedShort": "Refused",
     "set.lead": "Language and look. Both follow the system until you choose here.",
     "set.auto": "Automatic", "set.light": "Light", "set.dark": "Dark", "set.theme": "Theme",
     "set.languageHint": "Automatic takes the language of the system if bacnetio has it, otherwise English.",
     "update.title": "Version", "update.check": "Look for new versions", "update.on": "On", "update.off": "Off", "update.now": "Look now", "update.new": "New version {version}", "update.newer": "Version {version} is out.", "update.page": "Open the download page", "update.current": "This is the newest version.", "update.none": "No version published yet.", "update.checking": "Looking for a new version …", "update.failed": "No answer from GitHub, for example without internet.", "update.offHint": "Off: bacnetio does not go online.", "update.privacy": "Asks GitHub at most once a day. GitHub sees this computer's internet address, nothing else. bacnetio never downloads or installs anything by itself.",
     "plugins.title": "Extensions", "plugins.none": "No extension installed. An extension is one file (….bacnetio-plugin.html).", "plugins.install": "Install extension …", "plugins.safety": "An extension can read everything bacnetio reads, but it cannot write to the plant or reach your files. Install only extensions you trust.", "plugins.remove": "Remove", "plugins.removeAsk": "Remove {name} and what it has stored?", "plugins.replace": "Replace", "plugins.replaceAsk": "{name} is installed already. Replace it with version {version}?", "plugins.installed": "{name} {version} installed.", "plugins.gone": "This extension is not installed or switched off.",
-    "held.since": "held since {time}",
+    "held.since": "held since {time}", "held.leadNone": "Nothing is held in the plant. Every value you write is listed here.", "held.leadOne": "1 value you still hold in the plant. Release it when you are done.", "held.lead": "{n} values you still hold in the plant. Release them when you are done.", "held.noneTitle": "No values held", "held.noneText": "A value you write stays here until you release it.", "held.now": "Held now", "log.written": "Written", "log.export": "Export log (CSV)",
     "set.keys": "Keys", "keys.areas": "Areas (workspace to held values)", "keys.search": "Search the whole site",
     "keys.filter": "Search this list", "keys.jump": "First, last or ten rows further", "read.at": "Read {time}", "read.ago": "Read {time} · {n} min ago", "overridden.why": "Overridden on site, for example by a hand switch: the device reports this itself. The priorities below do not show it and act again only once the override ends.", "releaseOther": "Release priority {priority}", "confirm.releaseOther": "Priority {priority} holds {value}, written by another system such as the building management. Release it? That system may write it again.", "confirm.releaseOtherAnyway": "Release priority {priority}", "set.accent": "Accent colour", "set.accent.blue": "Blue", "set.accent.crimson": "Crimson", "set.accent.violet": "Violet", "set.accent.teal": "Teal", "keys.move": "Previous or next row", "keys.open": "Open the chosen device", "keys.close": "Close menu or details",
     "fact.date": "Device date", "fact.time": "Device time",
@@ -177,7 +177,7 @@ export default {
 
 
 
-    changeLog: "Change log",
+   
     language: "Language",
     bbmd: "BBMD in another subnet",
 
@@ -187,8 +187,8 @@ export default {
     "range.from": "Device IDs from", "range.to": "to", "range.hint": "Only for large sites: limits the search to devices with these IDs. Leave empty for all.",
     "locate.label": "Device by IP address", "locate.hint": "When the search does not find a device, open it directly by its address.",
     "locate.open": "Open device", "properties.change": "Change properties", "properties.reading": "Reading all properties …",
-    "held.title": "Values you hold", 
-    release: "Release", releaseAll: "Release all", nothingHeld: "Nothing held.",
+    
+    release: "Release",
     "log.wrote": "wrote {value}", "log.released": "released", "log.clock": "sent the time {value}", "log.atPriority": " at priority {priority}",
     "log.empty": "Nothing written yet.",
     device: "Device {n}",

@@ -119,6 +119,7 @@ export const state = {
   reference: null,
   /** Object names by "device:type:instance", to name held values. */
   objectNames: {},
+  objectUnits: {},
   /** Chosen point and its details read from the device. */
   selectedPoint: null,
   object: null,
