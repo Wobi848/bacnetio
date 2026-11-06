@@ -6,6 +6,11 @@ import { ABBREVIATIONS, BIBBS, OBJECT_TYPES, PROPERTIES } from "./rules.js";
 
 const DEVICE = 8;
 const NOTIFICATION_CLASS = 15;
+const SCHEDULE = 17;
+/** Table 10: priorities KBOB gives no use, free only after agreement with the owner. */
+const FREE_PRIORITIES = [3, 4, 9, 10, 11, 13, 15];
+/** Table 10: the BIBB Scheduling (central time programs) writes at priority 14. */
+const SCHEDULE_PRIORITY = 14;
 const ANALOG = [0, 1, 2];
 /** 5.3.6 names binary and multi-state inputs and values for state texts, not outputs. */
 const BINARY = [3, 5];
@@ -66,8 +71,8 @@ export function kbobClass(number) {
 export const OFF_BY_DEFAULT = ["aks"];
 export const defaultRules = () => RULES.filter((rule) => !OFF_BY_DEFAULT.includes(rule));
 
-export const RULES = ["revision", "objectTypes", "proprietary", "properties", "names", "aks", "units", "stateTexts", "notificationClass", "kbobClasses", "services"];
-const SOURCES = { revision: "4.1", objectTypes: "5.2.1, C1.1", proprietary: "4.4", properties: "5.3, C1.2", names: "5.3.3", aks: "Leitfaden 3.2.2", units: "5.3.4", stateTexts: "5.3.6", notificationClass: "5.3.5", kbobClasses: "6.2, Tab. 7, 8", services: "6, C1.3" };
+export const RULES = ["revision", "objectTypes", "proprietary", "properties", "names", "aks", "units", "stateTexts", "notificationClass", "kbobClasses", "priorities", "services"];
+const SOURCES = { revision: "4.1", objectTypes: "5.2.1, C1.1", proprietary: "4.4", properties: "5.3, C1.2", names: "5.3.3", aks: "Leitfaden 3.2.2", units: "5.3.4", stateTexts: "5.3.6", notificationClass: "5.3.5", kbobClasses: "6.2, Tab. 7, 8", priorities: "6.3.2, Tab. 10", services: "6, C1.3" };
 export const sourceOf = (rule) => SOURCES[rule];
 
 const byName = (properties) => new Map((properties ?? []).map((property) => [property.property, property]));
@@ -114,6 +119,20 @@ function classFindings(object, properties) {
   return what;
 }
 
+/** Commands held at priorities table 10 leaves free, and a schedule writing elsewhere than 14. */
+function priorityFindings(object, properties) {
+  const slots = properties.get("priority-array")?.items ?? [];
+  const taken = slots.map((value, index) => [index + 1, String(value).trim()])
+    .filter(([priority, value]) => FREE_PRIORITIES.includes(priority) && value && value !== "null")
+    .map(([priority]) => String(priority));
+  const findings = taken.length ? [{ rule: "priorities", what: taken }] : [];
+  const writing = text(properties, "priority-for-writing");
+  if (object.type === SCHEDULE && writing && Number(writing) !== SCHEDULE_PRIORITY) {
+    findings.push({ rule: "priorities", what: [writing], schedule: true });
+  }
+  return findings;
+}
+
 /** One object's findings: each a rule and what is wrong, for its mark and the report. */
 function objectFindings(object, profile, classes, options) {
   const findings = [];
@@ -134,6 +153,7 @@ function objectFindings(object, profile, classes, options) {
     const wrong = classFindings(object, properties);
     if (wrong.length) findings.push({ rule: "kbobClasses", what: wrong });
   }
+  findings.push(...priorityFindings(object, properties));
   // 5.3.4 asks for a BACnetEngineeringUnit; no-units is one of them, so only a missing unit counts
   if (ANALOG.includes(object.type) && !text(properties, "units")) findings.push({ rule: "units", what: [] });
   if (BINARY.includes(object.type)) {
@@ -188,6 +208,7 @@ export function checkDevice(device, profile, names = new Map(), given = {}) {
     stateTexts: objectRule("stateTexts"),
     notificationClass: objectRule("notificationClass"),
     kbobClasses: objectRule("kbobClasses"),
+    priorities: objectRule("priorities"),
     services: own ? services(deviceProperties, profile) : { ok: null },
   };
   const rules = Object.fromEntries(Object.entries(all).filter(([rule]) => options.rules.includes(rule)));

@@ -71,6 +71,29 @@ test("each rule finds what breaks it", () => {
   }
 });
 
+const slots = (taken) => Array.from({ length: 16 }, (_, index) => taken[index + 1] ?? "null");
+
+test("table 10: commands at its priorities pass, a free priority or a schedule off 14 is found", () => {
+  const withValve = (taken) => {
+    const device = goodDevice();
+    device.objects.push(object(1, 1, "Valve 1", { units: { value: "%" }, "priority-array": { value: "", items: slots(taken) } }));
+    return device;
+  };
+  assert.deepEqual(failing(check(withValve({ 8: "40 %", 16: "20 %" }))), [], "manual from the MBE and automatic");
+  const free = check(withValve({ 9: "40 %", 13: "10 %" }));
+  assert.deepEqual(failing(free), ["priorities"]);
+  assert.deepEqual(free.objects.find((entry) => entry.label === "AO 1").findings, [{ rule: "priorities", what: ["9", "13"] }]);
+
+  const withSchedule = (priority) => {
+    const device = goodDevice();
+    device.objects.push(object(17, 1, "Time program 1", { "priority-for-writing": { value: priority } }));
+    return device;
+  };
+  assert.deepEqual(failing(check(withSchedule("14"))), []);
+  const off = check(withSchedule("16"));
+  assert.deepEqual(off.objects.find((entry) => entry.label === "SCHED 1").findings, [{ rule: "priorities", what: ["16"], schedule: true }]);
+});
+
 test("a property the device does not have counts as missing, Property_List is never asked for", () => {
   const device = goodDevice();
   device.objects[1].properties.find((p) => p.property === "resolution").error = "unknown-property";

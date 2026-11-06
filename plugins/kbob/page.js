@@ -102,6 +102,7 @@ async function save() {
 
 function findingText(finding) {
   if (finding.letter) return t("findings.aksType", { what: finding.what.join(", "), letter: finding.letter, expected: finding.expected });
+  if (finding.schedule) return t("findings.prioritiesSchedule", { what: finding.what.join(", ") });
   return t(`findings.${finding.rule}`, { what: finding.what.join(", ") });
 }
 
