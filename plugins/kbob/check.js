@@ -72,6 +72,15 @@ export const OFF_BY_DEFAULT = ["aks"];
 export const defaultRules = () => RULES.filter((rule) => !OFF_BY_DEFAULT.includes(rule));
 
 export const RULES = ["revision", "objectTypes", "proprietary", "properties", "names", "aks", "units", "stateTexts", "notificationClass", "kbobClasses", "priorities", "services"];
+
+/**
+ * The rules chosen, from a kept choice: rules that came with an update since it was saved are on,
+ * unless off by default; what the user switched off stays off. A choice kept before `offered` was
+ * saved counts every rule but the chosen and the off ones as new.
+ */
+export function withNewRules({ rules, offered = [...rules, ...OFF_BY_DEFAULT] }) {
+  return RULES.filter((rule) => rules.includes(rule) || (!offered.includes(rule) && !OFF_BY_DEFAULT.includes(rule)));
+}
 const SOURCES = { revision: "4.1", objectTypes: "5.2.1, C1.1", proprietary: "4.4", properties: "5.3, C1.2", names: "5.3.3", aks: "Leitfaden 3.2.2", units: "5.3.4", stateTexts: "5.3.6", notificationClass: "5.3.5", kbobClasses: "6.2, Tab. 7, 8", priorities: "6.3.2, Tab. 10", services: "6, C1.3" };
 export const sourceOf = (rule) => SOURCES[rule];
 

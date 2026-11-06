@@ -1,7 +1,7 @@
 // The plugin's page: the devices with their profile, the check one after the other, the results
 // per rule, the marks in bacnetio's lists and the report. Talks to bacnetio only through `ask`.
 
-import { RULES, checkDevice, countNames, defaultRules, sourceOf } from "./check.js";
+import { RULES, checkDevice, countNames, defaultRules, sourceOf, withNewRules } from "./check.js";
 import { PROFILES, SOURCE } from "./rules.js";
 import { TEXTS } from "./texts.js";
 
@@ -13,6 +13,10 @@ const waiting = new Map();
 addEventListener("message", (event) => {
   if (event.source !== parent) return;
   const { call, result, error } = event.data ?? {};
+  if (event.data?.event === "devices") {
+    refreshDevices();
+    return;
+  }
   const asked = waiting.get(call);
   if (!asked) return;
   waiting.delete(call);
@@ -36,6 +40,8 @@ const h = (text) => String(text ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;"
 /** Kept in bacnetio's data folder: profiles chosen, results and object names per device. */
 let kept = { profiles: {}, devices: {} };
 let devices = [];
+/** Devices are asked again only once the page has its texts and kept results. */
+let started = false;
 let busy = null;
 let stopAsked = false;
 const open = new Set();
@@ -96,6 +102,7 @@ async function check(instances) {
 }
 
 async function save() {
+  kept.offered = RULES;
   await ask("save", kept);
   await ask("mark", marks());
 }
@@ -262,9 +269,18 @@ async function start() {
   // the rules chosen; before there was a choice, only AKS could be switched on
   kept.rules ??= kept.aks ? [...defaultRules(), "aks"] : defaultRules();
   delete kept.aks;
+  kept.rules = withNewRules(kept);
   devices = await ask("devices");
+  started = true;
   render();
   await ask("mark", marks());
+}
+
+/** A new search or another site in bacnetio: the list follows, results already kept stay. */
+async function refreshDevices() {
+  if (!started) return;
+  devices = await ask("devices");
+  render();
 }
 
 start().catch((error) => {

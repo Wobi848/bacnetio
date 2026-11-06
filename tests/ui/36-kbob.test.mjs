@@ -27,11 +27,16 @@ export default {
 
   async check(page, base, out) {
     await open(page, base, { area: "workspace" });
-    await searchInUi(page, 3);
     await page.click("a.settings-link");
     await page.setInputFiles("#plugin-file", path.join(out, "kbob.bacnetio-plugin.html"));
     await page.click(".tabs a:has-text('KBOB')");
     const plugin = page.frameLocator("iframe.plugin-frame");
+    await plugin.locator("#app p.muted").waitFor();
+    // a search after the plugin started reaches its open page without a reload
+    await page.click(".tabs a[data-area=workspace]");
+    await searchInUi(page, 3);
+    await page.click(".tabs a:has-text('KBOB')");
+    await plugin.locator("tbody tr:has-text('3022_LU1_L01_D001')").waitFor();
     // the AKS names of the guide's example on top of the rules
     await plugin.locator("details.chooser summary").click();
     assert.match(await plugin.locator("details.chooser summary").textContent(), /11 of 12/);
