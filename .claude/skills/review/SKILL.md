@@ -1,6 +1,6 @@
 ---
 name: review
-description: "Review a bacnetio branch, commit or pull request read-only: real bugs, the safety of everything that writes to a plant (unlock, confirmation, log, server-side checks), lost functions, and BACnet functions a good browser has. Use whenever the maintainer asks to check, review, audit, \"prüfen\" or \"gegenlesen\" bacnetio code, or to look over another session's work; it changes nothing in the repo."
+description: "Review a bacnetio branch, commit or pull request read-only: real bugs, the safety of everything that writes to a plant (unlock, confirmation, log, server-side checks), lost functions, and BACnet functions a good browser has. Use when the maintainer asks to review, audit or \"gegenlesen\" bacnetio code or a branch, to \"Code prüfen\", or to look over another session's work; it changes nothing in the repo. Not for checking a plant (the KBOB check), CI results or whether tests pass."
 ---
 
 # Reviewing bacnetio
