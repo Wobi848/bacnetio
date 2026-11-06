@@ -83,5 +83,7 @@ export function chips(point, held) {
   return out.join("");
 }
 
-export const noteStrip = (note, kind = "") => `<div class="strip ${kind}">${h(noteText(note))}</div>`;
+/** Notes on what bacnetio already worked around: information, not a call to act, so not orange. */
+const WORKED_AROUND = ["broadcast_blocked", "broadcast_not_passed", "some_only_direct"];
+export const noteStrip = (note) => `<div class="strip${WORKED_AROUND.includes(note.code) ? " info" : ""}">${h(noteText(note))}</div>`;
 export const errorStrip = (text) => (text ? `<div class="strip err">${h(text)}</div>` : "");
