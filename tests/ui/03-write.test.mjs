@@ -28,6 +28,18 @@ export default {
     // releasing is the next step, but a new search stays at hand beside it
     assert.equal(await page.textContent("#next"), "Release the held value");
     assert.equal(await page.textContent(".nextbar button[data-act=find]"), "Search again");
+    // the head says what to do, with the count; only the next step is filled, a chosen view is not
+    assert.equal(await page.textContent(".pagehead p"), "22 data points, 1 of them held by you. Choose one to see its details.");
+    const filled = (selector) => page.locator(selector).evaluate((element) => getComputedStyle(element).backgroundColor);
+    assert.notEqual(await filled(".toolbar .seg button[aria-pressed=true]"), await filled("#next"));
+    // on a phone the head keeps the next step; the search moves into the toolbar, nothing is lost
+    const wide = page.viewportSize();
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.ok(await page.isHidden(".nextbar button[data-act=find]"));
+    assert.ok(await page.isVisible(".toolbar .toolbar-head-tool[data-act=find]"));
+    assert.ok(await page.isVisible("#next"));
+    await page.setViewportSize(wide);
+    assert.ok(await page.isHidden(".toolbar .toolbar-head-tool"));
     // the problems and exports know the written value too, not the one from the last reading
     const site = await (await page.request.get(`${base}/api/site/points`)).json();
     assert.match(site["1001"].points.find((point) => point.name === "Heating valve").value, /42\.5/);

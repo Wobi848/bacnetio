@@ -27,6 +27,7 @@ export default {
     
     
     
+    "pts.lead": "{n} Datenpunkte. Einen wählen, um seine Details zu sehen.", "pts.leadOne": "1 Datenpunkt. Ihn wählen, um seine Details zu sehen.", "pts.leadHeld": "{n} Datenpunkte, {held} davon von dir gehalten. Einen wählen, um seine Details zu sehen.",
     "pts.reading": "Der Datenpunkt wird gelesen …",
     "view.all": "Alle", "view.faults": "Störung", "view.overridden": "Übersteuert", "view.changed": "Geändert", "view.alarm": "Alarm", "view.outOfService": "Ausser Betrieb", "view.held": "Von dir gehalten", "filter.clearAll": "Alle Filter weg", "filter.remove": "Diesen Filter entfernen", "filter.hint": "Auch: #123 für eine Instanz, type:AO, value:>50", "filter.types": "Objekttypen",
     "ref.hint": "Merkt sich alle Werte von jetzt, um später zu sehen, was sich geändert hat (vor und nach der Inbetriebnahme).",

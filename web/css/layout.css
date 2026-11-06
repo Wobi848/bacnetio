@@ -30,12 +30,17 @@
   .nextbar { padding: 8px 12px; }
   .nextbar:not(:has(#next)) { display: none; }
   #next { flex: 1; justify-content: center; }
+  /* the page head keeps only the next step; its tool button moves to the toolbar (PageHead) */
+  .next-acts { flex: 1; }
+  .next-acts .head-tool { display: none; }
   button, select, input, a.button, a.quiet { height: 36px; }
   .toolbar input[type=search] { flex: 1 1 100%; width: auto; }
   .toolbar .end { margin-left: 0; }
   /* list over the whole width with the way back; the groups in the table stand in for the tree */
   .listwrap { border-right: 0; }
-  .phone-back { display: inline-flex; flex: 1 1 100%; }
+  /* the way back and the search share a row, so the points start higher */
+  .phone-back { display: inline-flex; flex: none; }
+  .toolbar .phone-back + input[type=search] { flex: 1 1 0; min-width: 0; }
   .detail.open { inset: 0; width: auto; }
   .row.head { display: none; }
   /* without the head above them the groups stick at the top, or they cover the first row */

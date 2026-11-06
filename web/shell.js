@@ -132,10 +132,13 @@ function headToggle(state, open) {
   return `<button type="button" class="quiet head-toggle" data-act="toggle-head" aria-controls="head-more" aria-expanded="${open}" title="${t("head.toggle")}"><span class="cut">${h(name)}</span>${connection(state)}<span class="caret" aria-hidden="true">${open ? "▴" : "▾"}</span></button>`;
 }
 
+/** The tool button beside the next step, again in the toolbar: below 1000 px it moves there. */
+export const headToolHtml = (also) => (also ? `<button type="button" class="quiet toolbar-head-tool" data-act="${also.act}">${h(also.label)}</button>` : "");
+
 /** Title, one sentence and the one next step: every page says where you are. */
 export function nextbarHtml(view) {
   const next = view.next ? `<button type="button" id="next" data-act="${view.next.act}"${view.next.data ?? ""}>${h(view.next.label)}</button>` : "";
-  const also = view.also ? `<button type="button" class="quiet" data-act="${view.also.act}">${h(view.also.label)}</button>` : "";
+  const also = view.also ? `<button type="button" class="quiet head-tool" data-act="${view.also.act}">${h(view.also.label)}</button>` : "";
   return `<div class="pagehead"><h1>${h(view.title)}</h1><p class="lead">${view.lead ?? ""}</p></div>${also ? `<span class="next-acts">${also}${next}</span>` : next}`;
 }
 

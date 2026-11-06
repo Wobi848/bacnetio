@@ -13,10 +13,11 @@
 .seg button { height: 30px; border: 0; border-radius: 0; background: transparent; color: var(--muted); font-weight: 600; }
 /* the lines between the buttons are shadows, so a row that wraps gets its line above too */
 .seg button { box-shadow: -1px -1px 0 var(--line-strong); }
-.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+/* chosen, but quiet: only the next step of a page is filled (concept-hierarchy.md, A) */
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-strong); font-weight: 700; box-shadow: inset 0 0 0 1px var(--accent), -1px -1px 0 var(--line-strong); }
 /* hover only tints: the strong colour of other buttons would hide the counts and the chosen one */
 .seg button:not([aria-pressed="true"]):hover { background: var(--sunken); color: var(--text); }
-.seg button[aria-pressed="true"]:hover { background: var(--accent); color: var(--accent-ink); }
+.seg button[aria-pressed="true"]:hover { background: var(--accent-soft); color: var(--accent-strong); }
 .seg button[aria-pressed="true"] .n { color: inherit; }
 .seg .n { font-weight: 700; }
 .seg .n.err { color: var(--err); }
@@ -70,9 +71,12 @@ button.quick .nav-i { display: block; width: 16px; height: 16px; color: inherit;
 .row.devices .objects { text-align: right; }
 .row.devices .objects .label { display: none; }
 /* no column sized by its content: each row would split the width anew, and heads and rows drift apart */
-.row.points { grid-template-columns: minmax(160px, 2fr) minmax(0, 1.2fr) 62px 44px minmax(112px, .8fr) minmax(150px, 1fr); min-height: 34px; }
+.row.points { grid-template-columns: minmax(160px, 2fr) minmax(0, 1.2fr) 62px 44px minmax(112px, .8fr) minmax(200px, 1fr); min-height: 34px; }
+/* the state and the two row buttons on one line, so every row keeps its height */
+.row.points > .chips { flex-wrap: nowrap; }
+.row.points > .chips > .quicks { flex: none; }
 /* without descriptions on this device, their column would only take room from the names */
-.rows.no-desc .row.points { grid-template-columns: minmax(180px, 3fr) 62px 44px minmax(112px, .8fr) minmax(150px, 1fr); }
+.rows.no-desc .row.points { grid-template-columns: minmax(180px, 3fr) 62px 44px minmax(112px, .8fr) minmax(200px, 1fr); }
 .rows.no-desc .row.points > .desc { display: none; }
 .row.points .desc { color: var(--muted); font-size: 13px; }
 mark { border-radius: 2px; background: var(--warn-soft); color: inherit; border-bottom: 2px solid var(--warn); }
@@ -120,7 +124,8 @@ mark { border-radius: 2px; background: var(--warn-soft); color: inherit; border-
 /* a chip in a list is a state: it wraps inside its column rather than being cut off */
 .row .chip { height: auto; min-height: 22px; white-space: normal; }
 /* a group of points: one plant part */
-.row.group { grid-template-columns: 18px minmax(0, 1fr) auto; min-height: 36px; background: var(--bg); font-weight: 650; cursor: pointer; }
+/* quieter than the point names below it: the names are the data (concept-hierarchy.md, F) */
+.row.group { grid-template-columns: 18px minmax(0, 1fr) auto; min-height: 36px; background: var(--bg); color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; }
 .row.group.plain { grid-template-columns: minmax(0, 1fr) auto; }
 /* a box of its own, so that it turns around its centre and stays on the row's line */
 .row.group .arrow { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; line-height: 1; color: var(--muted); font-size: 11px; transition: transform .15s var(--ease); }
@@ -166,6 +171,7 @@ mark { border-radius: 2px; background: var(--warn-soft); color: inherit; border-
 .exports { display: grid; gap: 6px; min-width: 220px; }
 .exports a.quiet, .exports button { justify-content: flex-start; width: 100%; }
 .phone-back, .drawer-only { display: none; }
+@media (min-width: 1000px) { .toolbar-head-tool { display: none; } }
 .empty { padding: 24px 20px; color: var(--muted); display: grid; gap: 10px; justify-items: start; }
 .empty h2 { font-size: 15px; color: var(--text); }
 

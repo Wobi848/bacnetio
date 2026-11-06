@@ -33,6 +33,7 @@ function searchBeside(state) {
 }
 
 export function viewWorkspace(state) {
-  const inner = state.device ? viewPoints(state) : viewDevices(state);
-  return { ...inner, next: nextStep(state), also: searchBeside(state), html: `<div class="workspace">${treeHtml(state)}${inner.html}</div>` };
+  const also = searchBeside(state);
+  const inner = state.device ? viewPoints(state, also) : viewDevices(state, also);
+  return { ...inner, next: nextStep(state), also, html: `<div class="workspace">${treeHtml(state)}${inner.html}</div>` };
 }

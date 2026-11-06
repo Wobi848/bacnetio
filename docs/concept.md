@@ -98,7 +98,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Function | Place | Test |
 | --- | --- | --- |
 | Choose the network adapter | sidebar, adapter field | `ui/14-details`, `interfaces.rs` |
-| Search: Who-Is and every address asked directly, at the same time | workspace, next step | `ui/01-search`, `scan.rs` |
+| Search: Who-Is and every address asked directly, at the same time | workspace, next step; while values are held a tool beside it, on a phone in the toolbar | `ui/01-search`, `ui/03-write`, `scan.rs` |
 | Devices appear while the search runs, names read at once | table of the site | `scan.rs` (`devices_show_while_the_scan_runs`) |
 | Object lists read during the search, count and progress per device | table of the site, *Objects*; tree | `ui/01-search`, `ui/16-requests`, `scan.rs` (`reads_every_object_list_during_the_search_when_asked`) |
 | Plant subnet (VPN), BBMD, port, device ID range | sidebar, *Change* | `ui/04-reload`, `bbmd.rs`, `scan.rs` (range) |

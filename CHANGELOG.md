@@ -12,6 +12,7 @@ All notable changes for users of bacnetio.
 ### Changed
 
 - While a value is held, *Search again* stays beside *Release the held value* at the top, instead of giving way to it.
+- The data points page has a clear order (`docs/concept-hierarchy.md`): only the next step is filled; a chosen view or toggle everywhere is a framed light blue instead of a second filled button. The page head says what to do, with the count ("22 data points, 1 of them held by you. Choose one to see its details."). Group heads are quieter than the point names, a row's state and its watch and record buttons stay on one line, and *Object types* sits with the other tools on the right. On a phone the way back and the search share a row, and *Search again* moves from the page head into the toolbar.
 - The note of a new version is filled green, so it catches the eye.
 
 ### Fixed

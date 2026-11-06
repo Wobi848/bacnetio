@@ -27,6 +27,7 @@ export default {
     
     
     
+    "pts.lead": "{n} points de données. En choisir un pour voir ses détails.", "pts.leadOne": "1 point de données. Le choisir pour voir ses détails.", "pts.leadHeld": "{n} points de données, dont {held} maintenus par vous. En choisir un pour voir ses détails.",
     "pts.reading": "Lecture du point de données …",
     "view.all": "Tous", "view.faults": "Défauts", "view.overridden": "Forcés", "view.changed": "Modifiés", "view.alarm": "Alarme", "view.outOfService": "Hors service", "view.held": "Maintenues par vous", "filter.clearAll": "Tout effacer", "filter.remove": "Retirer ce filtre", "filter.hint": "Aussi : #123 pour une instance, type:AO, value:>50", "filter.types": "Types d’objet",
     "ref.hint": "Mémorise toutes les valeurs actuelles pour voir plus tard ce qui a changé (avant et après la mise en service).",
