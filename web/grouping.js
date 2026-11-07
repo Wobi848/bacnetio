@@ -1,7 +1,8 @@
 // Data points grouped by plant part. Many controllers name objects as paths
 // ("/21/000/09/11/S337.01/5101"): the segments all names share are left out, the rest of the
 // path up to the last segment becomes the group (the module), the last segment the name. Without
-// paths the groups are the object kinds.
+// paths the groups are the object kinds. A site can bring its own pattern instead
+// (docs/concept-toolbox.md part 4).
 
 const SEPARATOR = /[/\\']/;
 /** Object kinds by type number, for devices whose names are no paths. */
@@ -34,11 +35,55 @@ function partDepth(paths, skip) {
   return deepest;
 }
 
+/** A site's own grouping pattern as a regular expression; null for none. Throws when it is no
+ * valid regular expression, with the browser's reason. */
+export const compilePattern = (text) => (text ? new RegExp(text) : null);
+
+/** The pattern of the site open, or null: one that does not compile groups by itself. */
+export function sitePattern(site) {
+  try {
+    return compilePattern(site?.grouping);
+  } catch {
+    return null;
+  }
+}
+
+/** Where a name matches the pattern: its brackets (or the whole match without any) are the part,
+ * the rest of the name is the point's name. */
+export function splitByPattern(name, pattern) {
+  const text = name ?? "";
+  const match = pattern.exec(text);
+  if (!match) return null;
+  const part = match.length > 1 ? match.slice(1).filter(Boolean).join("/") : match[0];
+  if (!part) return null;
+  const rest = (text.slice(0, match.index) + text.slice(match.index + match[0].length)).replace(/^[\s_./\\-]+/, "");
+  return { part, name: rest || text };
+}
+
+function groupByPattern(points, pattern) {
+  const groups = new Map();
+  const other = [];
+  for (const point of points) {
+    const split = splitByPattern(point.name, pattern);
+    if (!split) {
+      other.push({ point, name: point.name ?? "" });
+      continue;
+    }
+    if (!groups.has(split.part)) groups.set(split.part, { key: `part:${split.part}`, title: split.part, kind: false, items: [] });
+    groups.get(split.part).items.push({ point, name: split.name });
+  }
+  const result = [...groups.values()];
+  if (other.length) result.push({ key: "part:", title: "other", kind: true, items: other });
+  return result;
+}
+
 /**
  * Groups in the order of the object list: `{ key, title, kind, items: [{ point, name }] }`. `kind`
  * is true when `title` is a text key (inputs, outputs, …) rather than a name from the device.
+ * With the site's own `pattern` the parts come from it.
  */
-export function groupPoints(points) {
+export function groupPoints(points, pattern = null) {
+  if (pattern) return groupByPattern(points, pattern);
   const paths = points.map((point) => segments(point.name));
   const deep = paths.filter((list) => list.length > 1);
   // while a device is read, names come in batches: decide by the names known so far

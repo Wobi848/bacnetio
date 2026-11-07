@@ -118,6 +118,7 @@ pub fn router(state: Shared) -> Router {
         .route("/api/sites/open", post(site::open))
         .route("/api/sites/delete", post(site::delete))
         .route("/api/sites/rename", post(site::rename))
+        .route("/api/sites/grouping", post(site::grouping))
         .route(
             "/api/site.json",
             get(site::export)

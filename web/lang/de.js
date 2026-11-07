@@ -142,6 +142,7 @@ export default {
     "port.taken": "ein anderes Programm nutzt {address}",
     "list.all": "Alle {n} Zeilen zeigen", "list.more": "… {n} weitere",
     "more": "Mehr …", "live.off": "Live-Werte", "live.on": "Live-Werte an", "live.hint": "Liest die sichtbaren Zeilen alle 5 s.", "groups.open": "Alle Gruppen öffnen", "groups.close": "Alle Gruppen schliessen",
+    "grouping.open": "Gruppierung …", "grouping.hint": "Die Punkte dieser Anlage nach einem eigenen Muster gruppieren statt nach den Pfaden in den Namen.", "grouping.noSite": "Zuerst eine Anlage suchen oder öffnen: Das Muster wird mit der Anlage gespeichert.", "grouping.title": "Gruppierung dieser Anlage", "grouping.lead": "Ein regulärer Ausdruck: Was seine Klammern treffen, wird zum Anlagenteil, der Rest des Namens zum Punkt. Es gilt für alle Geräte der Anlage.", "grouping.pattern": "Muster", "grouping.automatic": "Ohne Muster werden die Punkte nach den Pfaden in ihren Namen gruppiert, sonst nach Art.", "grouping.invalid": "Kein gültiges Muster: {reason}", "grouping.fit": "{fit} von {n} Punkten passen, {other} kommen unter Weitere.", "grouping.save": "Für diese Anlage speichern", "grouping.toAutomatic": "Automatisch gruppieren",
     "print.open": "Drucken …", "print.openHint": "Die Punkte dieses Geräts als Seite zum Drucken oder als PDF, mit Filter und Ansicht der Liste.", "print.now": "Drucken …", "print.back": "Zurück zur Liste", "print.hint": "Im Druckdialog lässt sich auch «Als PDF speichern» wählen.", "print.site": "Anlage", "print.device": "Gerät", "print.address": "Adresse", "print.maker": "Hersteller", "print.read": "Gelesen", "print.shown": "Gezeigt", "print.some": "{what}: {shown} von {n} Punkten", "print.all": "Alle {n} Punkte", "print.one": "1 Punkt", "print.made": "Erstellt", "print.priority": "Priorität jetzt",
     "tree.plantView": "Anlage", "tree.plantNone": "Keine Anlagenteile: Das Gerät hat keine eigene Anlagensicht, und seine Namen enthalten keinen Pfad. Alle seine Objekte stehen unter Nach Typ.", "tree.plantEmpty": "Die Anlagenteile erscheinen, sobald das Gerät gelesen ist.",
     "rec.all": "Alles", "rec.last60": "60 min", "rec.last15": "15 min", "rec.last5": "5 min", "rec.zoomOut": "Zoom zurück", "rec.compare": "Vergleichen", "rec.oneByOne": "Einzeln", "rec.clear": "Werte löschen", "rec.figures": "Kennzahlen in diesem Zeitraum", "rec.last": "Letzter", "rec.low": "Tiefster", "rec.high": "Höchster", "rec.mean": "Mittel / an", "rec.samples": "Messungen", "rec.gaps": "{n} ohne Antwort", "rec.changes": "{n} Wechsel", "rec.removeShort": "Entfernen", "rec.state": "Zustände", "rec.noUnit": "Ohne Einheit",
@@ -259,6 +260,7 @@ export default {
   },
   /** Known server errors by key (patterns in i18n.js); others stay English. */
   errors: {
+    patternTooLong: "Ein Gruppierungsmuster hat höchstens $1 Zeichen.",
     notSerialPort: "$1 ist kein serieller Anschluss dieses Computers.",
     noMstpSpeed: "$1 Baud ist keine MS/TP-Geschwindigkeit: 9600, 19200, 38400, 76800 oder 115200.",
     mstpListenFirst: "Zuerst den Strang mithören.",

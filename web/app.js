@@ -7,7 +7,7 @@ import { readBbmdTables } from "./bbmd-actions.js";
 import { compareTime, hideCompareCrosshair, hideCrosshair, showCompareCrosshair, showCrosshair } from "./chart.js";
 import { acknowledgeAlarm, askAcknowledge, askWhoHas, changeInstance, readWinners, renameDevice, runCommand } from "./device-commands.js";
 import { find, locate, openDevice, openPointAt, pollScan, saveReference, selectDevice, toggleRequests } from "./device-actions.js";
-import { deleteSite, exportSiteEde, importSite, loadSitePoints, loadSites, openSite, readAllDevices, renameSite, stopRunning } from "./site-actions.js";
+import { deleteSite, exportSiteEde, groupSite, importSite, loadSitePoints, loadSites, openSite, readAllDevices, renameSite, stopRunning } from "./site-actions.js";
 import { setLanguage, t } from "./i18n.js";
 import { toggleLiveList } from "./live-list.js";
 import { loadMemory, loadPropertyNames, loadTreeView, loadWatch, saveMemory, savePropertyNames, saveTreeView } from "./memory.js";
@@ -19,7 +19,7 @@ import { installPlugin, installPluginBridge, loadPlugins, pluginsMayAsk, removeP
 import { pollRecording, recordHere, recordPoint, recordingRequest, removeRecorded, setRecordMode } from "./recording-actions.js";
 import { chooseLink, leaveTrunk, listenToTrunk, loadSerialPorts, loadTrunk, searchOnTrunk, searchTrunkAgain } from "./mstp-actions.js";
 import { setAccent, setBackground, setTheme } from "./settings.js";
-import { siteName } from "./sites.js";
+import { openSiteOf, siteName } from "./sites.js";
 import { nextSort } from "./sorting.js";
 import { checkForUpdate, setUpdateCheck } from "./update.js";
 import { TABLE_FILTERS, noTableFilter } from "./table-filter.js";
@@ -154,6 +154,16 @@ const actions = {
   "day-write": () => writeDay(),
   "all-rows": () => { state.allRows = true; render(); },
   "live-list": () => toggleLiveList(),
+  "grouping-edit": () => {
+    state.groupingEdit = openSiteOf(state)?.grouping ?? "";
+    state.menu = null;
+    render();
+    document.getElementById("grouping-pattern")?.focus();
+  },
+  // spaces count in a pattern: only one of nothing else is none
+  "grouping-save": () => groupSite(openSiteOf(state).name, state.groupingEdit.trim() ? state.groupingEdit : null),
+  "grouping-auto": () => groupSite(openSiteOf(state).name, null),
+  "grouping-cancel": () => { state.groupingEdit = null; render(); },
   "print-open": () => openPrint(),
   "print-now": () => window.print(),
   "print-close": () => { state.printing = false; render(); },
@@ -423,6 +433,7 @@ document.addEventListener("input", (event) => {
   if (id === "property-value") state.editValue = event.target.value;
   if (id === "day-changes") state.editDayText = event.target.value;
   if (id === "site-title") state.siteTitle = event.target.value;
+  if (id === "grouping-pattern") { state.groupingEdit = event.target.value; render(); }
   if (FIELDS[id]) FIELDS[id](event.target.value);
   if (FILTERS[id]) { FILTERS[id](event.target.value); render(); }
   if (id === "table-filter") { state[TABLE_FILTERS[event.target.dataset.list]].text = event.target.value; render(); }
@@ -464,6 +475,7 @@ function closeTopmost() {
   else if (state.confirm) state.confirm = null;
   else if (state.asking) state.asking = false;
   else if (state.detailOpen) state.detailOpen = false;
+  else if (state.groupingEdit !== null) state.groupingEdit = null;
   else if (state.printing) state.printing = false;
   else return false;
   return true;

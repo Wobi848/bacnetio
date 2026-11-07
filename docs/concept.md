@@ -135,6 +135,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | EDE state text file, per device and for all | table of a device, toolbar, table of the site, toolbar | `ui/13-exports`, `ede.rs` |
 | EDE file of all devices, reading those not read yet | table of the site, toolbar, *EDE (all devices)* | `ui/13-exports` |
 | Print view of a device's points, with the list's filter and view, saved as PDF by the browser | table of a device, *More → Print …*; Ctrl+P in the list | `ui/40-print` |
+| Own grouping pattern per site, with a preview; kept with the site and over a new search | table of a device, *More → Grouping …* | `ui/43-grouping`, `tests/web/grouping.test.js`, `site.rs` (`a_grouping_pattern_stays_with_its_site`) |
 | Point list as CSV with the winning priority and set slots | table of a device, toolbar, *CSV with priorities* | `ui/13-exports`, `export.rs` |
 | Active alarms of a device (GetEventInformation) | device details | `ui/09-device`, `alarms.rs` (test) |
 | Save a reference, show what changed since | table of a device, toolbar | `ui/06-reference`, `reference.rs` |

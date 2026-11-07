@@ -139,6 +139,7 @@ export default {
     "port.taken": "otro programa usa {address}",
     "list.all": "Mostrar las {n} filas", "list.more": "… {n} más",
     "more": "Más …", "live.off": "Valores en directo", "live.on": "Valores en directo activos", "live.hint": "Lee las filas visibles cada 5 s.", "groups.open": "Abrir todos los grupos", "groups.close": "Cerrar todos los grupos",
+    "grouping.open": "Agrupación …", "grouping.hint": "Agrupar los puntos de esta instalación con un patrón propio en lugar de las rutas de sus nombres.", "grouping.noSite": "Busque o abra primero una instalación: el patrón se guarda con la instalación.", "grouping.title": "Agrupación de esta instalación", "grouping.lead": "Una expresión regular: lo que encuentran sus paréntesis pasa a ser la parte de la instalación, el resto del nombre el punto. Vale para todos los dispositivos de la instalación.", "grouping.pattern": "Patrón", "grouping.automatic": "Sin patrón, los puntos se agrupan por las rutas de sus nombres, si no por tipo.", "grouping.invalid": "Patrón no válido: {reason}", "grouping.fit": "{fit} de {n} puntos coinciden, {other} van a Otros.", "grouping.save": "Guardar para esta instalación", "grouping.toAutomatic": "Agrupar automáticamente",
     "print.open": "Imprimir …", "print.openHint": "Los puntos de este dispositivo como página para imprimir o en PDF, con el filtro y la vista de la lista.", "print.now": "Imprimir …", "print.back": "Volver a la lista", "print.hint": "En el diálogo de impresión también se puede elegir «Guardar como PDF».", "print.site": "Instalación", "print.device": "Dispositivo", "print.address": "Dirección", "print.maker": "Fabricante", "print.read": "Leído", "print.shown": "Mostrado", "print.some": "{what}: {shown} de {n} puntos", "print.all": "Los {n} puntos", "print.one": "1 punto", "print.made": "Creado", "print.priority": "Prioridad activa",
     "tree.plantView": "Instalación", "tree.plantNone": "Sin partes de instalación: el dispositivo no tiene vista de instalación propia y sus nombres no contienen una ruta. Todos sus objetos están en Por tipo.", "tree.plantEmpty": "Las partes de la instalación aparecen cuando se lee el dispositivo.",
     "rec.all": "Todo", "rec.last60": "60 min", "rec.last15": "15 min", "rec.last5": "5 min", "rec.zoomOut": "Quitar zoom", "rec.compare": "Comparar", "rec.oneByOne": "Uno a uno", "rec.clear": "Borrar valores", "rec.figures": "Cifras en este periodo", "rec.last": "Último", "rec.low": "Mínimo", "rec.high": "Máximo", "rec.mean": "Media / activo", "rec.samples": "Muestras", "rec.gaps": "{n} sin respuesta", "rec.changes": "{n} cambios", "rec.removeShort": "Quitar", "rec.state": "Estados", "rec.noUnit": "Sin unidad",
@@ -247,6 +248,7 @@ export default {
   },
   /** Known server errors by key (patterns in i18n.js); others stay English. */
   errors: {
+    patternTooLong: "Un patrón de agrupación tiene como máximo $1 caracteres.",
     notSerialPort: "$1 no es un puerto serie de este ordenador.",
     noMstpSpeed: "$1 baudios no es una velocidad MS/TP: 9600, 19200, 38400, 76800 o 115200.",
     mstpListenFirst: "Escuchar primero el bus.",

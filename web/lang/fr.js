@@ -139,6 +139,7 @@ export default {
     "port.taken": "un autre programme utilise {address}",
     "list.all": "Afficher les {n} lignes", "list.more": "… {n} de plus",
     "more": "Plus …", "live.off": "Valeurs en direct", "live.on": "Valeurs en direct activées", "live.hint": "Lit les lignes visibles toutes les 5 s.", "groups.open": "Ouvrir tous les groupes", "groups.close": "Fermer tous les groupes",
+    "grouping.open": "Regroupement …", "grouping.hint": "Regrouper les points de ce site selon votre propre modèle plutôt que selon les chemins de leurs noms.", "grouping.noSite": "Recherchez ou ouvrez d'abord un site : le modèle est gardé avec le site.", "grouping.title": "Regroupement de ce site", "grouping.lead": "Une expression régulière : ce que ses parenthèses trouvent devient la partie d'installation, le reste du nom le point. Elle vaut pour tous les appareils du site.", "grouping.pattern": "Modèle", "grouping.automatic": "Sans modèle, les points sont regroupés selon les chemins de leurs noms, sinon par genre.", "grouping.invalid": "Modèle non valide : {reason}", "grouping.fit": "{fit} points sur {n} correspondent, {other} vont sous Autres.", "grouping.save": "Garder pour ce site", "grouping.toAutomatic": "Regrouper automatiquement",
     "print.open": "Imprimer …", "print.openHint": "Les points de cet appareil sous forme de page à imprimer ou en PDF, avec le filtre et la vue de la liste.", "print.now": "Imprimer …", "print.back": "Retour à la liste", "print.hint": "La boîte d'impression permet aussi « Enregistrer au format PDF ».", "print.site": "Site", "print.device": "Appareil", "print.address": "Adresse", "print.maker": "Fabricant", "print.read": "Lu", "print.shown": "Affiché", "print.some": "{what} : {shown} sur {n} points", "print.all": "Les {n} points", "print.one": "1 point", "print.made": "Créé", "print.priority": "Priorité active",
     "tree.plantView": "Installation", "tree.plantNone": "Aucune partie d’installation : l’appareil n’a pas de vue d’installation propre et ses noms ne contiennent pas de chemin. Tous ses objets sont sous Par type.", "tree.plantEmpty": "Les parties de l’installation apparaissent une fois l’appareil lu.",
     "rec.all": "Tout", "rec.last60": "60 min", "rec.last15": "15 min", "rec.last5": "5 min", "rec.zoomOut": "Annuler le zoom", "rec.compare": "Comparer", "rec.oneByOne": "Un par un", "rec.clear": "Effacer les valeurs", "rec.figures": "Chiffres sur cette période", "rec.last": "Dernière", "rec.low": "Minimum", "rec.high": "Maximum", "rec.mean": "Moyenne / actif", "rec.samples": "Mesures", "rec.gaps": "{n} sans réponse", "rec.changes": "{n} changements", "rec.removeShort": "Retirer", "rec.state": "États", "rec.noUnit": "Sans unité",
@@ -247,6 +248,7 @@ export default {
   },
   /** Known server errors by key (patterns in i18n.js); others stay English. */
   errors: {
+    patternTooLong: "Un modèle de regroupement a au plus $1 caractères.",
     notSerialPort: "$1 n’est pas un port série de cet ordinateur.",
     noMstpSpeed: "$1 bauds n’est pas une vitesse MS/TP : 9600, 19200, 38400, 76800 ou 115200.",
     mstpListenFirst: "Écouter d’abord le bus.",

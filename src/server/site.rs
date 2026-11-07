@@ -29,6 +29,8 @@ const FINISHED: &str = "done";
 const MOST_DEVICES: usize = 5_000;
 /// The longest name a site can be given; the field in the page stops there too.
 const LONGEST_TITLE: usize = 80;
+/// The longest grouping pattern; the field in the page stops there too.
+const LONGEST_PATTERN: usize = 200;
 
 #[derive(Default, Clone, Serialize, Deserialize)]
 pub struct Site {
@@ -47,6 +49,31 @@ pub struct Site {
     /// The points of each device as `GET /api/devices/{instance}/points/last` answers them.
     #[serde(default)]
     pub points: Map<String, Value>,
+    /// The technician's own pattern that groups the points of every device of the site; none
+    /// groups them by itself (docs/concept-toolbox.md part 4).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grouping: Option<String>,
+}
+
+/// What the technician chose for a site: kept when the same network is searched again.
+#[derive(Default)]
+pub struct Choices {
+    title: Option<String>,
+    grouping: Option<String>,
+}
+
+impl Choices {
+    fn of(site: &Site) -> Self {
+        Choices {
+            title: site.title.clone(),
+            grouping: site.grouping.clone(),
+        }
+    }
+
+    pub fn apply(self, site: &mut Site) {
+        site.title = self.title;
+        site.grouping = self.grouping;
+    }
 }
 
 /// The points of every device read, by device: read since the start, else as remembered. For the
@@ -144,6 +171,7 @@ pub struct SiteView {
     /// The network searched, which the site is kept by.
     name: String,
     title: Option<String>,
+    grouping: Option<String>,
     /// Whether it is the site shown now.
     open: bool,
     saved_ms: u64,
@@ -177,6 +205,7 @@ pub async fn list(State(state): State<Shared>) -> Json<Vec<SiteView>> {
                 read: site.points.len(),
                 open: shown.as_ref() == Some(&site.name),
                 title: site.title,
+                grouping: site.grouping,
                 name: site.name,
                 saved_ms: site.saved_ms,
             })
@@ -251,23 +280,59 @@ pub async fn rename(
 ) -> Result<StatusCode, ApiError> {
     let title: String = request.title.trim().chars().take(LONGEST_TITLE).collect();
     let title = (!title.is_empty()).then_some(title);
+    change_site(&state, &request.name, |site| site.title = title.clone())
+}
+
+#[derive(Deserialize)]
+pub struct GroupingRequest {
+    name: String,
+    /// The pattern, a JavaScript regular expression the page applies; empty or none groups by
+    /// itself again.
+    pattern: Option<String>,
+}
+
+/// Gives a kept site its own pattern to group points by. The page checks the pattern, since it is
+/// the page that applies it; here only its length.
+pub async fn grouping(
+    State(state): State<Shared>,
+    Json(request): Json<GroupingRequest>,
+) -> Result<StatusCode, ApiError> {
+    // spaces count in a pattern: only one of nothing else is none
+    let pattern = request.pattern.unwrap_or_default();
+    if pattern.chars().count() > LONGEST_PATTERN {
+        return Err(ApiError::bad_request(format!(
+            "a grouping pattern has at most {LONGEST_PATTERN} characters"
+        )));
+    }
+    let pattern = (!pattern.trim().is_empty()).then_some(pattern);
+    change_site(&state, &request.name, |site| {
+        site.grouping = pattern.clone();
+    })
+}
+
+/// Changes a kept site, the one shown or one in the data folder.
+fn change_site(
+    state: &AppState,
+    name: &str,
+    change: impl Fn(&mut Site),
+) -> Result<StatusCode, ApiError> {
     let shown = state
         .site
         .lock()
         .expect("site lock")
         .as_ref()
-        .is_some_and(|site| site.name == request.name);
+        .is_some_and(|site| site.name == name);
     if shown {
-        state.remember(|site| site.title = title);
+        state.remember(change);
         return Ok(StatusCode::NO_CONTENT);
     }
     let dir = state
         .data_dir
         .as_deref()
         .ok_or_else(|| ApiError::conflict("bacnetio has no data folder to save to"))?;
-    let mut site = kept_site(dir, &request.name)
-        .ok_or_else(|| ApiError::bad_request(format!("no site named {}", request.name)))?;
-    site.title = title;
+    let mut site = kept_site(dir, name)
+        .ok_or_else(|| ApiError::bad_request(format!("no site named {name}")))?;
+    change(&mut site);
     keep(dir, &site).map_err(|error| ApiError::internal(error.to_string()))?;
     Ok(StatusCode::NO_CONTENT)
 }
@@ -394,14 +459,18 @@ pub async fn import(
 }
 
 impl AppState {
-    /// The name given to the site kept for that network, so a new search keeps it.
-    pub(super) fn kept_title(&self, name: &str) -> Option<String> {
+    /// What was chosen for the site kept for that network, so a new search keeps it.
+    pub(super) fn kept_choices(&self, name: &str) -> Choices {
         if let Some(site) = self.site.lock().expect("site lock").as_ref()
             && site.name == name
         {
-            return site.title.clone();
+            return Choices::of(site);
         }
-        kept_site(self.data_dir.as_deref()?, name)?.title
+        self.data_dir
+            .as_deref()
+            .and_then(|dir| kept_site(dir, name))
+            .map(|site| Choices::of(&site))
+            .unwrap_or_default()
     }
 
     /// Changes the remembered site and writes it to the data folder, if there is one.
@@ -427,6 +496,7 @@ impl AppState {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Arc;
 
     #[test]
     fn a_site_is_saved_and_loaded_again() {
@@ -574,5 +644,46 @@ mod tests {
             shown.title, None,
             "keeping a site leaves the one shown as it is"
         );
+    }
+
+    /// The grouping pattern belongs to the site: set on the one shown or a kept one, kept when the
+    /// same network is searched again, empty for the automatic grouping, and refused when too long.
+    #[tokio::test]
+    async fn a_grouping_pattern_stays_with_its_site() {
+        let dir = std::env::temp_dir().join(format!("bacnetio-grouping-{}", std::process::id()));
+        let mut state = AppState::default();
+        state.data_dir = Some(dir.clone());
+        let state = Arc::new(state);
+        state.remember(|site| site.name = "10.0.0.0/24".into());
+        let set = |name: &str, pattern: Option<&str>| {
+            grouping(
+                State(Arc::clone(&state)),
+                Json(GroupingRequest {
+                    name: name.into(),
+                    pattern: pattern.map(Into::into),
+                }),
+            )
+        };
+        assert!(set("10.0.0.0/24", Some(r"^(\w+) ")).await.is_ok());
+        assert_eq!(
+            state.kept_choices("10.0.0.0/24").grouping.as_deref(),
+            Some(r"^(\w+) "),
+            "with its space, on the site shown"
+        );
+        assert_eq!(
+            kept_site(&dir, "10.0.0.0/24").unwrap().grouping.as_deref(),
+            Some(r"^(\w+) "),
+            "and in its file"
+        );
+        let too_long = "a".repeat(LONGEST_PATTERN + 1);
+        assert!(set("10.0.0.0/24", Some(&too_long)).await.is_err());
+        assert!(
+            set("192.168.1.0/24", Some("x")).await.is_err(),
+            "no such site"
+        );
+        assert!(set("10.0.0.0/24", Some("  ")).await.is_ok());
+        let cleared = state.kept_choices("10.0.0.0/24").grouping;
+        fs::remove_dir_all(&dir).unwrap();
+        assert_eq!(cleared, None, "empty groups by itself again");
     }
 }

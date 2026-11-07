@@ -95,6 +95,8 @@ export const state = {
   deletingSite: null,
   renamingSite: null,
   siteTitle: "",
+  /** The grouping pattern being typed above the point list, or null (grouping-panel.js). */
+  groupingEdit: null,
   /** The priority that wins on each object of the open device, once asked for. */
   winners: {},
   readingWinners: false,

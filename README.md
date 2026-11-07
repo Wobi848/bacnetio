@@ -45,7 +45,8 @@ light and dark theme, the system's language (English or German), keys `1`–`6`,
 - **Exports**: device list and points as CSV, also with priorities; EDE files with state texts, per
   device or for the whole site. A device's points as a page to print or save as PDF, with the
   list's filter.
-- **Sites**: each site searched is kept, named by you, opened again, saved to and read from a file.
+- **Sites**: each site searched is kept, named by you, opened again, saved to and read from a file;
+  its points grouped by the paths in their names or by your own pattern.
 - **Extensions**: plugins installed from one file each under *Settings → Extensions*; each gets a
   page in the sidebar and can mark devices and points in the lists. A plugin reads only, it can
   never write to the plant. Writing a plugin: [docs/plugins.md](docs/plugins.md).

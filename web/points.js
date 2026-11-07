@@ -3,12 +3,14 @@
 
 import { deviceDetailHtml } from "./devices.js";
 import { DEVICE_TYPE, RECORDABLE, chips, deviceMaker, deviceName, errorStrip, has, isFault, isHeldEntry, isOverridden, isRecorded, isWatched, noteStrip, pointKey, valueHtml } from "./format.js";
-import { groupPoints, typeShort } from "./grouping.js";
+import { groupPoints, sitePattern, typeShort } from "./grouping.js";
 import { h, marked } from "./html.js";
 import { currentLocale, objectText, objectTypeName, t } from "./i18n.js";
 import { listBorders } from "./panels.js";
 import { detailHtml } from "./point-detail.js";
 import { pluginMarksHtml } from "./plugins.js";
+import { openSiteOf } from "./sites.js";
+import { groupingMenuHtml, groupingPanelHtml } from "./grouping-panel.js";
 import { matchesQuery, parseQuery } from "./point-query.js";
 import { AREA_ICONS, headToolHtml, readingText } from "./shell.js";
 import { sortHead, sortRows } from "./sorting.js";
@@ -54,7 +56,7 @@ function pointsOfNode(state) {
   const node = state.node;
   if (!node || isViewNode(node)) return points;
   if (node.startsWith("type:")) return points.filter((point) => `type:${point.type}` === node);
-  const group = groupPoints(points).find((found) => found.key === node);
+  const group = groupPoints(points, sitePattern(openSiteOf(state))).find((found) => found.key === node);
   return group ? group.items.map((item) => item.point) : points;
 }
 
@@ -122,6 +124,7 @@ function moreMenu(state) {
     <a class="quiet" href="/api/devices/${device}/points.ede-states.csv" download title="${t("ede.statesHint")}">${t("ede.states")}</a>
     <button type="button" class="quiet" data-act="print-open" title="${t("print.openHint")}">${t("print.open")}</button>
     <hr>
+    ${groupingMenuHtml(state)}
     <button type="button" class="quiet" data-act="groups-all" data-open="true">${t("groups.open")}</button>
     <button type="button" class="quiet" data-act="groups-all" data-open="false">${t("groups.close")}</button>
     <hr>
@@ -210,9 +213,9 @@ function groupRow(state, group, open) {
 
 /** The groups of all the device's points, so that a filter does not rename the plant parts, each
  * holding only the points shown. */
-function groupsOf(points, shown) {
+function groupsOf(state, points, shown) {
   const passing = new Set(shown);
-  return groupPoints(points)
+  return groupPoints(points, sitePattern(openSiteOf(state)))
     .map((group) => ({ ...group, items: group.items.filter(({ point }) => passing.has(point)) }))
     .filter((group) => group.items.length);
 }
@@ -225,13 +228,13 @@ function chosenGroups(state, groups) {
 }
 
 /** The groups the list shows, with the points shown in them: for the print view. */
-export const shownGroups = (state, points, shown) => chosenGroups(state, groupsOf(points, shown));
+export const shownGroups = (state, points, shown) => chosenGroups(state, groupsOf(state, points, shown));
 
 function listHtml(state, shown, points) {
   const empty = `<div class="empty"><p>${t(state.pointView === "changed" ? "ref.none" : "filter.none")}</p><p class="hint">${t("filter.hint")}</p></div>`;
   if (!shown.length) return empty;
   const narrowed = state.filter.trim() !== "" || state.pointView !== "all" || state.pointTypes.length > 0;
-  const groups = groupsOf(points, shown);
+  const groups = groupsOf(state, points, shown);
   const chosen = chosenGroups(state, groups);
   if (!chosen.length) return empty;
   const openAll = narrowed || chosen.length === 1;
@@ -282,7 +285,7 @@ export function viewPoints(state, also = null) {
   return {
     title: deviceName(device),
     lead: h(pointsLead(state, points)),
-    html: `<section class="listwrap">${listBorders()}${toolbar(state, pointsOfNode(state), also)}${strips}<div class="rows${points.some((point) => point.description) ? "" : " no-desc"}" data-keep="points" tabindex="0" role="listbox" data-list="points">${listHtml(state, shown, points)}</div></section>
+    html: `<section class="listwrap">${listBorders()}${toolbar(state, pointsOfNode(state), also)}${strips}${groupingPanelHtml(state, points)}<div class="rows${points.some((point) => point.description) ? "" : " no-desc"}" data-keep="points" tabindex="0" role="listbox" data-list="points">${listHtml(state, shown, points)}</div></section>
       ${state.selectedPoint ? detailHtml(state) : deviceDetailHtml(state)}`,
   };
 }

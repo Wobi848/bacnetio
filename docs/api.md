@@ -356,6 +356,10 @@ subnet, BBMD or adapter searched; `name` is that network, `title` the name the t
 `null`, `open` whether it is the site shown. `POST /api/sites/open` `{ "name": "…" }` shows one as
 remembered. `POST /api/sites/rename` `{ "name": "…", "title": "…" }` names one (at most 80
 characters; empty goes back to the network); a new search of the same network keeps the name.
+`POST /api/sites/grouping` `{ "name": "…", "pattern": "…" }` gives one its own grouping pattern, a
+JavaScript regular expression the page applies to the point names (at most 200 characters, spaces
+count; empty or `null` groups by itself again); a new search of the same network keeps it, and
+`GET /api/sites` lists it as `grouping`.
 `POST /api/sites/delete` `{ "name": "…" }` forgets one. `GET /api/site.json` downloads the remembered
 site as a file, `GET /api/site.json?name=…` a kept one, `POST /api/site.json` takes such a file
 back, keeps it and shows it; anything else gets `400`.

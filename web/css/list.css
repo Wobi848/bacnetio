@@ -282,3 +282,12 @@ button.chip.removable:hover { border-color: var(--accent-strong); }
 .props dd .stamps { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; }
 .props dd .entries { display: grid; gap: 2px; }
 .props dd .property-edit { flex: 1; }
+
+/* The site's own grouping pattern above the list (grouping-panel.js) */
+.grouping-panel { display: grid; gap: 8px; margin: 0 20px 12px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.grouping-panel h3 { margin: 0; font-size: 14px; }
+.grouping-panel p { margin: 0; }
+.grouping-field { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: center; gap: 8px; }
+.grouping-field input { width: 100%; }
+.grouping-preview { margin: 0; padding-left: 18px; font-size: 13px; }
+.grouping-panel .acts { display: flex; flex-wrap: wrap; gap: 8px; }

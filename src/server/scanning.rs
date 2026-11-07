@@ -123,9 +123,9 @@ where
         };
         if matches!(status, ScanStatus::Done(_)) {
             let scan = serde_json::to_value(scan_view(&status)).expect("scan state is JSON");
-            let title = state.kept_title(&scope);
+            let choices = state.kept_choices(&scope);
             state.remember(|site| {
-                site.title = title;
+                choices.apply(site);
                 site.name = scope;
                 site.scan = Some(scan);
                 site.points.clear();
