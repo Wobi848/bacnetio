@@ -156,12 +156,12 @@ pub async fn site_ede_states(State(state): State<Shared>) -> Result<impl IntoRes
     ))
 }
 
-/// The point list of the last reading as CSV, with the priority arrays read from the device now,
-/// one object after the other, so that a small controller is not flooded.
-pub async fn points_priorities_csv(
-    State(state): State<Shared>,
-    Path(device): Path<u32>,
-) -> Result<impl IntoResponse, ApiError> {
+/// The points of the last reading, each with its priority array read from the device now, one
+/// object after the other, so that a small controller is not flooded.
+pub(super) async fn priority_rows(
+    state: &Shared,
+    device: u32,
+) -> Result<Vec<(Point, export::Priorities)>, ApiError> {
     let points = state
         .readings
         .lock()
@@ -179,6 +179,15 @@ pub async fn points_priorities_csv(
         };
         rows.push((point, priorities));
     }
+    Ok(rows)
+}
+
+/// The point list of the last reading as CSV, with the priority arrays.
+pub async fn points_priorities_csv(
+    State(state): State<Shared>,
+    Path(device): Path<u32>,
+) -> Result<impl IntoResponse, ApiError> {
+    let rows = priority_rows(&state, device).await?;
     let disposition = format!("attachment; filename=\"device-{device}-priorities.csv\"");
     Ok((
         [

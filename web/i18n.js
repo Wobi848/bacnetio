@@ -74,6 +74,10 @@ const ERROR_PATTERNS = [
   [/^bacnetio has no data folder to save to$/, "noDataFolder"],
   [/^no site named (.*)$/, "noSite"],
   [/^a grouping pattern has at most (\d+) characters$/, "patternTooLong"],
+  // the Excel files: what the page sends for the column heads and the title line
+  [/^heads must be a JSON object of texts$/, "xlsxHeads"],
+  [/^at most (\d+) heads of at most (\d+) characters$/, "xlsxHeadsLong"],
+  [/^a title has at most (\d+) characters$/, "xlsxTitleLong"],
   [/^(.*) is not in alarm any more$/, "notInAlarm"],
   [/^the device does not tell when the alarm began, so it cannot be acknowledged from here$/, "noAlarmTime"],
   [/^"(.*)" is not true or false$/, "notBool"],

@@ -2,6 +2,7 @@
 
 import { byUnit, extent, figures, inWindow } from "./analysis.js";
 import { chartHtml, compareChartHtml, numberText, valueLabel } from "./chart.js";
+import { excelLink } from "./excel.js";
 import { h } from "./html.js";
 import { currentLocale, objectText, t } from "./i18n.js";
 
@@ -163,7 +164,8 @@ export function viewRecording(state) {
         <span class="seg">${views}</span><span class="seg">${windows}</span>${zoom}
         <div class="end">${stateHtml(recording, points)}
           <button type="button" class="quiet" data-act="rec-clear"${recording.running ? " disabled" : ""}>${t("rec.clear")}</button>
-          <a class="quiet" href="/api/recording.csv?offset_min=${offset}" download>${t("rec.export")}</a></div></div>
+          <a class="quiet" href="/api/recording.csv?offset_min=${offset}" download>${t("rec.export")}</a>
+          ${excelLink(state, "/api/recording.xlsx", t("xlsx.recExport"), [t("tab.recording")])}</div></div>
       ${recording.running ? "" : `<div class="strips"><div class="strip info">${t("rec.notStarted", { interval })}</div></div>`}
       <div class="page" data-keep="recording">${state.recView === "compare" ? `<div class="analysis">${compareHtml(state, points)}</div>` : `<div class="cards two">${points.map((point, index) => card(recording, point, index)).join("")}</div>`}</div></section></div>`,
   };

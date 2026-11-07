@@ -18,6 +18,7 @@ mod scanning;
 mod serial;
 mod session;
 mod site;
+mod workbooks;
 mod writing;
 
 use std::net::{Ipv4Addr, SocketAddr};
@@ -74,6 +75,10 @@ pub fn router(state: Shared) -> Router {
             get(scanning::scan_state).post(scanning::start_scan),
         )
         .route("/api/devices.csv", get(exports::devices_csv))
+        .route("/api/devices.xlsx", get(workbooks::devices))
+        .route("/api/site.xlsx", get(workbooks::site))
+        .route("/api/log.xlsx", get(workbooks::log))
+        .route("/api/recording.xlsx", get(workbooks::recording))
         .route("/api/devices/locate", post(scanning::locate))
         .route("/api/devices/{device}/points", get(devices::points))
         .route(
@@ -86,6 +91,11 @@ pub fn router(state: Shared) -> Router {
             get(reading::progress).post(reading::start),
         )
         .route("/api/devices/{device}/points.csv", get(exports::points_csv))
+        .route("/api/devices/{device}/points.xlsx", get(workbooks::points))
+        .route(
+            "/api/devices/{device}/points-priorities.xlsx",
+            get(workbooks::points_priorities),
+        )
         .route(
             "/api/devices/{device}/points-priorities.csv",
             get(exports::points_priorities_csv),

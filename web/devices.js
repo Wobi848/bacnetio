@@ -1,6 +1,7 @@
 // The device list: the search in place with its progress, the devices found, and the details of
 // the chosen one beside the list.
 
+import { excelLink } from "./excel.js";
 import { bbmdHtml } from "./bbmd.js";
 import { deviceCount, deviceMaker, deviceName, errorStrip, noteStrip, ownObjects } from "./format.js";
 import { h } from "./html.js";
@@ -48,6 +49,8 @@ function locateMenu(state) {
 function exportMenu(state, searching) {
   const menu = state.menu !== "export" ? "" : `<div class="menu end exports" role="menu">
     <a class="quiet" href="/api/devices.csv" download>${t("export.devices")}</a>
+    ${excelLink(state, "/api/devices.xlsx", t("xlsx.devicesExport"))}
+    <button type="button" class="quiet" data-act="site-excel" title="${t("xlsx.siteHint")}"${searching || state.reading ? " disabled" : ""}>${t("xlsx.site")}</button>
     <button type="button" class="quiet" data-act="site-ede" title="${t("ede.siteHint")}"${searching || state.reading ? " disabled" : ""}>${t("ede.site")}</button></div>`;
   return `<span class="menu-host"><button type="button" class="quiet" data-act="export-menu" aria-expanded="${state.menu === "export"}">${t("export")}</button>${menu}</span>`;
 }
