@@ -77,6 +77,101 @@ fn taken_on_interface(interface: Ipv4Addr, port: u16) -> Option<String> {
     }
 }
 
+/// Where bacnetio joins an MS/TP trunk (docs/concept-mstp.md): the serial port, the trunk's
+/// speed, bacnetio's own station address and the highest master address to poll for.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct Trunk {
+    pub port: String,
+    pub baud: u32,
+    pub station: u8,
+    pub max_master: u8,
+}
+
+/// On MS/TP an answer waits for the token: a ring of many stations takes a while to come round.
+const MSTP_APDU_TIMEOUT_MS: u64 = 3000;
+/// The largest APDU an MS/TP frame carries (Clause 9.3).
+const MSTP_MAX_APDU: u16 = 480;
+/// How long a master may take to poll for bacnetio's address and pass it the token.
+const RING_WAIT: Duration = Duration::from_secs(20);
+const RING_POLL: Duration = Duration::from_millis(100);
+
+/// Opens the serial port and joins the trunk as a master station.
+#[cfg(not(target_os = "android"))]
+pub async fn open_mstp(trunk: &Trunk) -> anyhow::Result<Connection> {
+    use bacnet_transport::mstp_serial::{SerialConfig, TokioSerialPort};
+    let serial = TokioSerialPort::open(&SerialConfig {
+        port_name: trunk.port.clone(),
+        baud_rate: trunk.baud,
+    })
+    .with_context(|| format!("cannot open {}", trunk.port))?;
+    open_mstp_on(serial, trunk).await
+}
+
+/// Joins the trunk on an open serial line; [`open_mstp`] with a real port.
+pub async fn open_mstp_on<S: bacnet_transport::mstp::SerialPort>(
+    serial: S,
+    trunk: &Trunk,
+) -> anyhow::Result<Connection> {
+    use bacnet_transport::mstp::{MstpConfig, MstpTransport};
+    let config = MstpConfig {
+        this_station: trunk.station,
+        max_master: trunk.max_master,
+        baud_rate: trunk.baud,
+        ..MstpConfig::default()
+    };
+    let transport: AnyTransport = MstpTransport::new(serial, config).into();
+    let client = BACnetClient::generic_builder()
+        .transport(transport)
+        .apdu_timeout_ms(MSTP_APDU_TIMEOUT_MS)
+        .apdu_retries(APDU_RETRIES)
+        .max_apdu_length(MSTP_MAX_APDU)
+        .build()
+        .await
+        .with_context(|| format!("cannot join the MS/TP trunk on {}", trunk.port))?;
+    // a Who-Is sent before bacnetio holds the token would wait in its queue, and the search
+    // would end before the answers come
+    if let Err(error) = wait_in_ring(&client, trunk).await {
+        let mut client = client;
+        client
+            .stop()
+            .await
+            .context("cannot close the serial port")?;
+        return Err(error);
+    }
+    Ok(Connection {
+        client: Arc::new(client),
+        local_port: 0,
+        port_unavailable: None,
+    })
+}
+
+/// Waits until bacnetio has held the token: passed it on in a ring, or took it alone on a quiet
+/// trunk.
+async fn wait_in_ring(client: &Client, trunk: &Trunk) -> anyhow::Result<()> {
+    let AnyTransport::Mstp(transport) = client.transport() else {
+        return Ok(());
+    };
+    let diagnostics = transport.diagnostics();
+    let deadline = Instant::now() + RING_WAIT;
+    loop {
+        let alone = diagnostics
+            .node_state()
+            .is_some_and(|node| node.sole_master);
+        if alone || diagnostics.snapshot().mac.token_rotations > 0 {
+            return Ok(());
+        }
+        if Instant::now() >= deadline {
+            bail!(
+                "no master took bacnetio into the token ring as station {} within {} s: check \
+                 the speed, and that the station is inside the masters' Max_Master",
+                trunk.station,
+                RING_WAIT.as_secs()
+            );
+        }
+        tokio::time::sleep(RING_POLL).await;
+    }
+}
+
 /// Registers with the BBMD where one is given.
 async fn finish(
     endpoint: &Endpoint,

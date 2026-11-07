@@ -114,6 +114,8 @@ button.chip { height: 22px; border: 0; cursor: pointer; }
 .side-card .side-meta { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
 .side-card .side-detail { display: grid; gap: 2px; min-width: 0; color: var(--muted); font-size: 12.5px; }
 .side-card .side-detail .mono { overflow-wrap: anywhere; }
+/* the way off the trunk wraps below its line in a narrow sidebar, beside it where there is room */
+.side-card .side-trunk { display: grid; justify-items: start; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
 /* the state wraps rather than being cut off: it says what to do */
 .side-card .state { min-width: 0; line-height: 1.25; }
 /* the search settings: a framed icon, the word joins it where the card has room */
@@ -121,6 +123,7 @@ button.chip { height: 22px; border: 0; cursor: pointer; }
 .side-card .side-tool .nav-i { display: block; width: 18px; height: 18px; color: inherit; }
 .side-card .side-tool-label { display: none; }
 @container (min-width: 280px) {
+  .side-card .side-trunk { grid-template-columns: minmax(0, 1fr) auto; align-items: center; justify-items: stretch; }
   .side-card .side-tool { width: auto; padding: 0 10px; }
   .side-card .side-tool-label { display: inline; }
 }

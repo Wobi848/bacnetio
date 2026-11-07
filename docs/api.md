@@ -77,8 +77,26 @@ speed (38400, 76800, 19200, 9600, 115200) until one gives clean frames. The answ
 `baud` is `null` when no speed gave clean frames; `trials` then says what each speed heard
 (`damaged`: broken CRC, cut-off frames, octets that make no frame). `stations` sent a frame,
 `max_master` is the highest address their polls reach, `proposed_station` the highest free
-address up to it. `400` for a port the system does not list or a speed MS/TP does not use, `409`
-when the port cannot be opened (in use, no permission: the text says what to do).
+address: the first free one right above a station heard, up to Max_Master. `400` for a port the
+system does not list or a speed MS/TP does not use, `409` when the port cannot be opened (in use, no
+permission: the text says what to do) or bacnetio is on that trunk already.
+
+`POST /api/mstp/search` `{ "port": "/dev/ttyACM0", "baud": 38400, "station": 9 }`: joins the trunk
+as that station and searches it like `POST /api/scan` (Who-Is; no sweep, no BBMD); the progress
+and the result come from `GET /api/scan`. bacnetio first waits until a master has taken it into the
+token ring. `202` when the search runs. `409` before listening to that port, at another speed than
+the one heard, or at an address that answered while listening: joining a trunk takes part in its
+timing (`docs/concept-mstp.md`). `502` when no master takes bacnetio into the ring. Joining is
+logged (`GET /api/log`, under device 4194303, action `command`).
+
+`GET /api/mstp/trunk`: the trunk bacnetio is on, `{ "port": "/dev/ttyACM0", "baud": 38400,
+"station": 9, "max_master": 127 }`, or `null`.
+
+`POST /api/mstp/leave`: leaves the trunk and closes its port; logged like joining. `204`, also when
+bacnetio is on no trunk.
+
+Devices on a trunk have the `address` `MS/TP 5`. Written entries keep it as `mstp:5`; IP addresses
+stay as they were.
 ## Search for devices
 
 `POST /api/scan/stop` stops a running search (`204`); it ends as done, with the devices found so far.

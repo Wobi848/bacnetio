@@ -2,7 +2,8 @@
 // ports, and listening to a trunk, which sends nothing.
 
 import { api } from "./api.js";
-import { render, state } from "./store.js";
+import { runSearch } from "./device-actions.js";
+import { render, state, toast } from "./store.js";
 
 /** BACnet/IP or MS/TP; the serial ports are asked for the first time MS/TP is chosen. */
 export function chooseLink(link) {
@@ -37,9 +38,49 @@ export async function listenToTrunk() {
   render();
   try {
     mstp.heard = await api.mstpListen(mstp.port, mstp.baud ? Number(mstp.baud) : undefined);
+    mstp.station = mstp.heard.proposed_station === null ? "" : String(mstp.heard.proposed_station);
   } catch (error) {
     mstp.error = error.message;
   }
   mstp.listening = false;
+  render();
+}
+
+/** Joins the trunk heard as the station in the field and searches it; the server checks again. */
+export async function searchOnTrunk() {
+  const mstp = state.mstp;
+  const station = Number(mstp.station);
+  if (!mstp.heard?.baud || mstp.station.trim() === "" || !Number.isInteger(station)) return;
+  state.menu = null;
+  const joined = await runSearch(() => api.mstpSearch(mstp.port, mstp.heard.baud, station));
+  if (joined) await loadTrunk();
+}
+
+/** Searches the trunk bacnetio is on again, as it joined it. */
+export function searchTrunkAgain() {
+  const trunk = state.mstp.trunk;
+  return runSearch(() => api.mstpSearch(trunk.port, trunk.baud, trunk.station));
+}
+
+/** Leaves the trunk; its port is free again for listening. */
+export async function leaveTrunk() {
+  try {
+    await api.mstpLeave();
+    state.mstp.trunk = null;
+    state.log = await api.log();
+  } catch (error) {
+    toast(error.message, true);
+  }
+  render();
+}
+
+/** Whether bacnetio is on a trunk, also after a reload of the page: MS/TP is chosen then. */
+export async function loadTrunk() {
+  const trunk = await api.mstpTrunk();
+  state.mstp.trunk = trunk;
+  if (trunk) {
+    state.link = "mstp";
+    state.mstp.port = trunk.port;
+  }
   render();
 }

@@ -2,7 +2,7 @@
 
 import { h } from "./html.js";
 import { t } from "./i18n.js";
-import { heardHtml, linkChoiceHtml, mstpFieldsHtml } from "./mstp.js";
+import { heardHtml, linkChoiceHtml, mstpActsHtml, mstpFieldsHtml, trunkHtml } from "./mstp.js";
 import { resizeHandle } from "./panels.js";
 import { pluginTabsHtml } from "./plugins.js";
 import { siteProblems } from "./problems.js";
@@ -44,8 +44,10 @@ function connection(state) {
   return `<span class="state"><span class="dot"></span>${t("conn.ready")}</span>`;
 }
 
-/** Where the search looks, in one line: the subnet entered, or the adapter's. */
+/** Where the search looks, in one line: the trunk bacnetio is on, the subnet entered, or the adapter's. */
 export function searchScope(state) {
+  const trunk = state.mstp?.trunk;
+  if (trunk) return `${trunk.port} · ${trunk.baud}`;
   if (state.settings.subnet.trim()) return state.settings.subnet.trim();
   if (state.settings.bbmd.trim()) return `BBMD ${state.settings.bbmd.trim()}`;
   return state.adapter ? `${state.adapter.ip}/${state.adapter.prefix_len}` : "";
@@ -65,9 +67,7 @@ function adapterField(state) {
 export function searchDialog(state) {
   if (state.menu !== "network") return "";
   const mstp = state.mstpAvailable && state.link === "mstp";
-  const next = mstp
-    ? `<button type="button" data-act="mstp-listen"${state.mstp.port && !state.mstp.listening ? "" : " disabled"}>${t("mstp.listen")}</button>`
-    : `<button type="button" data-act="find">${t("searchWithSettings")}</button>`;
+  const next = mstp ? mstpActsHtml(state) : `<button type="button" data-act="find">${t("searchWithSettings")}</button>`;
   return `<div class="modal"><div class="modal-box search-settings" role="dialog" aria-modal="true" aria-labelledby="net-title">
     <h2 id="net-title">${t("net.title")}</h2>
     <p class="sub">${t("net.lead")}</p>
@@ -123,7 +123,8 @@ function sideCard(state) {
     <section class="side-part site-group" aria-label="${t("side.site")}"><span class="cap">${t("side.site")}</span>
       <div class="menu-host site-host"><button type="button" id="site-switch" class="quiet site-switch" data-act="site-menu" aria-haspopup="listbox" aria-expanded="${state.menu === "sites"}" title="${h(name)}"><span class="site-now">${h(name)}</span>${CHEVRON}</button>${siteMenu(state)}</div>
       <div class="side-meta"><span class="side-detail">${network}${connection(state)}</span>
-        <button type="button" id="search-settings" class="quiet side-tool" data-act="network" aria-expanded="${state.menu === "network"}" aria-label="${t("side.searchSettings")}" title="${t("side.searchSettings")}">${SLIDERS_ICON}<span class="side-tool-label">${t("side.searchSettings")}</span></button></div></section>
+        <button type="button" id="search-settings" class="quiet side-tool" data-act="network" aria-expanded="${state.menu === "network"}" aria-label="${t("side.searchSettings")}" title="${t("side.searchSettings")}">${SLIDERS_ICON}<span class="side-tool-label">${t("side.searchSettings")}</span></button></div>
+      ${trunkHtml(state)}</section>
   </div>`;
 }
 
@@ -196,11 +197,12 @@ export function readingText(progress) {
 
 export function statusHtml(state) {
   const busy = state.scan.state === "running" || state.reading;
-  const port = state.settings.port.trim() || "47808";
+  const trunk = state.mstp?.trunk;
+  const link = trunk ? t("mstp.status", { baud: trunk.baud }) : `${t("port")} ${state.settings.port.trim() || "47808"}`;
   const held = state.held.length ? `<button type="button" class="chip warn" data-area-go="log">${t("held", { n: state.held.length })}</button>` : "";
   const recording = state.recording?.running ? `<button type="button" class="chip accent" data-area-go="recording">● ${t("rec.on")}</button>` : "";
   return `<span class="state"><span class="dot ${busy ? "busy" : "on"}"></span>${h(activity(state))}</span>
     ${busy ? `<button type="button" class="quiet" data-act="stop-running">${t("stop")}</button>` : ""}
-    <span class="cut">${t("port")} ${h(port)}</span>
+    <span class="cut">${h(link)}</span>
     <span class="chips">${held}${recording}</span>`;
 }

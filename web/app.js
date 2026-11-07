@@ -17,7 +17,7 @@ import { installDragToggle } from "./drag-toggle.js";
 import { editDay, editProperty, releaseHeld, releaseHere, releaseOther, selectPoint, setClock, showTechnical, writeDay, writeProperty, writeValue } from "./object-actions.js";
 import { installPlugin, installPluginBridge, loadPlugins, pluginsMayAsk, removePlugin, switchPlugin } from "./plugin-actions.js";
 import { pollRecording, recordHere, recordPoint, recordingRequest, removeRecorded, setRecordMode } from "./recording-actions.js";
-import { chooseLink, listenToTrunk, loadSerialPorts } from "./mstp-actions.js";
+import { chooseLink, leaveTrunk, listenToTrunk, loadSerialPorts, loadTrunk, searchOnTrunk, searchTrunkAgain } from "./mstp-actions.js";
 import { setAccent, setBackground, setTheme } from "./settings.js";
 import { siteName } from "./sites.js";
 import { nextSort } from "./sorting.js";
@@ -35,6 +35,7 @@ const FIELDS = {
   subnet: (value) => { state.settings.subnet = value; },
   "id-from": (value) => { state.settings.idFrom = value; },
   "id-to": (value) => { state.settings.idTo = value; },
+  "mstp-station": (value) => { state.mstp.station = value; },
   "locate-address": (value) => { state.settings.locate = value; },
   "locate-network": (value) => { state.settings.locateNetwork = value; },
   "locate-mac": (value) => { state.settings.locateMac = value; },
@@ -107,7 +108,8 @@ function leaveSite() {
 const listedPoint = (key) => state.points.find((point) => pointKey(point) === key);
 
 const actions = {
-  find: () => { forgetDeviceReads(); find(); },
+  // with MS/TP chosen, searching again searches the trunk bacnetio is on
+  find: () => { forgetDeviceReads(); if (state.link === "mstp" && state.mstp.trunk) searchTrunkAgain(); else find(); },
   locate: () => locate(),
   network: () => { state.menu = state.menu === "network" ? null : "network"; render(); document.getElementById("subnet")?.focus(); },
   "locate-menu": () => { state.menu = state.menu === "locate" ? null : "locate"; render(); document.getElementById("locate-address")?.focus(); },
@@ -115,6 +117,8 @@ const actions = {
   link: (element) => chooseLink(element.dataset.link),
   "mstp-ports": () => loadSerialPorts(),
   "mstp-listen": () => listenToTrunk(),
+  "mstp-search": () => { forgetDeviceReads(); searchOnTrunk(); },
+  "mstp-leave": () => leaveTrunk(),
   "toggle-head": () => { state.headOpen = !state.headOpen; render(); },
   // the adapter is chosen in the search settings: open them with the choice in focus
   "focus-adapter": () => {
@@ -629,7 +633,11 @@ async function start() {
     refreshHeld(),
     api.log().then((log) => { state.log = log; }),
     api.recording().then((recording) => { state.recording = recording; }),
-    api.info().then((info) => { state.version = info.version; state.mstpAvailable = Boolean(info.mstp); }),
+    api.info().then((info) => {
+      state.version = info.version;
+      state.mstpAvailable = Boolean(info.mstp);
+      if (state.mstpAvailable) return loadTrunk();
+    }),
   ]).catch((error) => { state.error = error.message; });
   render();
   pollRecording();

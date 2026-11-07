@@ -91,13 +91,47 @@ pub fn trunk_speed(trials: &[Trial]) -> Option<u32> {
         .map(|trial| trial.baud)
 }
 
-/// The highest address up to `max_master` that no station uses. Devices are usually numbered
-/// from below, so the top collides least.
+/// The first free address right above a station heard, the highest station first, up to
+/// `max_master`. A master polls the addresses after its own one by one, in a ring only one every
+/// 50 token passes (Clause 9.5.6): right above it bacnetio is taken into the ring at once, at 127
+/// it may wait minutes (decided with the maintainer on 7 November 2026). Without such an address,
+/// the highest free one.
 pub fn proposed_station(stations: &[u8], max_master: Option<u8>) -> Option<u8> {
     let highest = max_master.unwrap_or(MAX_MASTER).min(MAX_MASTER);
-    (0..=highest)
-        .rev()
-        .find(|address| !stations.contains(address))
+    let free = |address: &u8| *address <= highest && !stations.contains(address);
+    let mut heard: Vec<u8> = stations.to_vec();
+    heard.sort_unstable_by(|a, b| b.cmp(a));
+    heard
+        .iter()
+        .filter_map(|station| station.checked_add(1))
+        .find(free)
+        .or_else(|| (0..=highest).rev().find(free))
+}
+
+/// Whether bacnetio may join the trunk it heard at `baud` as `station`: only at the speed it
+/// heard, and never at an address that answered (docs/concept-mstp.md, "Joining a trunk is an
+/// intervention"). The reason in words when not.
+pub fn may_join(heard: &Heard, baud: u32, station: u8) -> Result<(), String> {
+    match heard.baud {
+        None => return Err("nothing was heard on this port: listen to the trunk first".to_string()),
+        Some(found) if found != baud => {
+            return Err(format!(
+                "the trunk was heard at {found} baud, not {baud}: listen again at {baud} first"
+            ));
+        }
+        Some(_) => {}
+    }
+    if station > MAX_MASTER {
+        return Err(format!(
+            "station {station} is above {MAX_MASTER}, the highest master address"
+        ));
+    }
+    if heard.stations.contains(&station) {
+        return Err(format!(
+            "station {station} answered while listening: another device uses it"
+        ));
+    }
+    Ok(())
 }
 
 /// Listens at each speed in turn until one gives clean frames, opening the line anew for each.
@@ -229,12 +263,51 @@ mod tests {
     }
 
     #[test]
-    fn the_highest_free_address_up_to_max_master_is_proposed() {
-        assert_eq!(proposed_station(&[5, 6, 7], None), Some(127));
-        assert_eq!(proposed_station(&[5, 63], Some(63)), Some(62));
+    fn the_free_address_right_above_the_highest_station_is_proposed() {
+        assert_eq!(proposed_station(&[5, 6, 7], None), Some(8));
+        assert_eq!(proposed_station(&[8, 5, 6, 7], Some(127)), Some(9));
+        // the highest station sits at Max_Master: right above a lower one
+        assert_eq!(proposed_station(&[5, 63], Some(63)), Some(6));
         assert_eq!(proposed_station(&[], Some(200)), Some(127));
         let all: Vec<u8> = (0..=3).collect();
         assert_eq!(proposed_station(&all, Some(3)), None);
+    }
+
+    #[test]
+    fn joining_needs_the_speed_heard_and_a_free_address() {
+        let heard = Heard {
+            baud: Some(38_400),
+            trials: Vec::new(),
+            stations: vec![5, 6],
+            max_master: Some(127),
+            lost_tokens: 0,
+            proposed_station: Some(7),
+        };
+        assert_eq!(may_join(&heard, 38_400, 7), Ok(()));
+        assert!(
+            may_join(&heard, 38_400, 6)
+                .unwrap_err()
+                .contains("another device uses it")
+        );
+        assert!(
+            may_join(&heard, 76_800, 7)
+                .unwrap_err()
+                .contains("heard at 38400 baud")
+        );
+        assert!(
+            may_join(&heard, 38_400, 128)
+                .unwrap_err()
+                .contains("above 127")
+        );
+        let silent = Heard {
+            baud: None,
+            ..heard
+        };
+        assert!(
+            may_join(&silent, 38_400, 7)
+                .unwrap_err()
+                .contains("listen to the trunk first")
+        );
     }
 
     #[test]

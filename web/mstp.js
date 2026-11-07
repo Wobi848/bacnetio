@@ -32,13 +32,38 @@ function speedField(mstp) {
   return `<select id="mstp-baud">${options}</select>`;
 }
 
-/** The fields of the search settings with MS/TP chosen. */
+/** The fields of the search settings with MS/TP chosen; bacnetio's address once a speed was heard. */
 export function mstpFieldsHtml(state) {
   const mstp = state.mstp;
   const field = (id, label, input) => `<dt><label for="${id}">${label}</label></dt><dd>${input}</dd>`;
+  const station = canJoin(mstp)
+    ? `${field("mstp-station", t("mstp.ownAddress"), `<input id="mstp-station" class="mono" inputmode="numeric" value="${h(mstp.station)}">`)}
+    <dd class="hint">${t("mstp.joinHint", { baud: mstp.heard.baud })}</dd>`
+    : "";
   return `${field("mstp-port", t("mstp.port"), portField(mstp))}
     ${field("mstp-baud", t("mstp.speed"), speedField(mstp))}
-    <dd class="hint">${t("mstp.listenHint")}</dd>`;
+    <dd class="hint">${t("mstp.listenHint")}</dd>
+    ${station}`;
+}
+
+/** Joining needs a speed heard on this port: listening comes first (docs/concept-mstp.md). */
+export const canJoin = (mstp) => Boolean(mstp.heard?.baud) && !mstp.listening;
+
+/** The buttons of the dialog with MS/TP: listen, and once a speed was heard, join as the next step. */
+export function mstpActsHtml(state) {
+  const mstp = state.mstp;
+  const busy = !mstp.port || mstp.listening;
+  if (!canJoin(mstp)) return `<button type="button" data-act="mstp-listen"${busy ? " disabled" : ""}>${t("mstp.listen")}</button>`;
+  return `<button type="button" class="quiet" data-act="mstp-listen"${busy ? " disabled" : ""}>${t("mstp.listenAgain")}</button>
+    <button type="button" data-act="mstp-search">${t("mstp.join")}</button>`;
+}
+
+/** In the sidebar while bacnetio is on a trunk: where, and the way off it. */
+export function trunkHtml(state) {
+  const trunk = state.mstp.trunk;
+  if (!trunk) return "";
+  return `<div class="side-trunk"><span class="side-detail">${t("mstp.onTrunk", { station: trunk.station, baud: trunk.baud })}</span>
+    <button type="button" class="quiet" data-act="mstp-leave">${t("mstp.leave")}</button></div>`;
 }
 
 /** What listening heard, in words: the speed, the stations, a free address; or why nothing came. */

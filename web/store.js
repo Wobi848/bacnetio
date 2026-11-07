@@ -40,7 +40,7 @@ export const state = {
   /** Whether this bacnetio can use MS/TP at all (not on Android), from /api/info. */
   mstpAvailable: false,
   /** MS/TP: the serial ports (null until asked), the chosen one and speed ("" = find out), and what listening heard. */
-  mstp: { ports: null, port: "", baud: "", listening: false, heard: null, error: null },
+  mstp: { ports: null, port: "", baud: "", listening: false, heard: null, error: null, station: "", trunk: null },
   /** Which menu is open: "network", "locate" or "export". */
   menu: null,
   scan: { state: "idle" },
