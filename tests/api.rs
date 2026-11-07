@@ -160,3 +160,31 @@ async fn foreign_pages_are_refused() {
     let own = write("127.0.0.1:18099", Some("http://127.0.0.1:18099"));
     assert_eq!(status(own).await, StatusCode::BAD_REQUEST);
 }
+
+#[cfg(not(target_os = "android"))]
+#[tokio::test]
+async fn serial_ports_are_listed() {
+    let (status, body) = call(Method::GET, "/api/serial-ports", "").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.is_array());
+}
+
+#[cfg(not(target_os = "android"))]
+#[tokio::test]
+async fn listening_opens_only_a_listed_port_at_an_mstp_speed() {
+    // a file is no serial port: the name would otherwise be opened as one
+    let (status, body) = call(
+        Method::POST,
+        "/api/mstp/listen",
+        r#"{"port":"/etc/passwd"}"#,
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert!(
+        body["error"]
+            .as_str()
+            .unwrap()
+            .contains("not a serial port"),
+        "{body}"
+    );
+}
