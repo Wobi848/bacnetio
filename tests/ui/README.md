@@ -3,7 +3,9 @@
 The tests start the two simulated devices from `examples/` on loopback addresses (`127.0.0.2` and
 `127.0.0.3`, port 47809), then per test a fresh bacnetio with an empty data folder and the hidden
 `--test-loopback` switch, operate the interface like a user and check the result. No real network
-and no administrator rights are needed.
+and no administrator rights are needed. On Linux they also start `simulated_mstp`, an MS/TP device on a
+pseudo-terminal, and hand its name to bacnetio in `BACNETIO_TEST_SERIAL`; elsewhere the MS/TP test
+has nothing to listen to and passes without checking.
 
 ```sh
 cargo build --all-targets

@@ -253,7 +253,11 @@ fn open_browser(url: &str) {
 
 /// The version, for the About line.
 async fn info() -> Json<serde_json::Value> {
-    Json(json!({ "version": env!("CARGO_PKG_VERSION") }))
+    Json(json!({
+        "version": env!("CARGO_PKG_VERSION"),
+        // MS/TP over a serial port (docs/concept-mstp.md): not on Android
+        "mstp": cfg!(not(target_os = "android")),
+    }))
 }
 
 /// The newest release on GitHub and whether it is newer than this one; asked only by the page,

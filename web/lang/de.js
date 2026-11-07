@@ -183,6 +183,7 @@ export default {
 
     port: "BACnet-Port", searchWithSettings: "Mit diesen Einstellungen suchen",
     "vpn.hint": "Über VPN: den VPN-Adapter wählen, dann das Subnetz der Anlage oder ihren BBMD eintragen. Ein VPN leitet keine Broadcasts weiter.",
+    "link.title": "Verbindung", "link.ip": "BACnet/IP", "link.mstp": "MS/TP (RS-485)", "mstp.port": "Anschluss", "mstp.speed": "Geschwindigkeit", "mstp.portsLoading": "Serielle Anschlüsse werden gesucht …", "mstp.noPort": "Kein serieller Anschluss gefunden. Den USB-RS-485-Adapter einstecken.", "mstp.lookAgain": "Erneut suchen", "mstp.findSpeed": "Durch Mithören ermitteln", "mstp.listenHint": "Mithören sendet nichts und stört den Strang nicht: bacnetio findet die Geschwindigkeit, die Stationen und eine freie Adresse für sich.", "mstp.listen": "Strang mithören", "mstp.listening": "Strang wird mitgehört … bis zu 10 s.", "mstp.nothingHeard": "Bei keiner Geschwindigkeit etwas gehört. Verdrahtung (A und B), Abschluss und den Anschluss des Adapters am Strang prüfen.", "mstp.onlyDamaged": "Nur beschädigte Telegramme bei {speeds} Baud: vielleicht A und B vertauscht, kein Abschluss oder eine Geschwindigkeit, die bacnetio nicht prüft.", "mstp.stations": "Gehörte Stationen", "mstp.ownAddress": "Adresse für bacnetio", "mstp.free": "{station} ist frei", "mstp.noFree": "Keine freie Adresse bis Max_Master",
     subnet: "Subnetz der Anlage (jede Adresse wird gefragt)",
     "range.from": "Geräte-IDs von", "range.to": "bis", "range.hint": "Nur für grosse Anlagen: sucht nur Geräte mit diesen IDs. Leer lassen für alle.",
     "locate.label": "Gerät per IP-Adresse", "locate.hint": "Findet die Suche ein Gerät nicht, lässt es sich hier direkt über seine Adresse öffnen.",
@@ -256,6 +257,9 @@ export default {
   },
   /** Known server errors by key (patterns in i18n.js); others stay English. */
   errors: {
+    notSerialPort: "$1 ist kein serieller Anschluss dieses Computers.",
+    noMstpSpeed: "$1 Baud ist keine MS/TP-Geschwindigkeit: 9600, 19200, 38400, 76800 oder 115200.",
+    mstpPermission: "Keine Berechtigung für $1: den Benutzer in die Gruppe dialout aufnehmen (sudo usermod -aG dialout $USER) und neu anmelden.",
     pluginNoFolder: "Erweiterungen brauchen einen Datenordner.",
     pluginMissing: "Die Erweiterung $1 ist nicht installiert.",
     pluginInstalled: "$1 $2 ist schon installiert.",

@@ -103,7 +103,10 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Search: Who-Is and every address asked directly, at the same time | workspace, next step; while values are held a tool beside it, on a phone in the toolbar | `ui/01-search`, `ui/03-write`, `scan.rs` |
 | Devices appear while the search runs, names read at once | table of the site | `scan.rs` (`devices_show_while_the_scan_runs`) |
 | Object lists read during the search, count and progress per device | table of the site, *Objects*; tree | `ui/01-search`, `ui/16-requests`, `scan.rs` (`reads_every_object_list_during_the_search_when_asked`) |
-| Plant subnet (VPN), BBMD, port, device ID range | sidebar, *Search settings* | `ui/04-reload`, `bbmd.rs`, `scan.rs` (range) |
+| Plant subnet (VPN), BBMD, port, device ID range (BACnet/IP) | sidebar, *Search settings* | `ui/04-reload`, `bbmd.rs`, `scan.rs` (range) |
+| Choose BACnet/IP or MS/TP (RS-485) | sidebar, *Search settings*, first row (not on Android) | `ui/37-mstp` |
+| Serial ports, USB adapters first with their name | *Search settings* with MS/TP | `mstp.rs` (`usb_adapters_come_first`), `ui/37-mstp`, `api.rs` |
+| Listen to an MS/TP trunk without sending: speed, stations, a free address | *Search settings* with MS/TP, *Listen to the trunk* | `tests/mstp.rs`, `mstp.rs`, `ui/37-mstp` |
 | BBMD tables read (BDT and FDT), never written; a device that is none says so | device details, *BBMD tables* | `ui/24-bbmd`, `tests/bbmd.rs` (both tables, no BBMD), `web/ui.test.js` |
 | Device by IP address | table of the site, toolbar, *Device by IP …* | `ui/10-locate` |
 | Routers and the networks behind them | tree and strips above the table | `scan.rs` (routers) |

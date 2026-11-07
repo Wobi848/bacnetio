@@ -1,6 +1,6 @@
 # Concept: BACnet MS/TP over a USB RS-485 adapter
 
-Approved on 7 November 2026 (branch `concept-mstp`). Step 1 of the building order is built.
+Approved on 7 November 2026 (branch `concept-mstp`). Steps 1 and 2 of the building order are built.
 
 ## Why
 
@@ -157,7 +157,11 @@ Each step leaves everything working and is its own pull request:
 1. **Client over `AnyTransport`.** Nothing visible changes, all tests stay green. Built on
    7 November 2026 (`src/connection.rs`).
 2. **Serial ports and listening**: `GET /api/serial-ports`, the monitor, speed detection,
-   simulator `simulated_mstp`. The page shows the result of listening.
+   simulator `simulated_mstp`. The page shows the result of listening. Built on 7 November 2026
+   (`src/mstp.rs`, `src/server/serial.rs`, `web/mstp.js`, `examples/simulated_mstp.rs`). A
+   pseudo-terminal has no speed of its own, so the simulator is heard at the first speed tried;
+   the choice of speed is tested in `tests/mstp.rs`. The maintainer's CH343 opens and listens at
+   every speed.
 3. **Join and search**: the address type for IP and MS/TP, the transport in the client, Who-Is,
    the device table with MACs, the log entry, address refusal. The address type comes here, with
    the first MS/TP device, not before.

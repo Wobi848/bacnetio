@@ -51,6 +51,27 @@ const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 const simulators = SIMULATORS.map(([example, address]) =>
   spawn(path.join(root, `target/debug/examples/${example}${exe}`), [address, String(SIM_PORT)], { stdio: "ignore" }));
 
+/**
+ * The MS/TP device on a pseudo-terminal (Linux only): bacnetio lists the terminal it prints as a
+ * serial port, through BACNETIO_TEST_SERIAL.
+ */
+async function startMstpSimulator() {
+  if (process.platform !== "linux") return null;
+  const started = spawn(path.join(root, "target/debug/examples/simulated_mstp"), ["5"], { stdio: ["ignore", "pipe", "inherit"] });
+  const terminal = await new Promise((found) => {
+    let printed = "";
+    started.stdout.on("data", (chunk) => {
+      printed += chunk;
+      const name = printed.match(/on (\/dev\/\S+) \(/);
+      if (name) found(name[1]);
+    });
+    started.once("exit", () => found(null));
+  });
+  if (terminal) process.env.BACNETIO_TEST_SERIAL = terminal;
+  return started;
+}
+const mstpSimulator = await startMstpSimulator();
+
 /** Starts bacnetio on `port` with the data folder `dir` and waits until its API answers. */
 async function launch(port, dir) {
   const started = spawn(bin, ["--web-port", String(port), "--no-browser", "--data-dir", dir, "--test-loopback"], { stdio: "ignore" });
@@ -143,5 +164,6 @@ for (const test of tests.filter((candidate) => candidate.name.includes(filter) |
 }
 await browser.close();
 for (const simulator of simulators) simulator.kill();
+mstpSimulator?.kill();
 console.log(failed ? `${failed} failed` : "all tests passed");
 process.exit(failed ? 1 : 0);

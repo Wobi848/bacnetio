@@ -21,7 +21,8 @@ from `web/` and this JSON API under `/api/`.
 
 ## Version
 
-`GET /api/info`: `{ "version": "0.1.0" }`
+`GET /api/info`: `{ "version": "0.1.0", "mstp": true }`. `mstp` says whether this bacnetio can use
+MS/TP over a serial port (not the Android app).
 
 `GET /api/update` asks GitHub for the newest release (docs/concept-update-check.md):
 `{ "current": "0.1.0", "latest": { "version": "0.2.0", "url": "https://github.com/…/releases/tag/v0.2.0" }, "newer": true }`.

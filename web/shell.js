@@ -2,6 +2,7 @@
 
 import { h } from "./html.js";
 import { t } from "./i18n.js";
+import { heardHtml, linkChoiceHtml, mstpFieldsHtml } from "./mstp.js";
 import { resizeHandle } from "./panels.js";
 import { pluginTabsHtml } from "./plugins.js";
 import { siteProblems } from "./problems.js";
@@ -63,23 +64,34 @@ function adapterField(state) {
 /** Search settings (Dialog): where the search looks, with the adapter; on a dimmed page, focus kept inside. */
 export function searchDialog(state) {
   if (state.menu !== "network") return "";
-  const value = (key) => h(state.settings[key]);
-  const field = (id, label, input) => `<dt><label for="${id}">${label}</label></dt><dd>${input}</dd>`;
+  const mstp = state.mstpAvailable && state.link === "mstp";
+  const next = mstp
+    ? `<button type="button" data-act="mstp-listen"${state.mstp.port && !state.mstp.listening ? "" : " disabled"}>${t("mstp.listen")}</button>`
+    : `<button type="button" data-act="find">${t("searchWithSettings")}</button>`;
   return `<div class="modal"><div class="modal-box search-settings" role="dialog" aria-modal="true" aria-labelledby="net-title">
     <h2 id="net-title">${t("net.title")}</h2>
     <p class="sub">${t("net.lead")}</p>
     <dl class="facts">
-      ${field("adapter", t("adapter.title"), adapterField(state))}
+      ${linkChoiceHtml(state)}
+      ${mstp ? mstpFieldsHtml(state) : ipFields(state)}
+    </dl>
+    ${mstp ? heardHtml(state) : ""}
+    <div class="acts"><button type="button" class="quiet" data-act="close-menu">${t("cancel")}</button>${next}</div>
+  </div></div>`;
+}
+
+/** The fields of the search settings with BACnet/IP chosen. */
+function ipFields(state) {
+  const value = (key) => h(state.settings[key]);
+  const field = (id, label, input) => `<dt><label for="${id}">${label}</label></dt><dd>${input}</dd>`;
+  return `${field("adapter", t("adapter.title"), adapterField(state))}
       <dd class="hint">${t("vpn.hint")}</dd>
       ${field("subnet", t("subnet"), `<input id="subnet" class="mono" placeholder="192.168.10.0/24" value="${value("subnet")}">`)}
       ${field("bbmd", t("bbmd"), `<input id="bbmd" class="mono" placeholder="10.20.0.10" value="${value("bbmd")}">`)}
       ${field("port", t("port"), `<input id="port" class="mono" inputmode="numeric" value="${value("port")}">`)}
       ${field("id-from", t("range.from"), `<input id="id-from" class="mono" inputmode="numeric" placeholder="0" value="${value("idFrom")}">`)}
       ${field("id-to", t("range.to"), `<input id="id-to" class="mono" inputmode="numeric" placeholder="4194302" value="${value("idTo")}">`)}
-      <dd class="hint">${t("range.hint")}</dd>
-    </dl>
-    <div class="acts"><button type="button" class="quiet" data-act="close-menu">${t("cancel")}</button><button type="button" data-act="find">${t("searchWithSettings")}</button></div>
-  </div></div>`;
+      <dd class="hint">${t("range.hint")}</dd>`;
 }
 
 /** The site as a select field: the known sites, the open one marked, the page of all sites last. */

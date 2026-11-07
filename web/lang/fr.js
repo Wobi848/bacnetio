@@ -172,6 +172,7 @@ export default {
     bbmd: "BBMD dans un autre sous-réseau",
     port: "Port BACnet", searchWithSettings: "Rechercher avec ces réglages",
     "vpn.hint": "Derrière un VPN : choisir l’adaptateur VPN, puis saisir le sous-réseau de l’installation ou son BBMD. Un VPN ne transmet pas les broadcasts.",
+    "link.title": "Connexion", "link.ip": "BACnet/IP", "link.mstp": "MS/TP (RS-485)", "mstp.port": "Port série", "mstp.speed": "Vitesse", "mstp.portsLoading": "Recherche des ports série …", "mstp.noPort": "Aucun port série trouvé. Brancher l’adaptateur USB RS-485.", "mstp.lookAgain": "Chercher à nouveau", "mstp.findSpeed": "Déterminer en écoutant", "mstp.listenHint": "L’écoute n’envoie rien et ne perturbe pas le bus : bacnetio trouve la vitesse, les stations et une adresse libre pour lui.", "mstp.listen": "Écouter le bus", "mstp.listening": "Écoute du bus … jusqu’à 10 s.", "mstp.nothingHeard": "Rien entendu à aucune vitesse. Vérifier le câblage (A et B), la terminaison et que l’adaptateur est raccordé au bus.", "mstp.onlyDamaged": "Seulement des trames endommagées à {speeds} bauds : peut-être A et B inversés, pas de terminaison ou une vitesse que bacnetio n’essaie pas.", "mstp.stations": "Stations entendues", "mstp.ownAddress": "Adresse pour bacnetio", "mstp.free": "{station} est libre", "mstp.noFree": "Aucune adresse libre jusqu’à Max_Master",
     subnet: "Sous-réseau de l’installation (chaque adresse est interrogée)",
     "range.from": "ID d’appareil de", "range.to": "à", "range.hint": "Seulement pour les grandes installations : limite la recherche aux appareils avec ces ID. Laisser vide pour tous.",
     "locate.label": "Appareil par adresse IP", "locate.hint": "Si la recherche ne trouve pas un appareil, l’ouvrir directement par son adresse.",
@@ -244,6 +245,9 @@ export default {
   },
   /** Known server errors by key (patterns in i18n.js); others stay English. */
   errors: {
+    notSerialPort: "$1 n’est pas un port série de cet ordinateur.",
+    noMstpSpeed: "$1 bauds n’est pas une vitesse MS/TP : 9600, 19200, 38400, 76800 ou 115200.",
+    mstpPermission: "Pas d’autorisation pour ouvrir $1 : s’ajouter au groupe dialout (sudo usermod -aG dialout $USER) et se reconnecter.",
     pluginNoFolder: "Les extensions ont besoin d’un dossier de données.",
     pluginMissing: "L’extension $1 n’est pas installée.",
     pluginInstalled: "$1 $2 est déjà installée.",
