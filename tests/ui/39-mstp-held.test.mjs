@@ -49,6 +49,11 @@ export default {
     // on the trunk again, the release reaches the device
     await joinTrunk(page);
     await page.goto(`${base}/#/log`);
+    // reloaded on the trunk: the search settings list the ports, the one in use chosen
+    await page.click("#search-settings");
+    await page.waitForSelector("#mstp-port");
+    assert.match(await page.$eval("#mstp-port", (select) => select.selectedOptions[0].textContent), /Simulator/);
+    await page.click(".search-settings [data-act=close-menu]");
     await page.waitForSelector(".row.held");
     await page.click(".row.held [data-act=release-held]");
     await page.waitForFunction(() => !document.querySelector(".row.held"), null, { timeout: 30000 });
