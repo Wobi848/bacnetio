@@ -203,9 +203,8 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 ### Later (in this order, section 12)
 
 Built since: recording (polled or COV, chart, CSV), the Android app, COV live values, sites kept
-and compared with a reference, trend logs, alarms and events. Still open:
-
-- Excel export (`.xlsx`); CSV for now
+and compared with a reference, trend logs, alarms and events, and Excel files beside the CSV
+([concept-excel.md](concept-excel.md)). Nothing of this list is open.
 
 ### Later or never
 

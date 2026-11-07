@@ -180,7 +180,7 @@ Asked for next by the maintainer, both built since: the same choice for recordin
 Marked "later" there and not part of this plan, built since (concept-toolbox.md and the changelog):
 comparing devices side by side, pcap export, own grouping patterns, mass operations, BBMD tables,
 print layout. Not needed: a client device ID (bacnetio has no device object on the network). Still
-open: backup and restore ("later or never"), Excel files. Built beyond the list because a browser
+open: backup and restore ("later or never"). Excel files are built since (concept-excel.md). Built beyond the list because a browser
 needs them on site: device ID, device commands, acknowledging alarms, Who-Has, schedule and calendar
 views, writing any plain property.
 
