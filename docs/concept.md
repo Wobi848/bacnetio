@@ -191,6 +191,8 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
   Italian and Spanish enter the menu after a review ([concept-languages.md](concept-languages.md));
   point list export as CSV
 - Windows and Linux, **without administrator rights** (section 7.4)
+- BACnet MS/TP directly over a USB RS-485 adapter, as its own connection type, not on Android
+  ([concept-mstp.md](concept-mstp.md))
 
 ### Later (in this order, section 12)
 
@@ -202,8 +204,6 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 
 ### Later or never
 
-- BACnet MS/TP directly (USB RS-485 adapter), as its own connection type: proposal in
-  [concept-mstp.md](concept-mstp.md)
 - Raspberry Pi: not a target
 - BACnet/IPv6, BACnet/SC, BACnet Ethernet: not planned
 - Acting as a BACnet server: only the minimum (a device object for devices that ask back)
