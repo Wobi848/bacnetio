@@ -10,9 +10,11 @@ use crate::connection::{BACNET_PORT, socket_address};
 use crate::points::{Point, StatusFlags};
 
 mod dates;
+mod entries;
 mod objects;
 
 pub use dates::{date_text, date_time_text, time_text};
+pub use entries::entry_action;
 pub use objects::{object_text, object_type_text, parse_object};
 
 /// Symbols for units common in building automation; others are spelled out.

@@ -33,14 +33,14 @@ export default {
     "ref.hint": "Merkt sich alle Werte von jetzt, um später zu sehen, was sich geändert hat (vor und nach der Inbetriebnahme).",
     "rec.lead": "Werte über die Zeit, als Kurven und CSV.", "rec.interval": "Alle",
     "rec.on": "Aufzeichnung", 
-    "log.lead": "Was du in der Anlage noch hältst, und jeder Wert, der in dieser Sitzung geschrieben wurde.",
-    "log.ok": "erledigt", "log.refusedShort": "abgelehnt",
+   
+    "log.refusedShort": "Abgelehnt",
     "set.lead": "Sprache und Darstellung. Beides folgt dem System, bis du hier wählst.",
     "set.auto": "Automatisch", "set.light": "Hell", "set.dark": "Dunkel", "set.theme": "Darstellung",
     "set.languageHint": "Automatisch nimmt die Sprache des Systems, wenn bacnetio sie hat, sonst Englisch.",
     "update.title": "Version", "update.check": "Nach neuen Versionen suchen", "update.on": "Ein", "update.off": "Aus", "update.now": "Jetzt suchen", "update.new": "Neue Version {version}", "update.newer": "Version {version} ist erschienen.", "update.page": "Download-Seite öffnen", "update.current": "Das ist die neueste Version.", "update.none": "Noch keine Version veröffentlicht.", "update.checking": "Suche nach einer neuen Version …", "update.failed": "Keine Antwort von GitHub, zum Beispiel ohne Internet.", "update.offHint": "Aus: bacnetio geht nicht ins Internet.", "update.privacy": "Fragt höchstens einmal am Tag bei GitHub nach. GitHub sieht die Internet-Adresse dieses Computers, sonst nichts. bacnetio lädt nie selbst etwas herunter und installiert nichts.",
     "plugins.title": "Erweiterungen", "plugins.none": "Keine Erweiterung installiert. Eine Erweiterung ist eine Datei (….bacnetio-plugin.html).", "plugins.install": "Erweiterung installieren …", "plugins.safety": "Eine Erweiterung kann alles lesen, was bacnetio liest, aber nicht auf die Anlage schreiben und nicht an deine Dateien. Installiere nur Erweiterungen, denen du vertraust.", "plugins.remove": "Entfernen", "plugins.removeAsk": "{name} und was es gespeichert hat entfernen?", "plugins.replace": "Ersetzen", "plugins.replaceAsk": "{name} ist schon installiert. Durch Version {version} ersetzen?", "plugins.installed": "{name} {version} installiert.", "plugins.gone": "Diese Erweiterung ist nicht installiert oder ausgeschaltet.",
-    "held.since": "gehalten seit {time}",
+    "held.since": "gehalten seit {time}", "held.leadNone": "In der Anlage ist nichts gehalten. Jeder Wert, den du schreibst, steht hier.", "held.leadOne": "1 Wert, den du in der Anlage noch hältst. Gib ihn frei, wenn du fertig bist.", "held.lead": "{n} Werte, die du in der Anlage noch hältst. Gib sie frei, wenn du fertig bist.", "held.noneTitle": "Keine Werte gehalten", "held.noneText": "Ein Wert, den du schreibst, steht hier, bis du ihn freigibst.", "held.now": "Jetzt gehalten", "log.written": "Geschrieben", "log.export": "Protokoll exportieren (CSV)",
     "set.keys": "Tasten", "keys.areas": "Bereiche (Arbeitsplatz bis gehaltene Werte)", "keys.search": "Ganze Anlage durchsuchen",
     "keys.filter": "Diese Liste durchsuchen", "keys.jump": "Erste, letzte oder zehn Zeilen weiter", "read.at": "Gelesen {time}", "read.ago": "Gelesen {time} · vor {n} min", "overridden.why": "Vor Ort übersteuert, zum Beispiel mit einem Handschalter: Das meldet das Gerät selbst. Die Prioritäten unten zeigen das nicht und wirken erst wieder, wenn die Übersteuerung endet.", "releaseOther": "Priorität {priority} freigeben", "confirm.releaseOther": "Priorität {priority} hält {value}, geschrieben von einem anderen System, etwa der Gebäudeleittechnik. Freigeben? Dieses System kann den Wert wieder schreiben.", "confirm.releaseOtherAnyway": "Priorität {priority} freigeben", "set.accent": "Akzentfarbe", "set.accent.blue": "Blau", "set.accent.crimson": "Karmesin", "set.accent.violet": "Violett", "set.accent.teal": "Petrol", "keys.move": "Vorherige oder nächste Zeile", "keys.open": "Gewähltes Gerät öffnen", "keys.close": "Menü oder Details schliessen",
     "fact.date": "Gerätedatum", "fact.time": "Gerätezeit",
@@ -177,7 +177,7 @@ export default {
 
 
 
-    changeLog: "Änderungsprotokoll",
+   
     language: "Sprache",
     bbmd: "BBMD in einem anderen Subnetz",
 
@@ -187,9 +187,9 @@ export default {
     "range.from": "Geräte-IDs von", "range.to": "bis", "range.hint": "Nur für grosse Anlagen: sucht nur Geräte mit diesen IDs. Leer lassen für alle.",
     "locate.label": "Gerät per IP-Adresse", "locate.hint": "Findet die Suche ein Gerät nicht, lässt es sich hier direkt über seine Adresse öffnen.",
     "locate.open": "Gerät öffnen", "properties.change": "Eigenschaften ändern", "properties.reading": "Alle Eigenschaften werden gelesen …",
-    "held.title": "Werte, die du hältst", 
-    release: "Freigeben", releaseAll: "Alle freigeben", nothingHeld: "Nichts gehalten.",
-    "log.wrote": "{value} geschrieben", "log.released": "freigegeben", "log.clock": "Zeit {value} gesendet", "log.atPriority": " auf Priorität {priority}",
+    
+    release: "Freigeben",
+    "log.wrote": "auf {value} gesetzt", "log.released": "freigegeben", "log.clock": "Zeit {value} gesendet", "log.atPriority": " auf Priorität {priority}",
     "log.empty": "Noch nichts geschrieben.",
     device: "Gerät {n}",
     "clock.set": "Geräteuhr auf die Zeit dieses Computers stellen", "clock.done": "Zeit {time} an das Gerät gesendet. Es bestätigt das nicht; prüfe die Gerätezeit.", "clock.confirm": "Die Zeit dieses Computers an das Gerät senden?",

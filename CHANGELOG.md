@@ -19,11 +19,13 @@ All notable changes for users of bacnetio.
 - The head of the sidebar is one card: the site as a select field with its name, or its network while it has none, never a placeholder; it opens the known sites to switch to and *All sites …* (where a site without a name has its name field ready). Below it the network (when it is not the name) and how the search went (*3 devices found*), beside them *Search settings* as a framed sliders button, with its word where the sidebar is dragged wide. The adapter is chosen in *Search settings* with the other search settings and no longer shown in the sidebar; the status bar no longer repeats it either.
 - *Search settings* is a dialog on a dimmed page with a sentence saying what it is for; the focus goes into it, Tab stays inside, Escape or *Cancel* gives it back to the button. The list of sites opens under its field; the arrow keys move through it, Escape closes it.
 - The tree names its devices in 600, one step heavier than their groups; the chosen node has the bar in the brand colour.
+- *Held by you* follows the same order: the head says how many values you still hold and what to do ("1 value you still hold in the plant. Release it when you are done."), the next step names how many it releases. Each held value shows the point's name first, below it the device, the object and since when it is held, the value with its unit, the priority as a warning chip and *Release*. The log lists the newest write first and gives a chip only to a refused one, with the device's reason beside it, instead of *done* on every line. New: *Export log (CSV)*.
 - Site problems and the watch list say what a click does ("Choose one to open it in its device."), and the point's name takes the free width of the row instead of an empty state column.
 - The note of a new version is filled green, so it catches the eye.
 
 ### Fixed
 
+- *Held by you* no longer runs a held point's name into "held since" (*Heating valveheld since*).
 - The plant tree of a device that has no plant view and no path names no longer says the parts appear once the device is read, when it has been read: it says why there are no plant parts and that all objects are under *By type*, in a sentence that wraps instead of a cut-off heading.
 - An extension's page follows a search started after it was opened: it gets the devices found without reloading the page (plugin API 1 gains the event `devices`).
 - Releasing from *Held by you* first reads the slot from the device and releases only while it still holds what bacnetio wrote. If another system has written over it or released it since, bacnetio says so and takes nothing away. Each held value shows since when it is held.

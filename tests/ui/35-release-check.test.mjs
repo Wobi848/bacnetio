@@ -16,13 +16,13 @@ export default {
     await new Promise((done) => setTimeout(done, 10500));
 
     await open(page, base, { area: "log" });
-    await page.waitForSelector(".row.log button[data-act=release-held]");
-    assert.match(await page.textContent(".row.log .name"), /held since \d\d:\d\d/);
-    await page.click(".row.log button[data-act=release-held]");
+    await page.waitForSelector(".row.held button[data-act=release-held]");
+    assert.match(await page.textContent(".row.held .name"), /held since \d\d:\d\d/);
+    await page.click(".row.held button[data-act=release-held]");
     await page.waitForFunction(() => /priority 9 holds 60/i.test(document.querySelector("#toast")?.textContent ?? ""));
     assert.match(await page.textContent("#toast"), /not what bacnetio wrote: another system wrote over it, so it was not released/);
     // no longer counted as ours, and the other system's value is still there
-    await page.waitForSelector(".row.log button[data-act=release-held]", { state: "detached" });
+    await page.waitForSelector(".row.held button[data-act=release-held]", { state: "detached" });
     const valve = await api(VALVE);
     assert.equal(valve.priority_array.find((slot) => slot.priority === 9).value, "60 %");
 

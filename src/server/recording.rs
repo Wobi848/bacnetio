@@ -212,7 +212,7 @@ pub async fn clear(State(state): State<Shared>) -> Json<RecordingView> {
 pub struct CsvQuery {
     /// The viewer's offset from UTC in minutes, for local times.
     #[serde(default)]
-    offset_min: i32,
+    pub(super) offset_min: i32,
 }
 
 pub async fn csv(State(state): State<Shared>, Query(query): Query<CsvQuery>) -> impl IntoResponse {

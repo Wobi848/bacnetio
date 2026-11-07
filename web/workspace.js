@@ -3,13 +3,14 @@
 
 import { viewDevices } from "./devices.js";
 import { t } from "./i18n.js";
+import { releaseLabel } from "./log.js";
 import { viewPoints } from "./points.js";
 import { treeHtml } from "./tree.js";
 
 /** The one next step of the page head. */
 export function nextStep(state) {
   if (state.held.length) {
-    return { act: "go", data: ' data-area="log"', label: state.held.length === 1 ? t("next.releaseOne") : t("next.release", { n: state.held.length }) };
+    return { act: "go", data: ' data-area="log"', label: releaseLabel(state.held.length) };
   }
   if (state.scan.state === "running") return null;
   if (state.scan.remembered_ms) return searchStep(state);

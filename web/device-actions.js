@@ -116,9 +116,12 @@ async function loadAlarms(instance) {
   render();
 }
 
+/** Names and units of the points read, so the held values and the log can name them. */
 function rememberNames(instance, points) {
   for (const point of points) {
-    if (point.name) state.objectNames[`${instance}:${point.type}:${point.instance}`] = point.name;
+    const key = `${instance}:${point.type}:${point.instance}`;
+    if (point.name) state.objectNames[key] = point.name;
+    if (point.units) state.objectUnits[key] = point.units;
   }
 }
 

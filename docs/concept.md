@@ -138,7 +138,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Recording compared: one time axis, a chart per unit, window and zoom, lowest, highest, mean, on-share, changes, gaps | *Recording* | `ui/05-recording`, `web/ui.test.js` |
 | Recording: add, interval, start, stop, remove, clear, CSV, backup | point details, *Recording* | `ui/05-recording`, `ui/13-exports`, `record.rs` |
 | Values still held, release one or all, also after a restart | *Held by you*, status bar | `ui/03-write`, `storage.rs` |
-| Log of every write, release and clock setting | *Held by you* | `ui/03-write`, `ui/09-device` |
+| Log of every write, release and clock setting; refused ones with the reason; as CSV | *Held by you*, *Export log (CSV)* | `ui/03-write`, `ui/09-device`, `ui/21-tools`, `export.rs` |
 | Warning before closing while values are held; *Leave the site* offers to release them | browser, *Held by you* | `ui/15-leaving`, `ui/20-site` |
 | The site at a glance: tree with marks, next step | workspace | `ui/12-workspace` |
 | Language and theme, following the system | settings | `ui/07-settings` |

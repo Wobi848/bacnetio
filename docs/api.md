@@ -469,6 +469,10 @@ Both return the same entries:
   acknowledged alarm or a changed day of a schedule. `value` says which, and the object is what the
   command acted on: the device, the object in alarm, or the schedule.
 
+`GET /api/log.csv?offset_min=60` downloads the same entries as CSV for Excel (semicolon, UTF-8 with
+BOM): time at the viewer's offset from UTC, device, object type, instance, priority, action, value
+and why the device refused, if it did.
+
 A page that shows the log has to take all five; the list grows with what bacnetio can change.
 
 ## Recording
