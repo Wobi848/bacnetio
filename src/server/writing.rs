@@ -1,7 +1,6 @@
 //! Writing to the plant: values, releases and the device clock, each logged in the journal, and
 //! the values still held.
 
-use std::net::SocketAddrV4;
 use std::time::{Duration, SystemTime};
 
 use axum::Json;
@@ -17,7 +16,7 @@ use super::devices::{object_id, object_view};
 use super::json::{EntryView, ObjectView};
 use super::recording::CsvQuery;
 use super::session::Shared;
-use crate::connection::socket_address;
+use crate::address::Address;
 use crate::export;
 use crate::object::PRIORITIES;
 use crate::property_text;
@@ -288,7 +287,7 @@ pub(super) async fn journaled(
         .get_device(device)
         .await
         .filter(|found| found.source_network.is_none())
-        .and_then(|found| socket_address(&found.mac_address));
+        .and_then(|found| Address::from_mac(&found.mac_address));
     let result = write::perform(&client, device, object, priority, &action).await;
     let error = result.err().map(|error| error.to_string());
     if error.is_none() {
@@ -324,7 +323,7 @@ pub(super) async fn journaled(
 }
 
 /// Where the device was reached when bacnetio last wrote to it, from the journal.
-fn held_address(state: &Shared, device: u32) -> Option<SocketAddrV4> {
+fn held_address(state: &Shared, device: u32) -> Option<Address> {
     let journal = state.journal.lock().expect("journal lock");
     journal
         .entries()

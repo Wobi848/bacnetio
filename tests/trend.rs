@@ -41,7 +41,7 @@ async fn reads_a_trend_log_over_several_pages() {
     let objects: Vec<Box<dyn BACnetObject>> = vec![Box::new(supply_air_log(120))];
     let mut device = simulated_device(7001, "AHU-07", 47935, Segmentation::BOTH, objects).await;
     let connection = connect(47936).await;
-    let instance = scan::locate(&connection.client, None, Some(at(47935)), WAIT)
+    let instance = scan::locate(&connection.client, None, Some(at(47935).into()), WAIT)
         .await
         .unwrap();
 

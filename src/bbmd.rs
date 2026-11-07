@@ -8,7 +8,8 @@ use std::net::{Ipv4Addr, SocketAddrV4};
 use bacnet_transport::bip::BvlcExchangeError;
 use serde::Serialize;
 
-use crate::connection::{Client, mac};
+use crate::address::Address;
+use crate::connection::Client;
 
 /// One BBMD the asked BBMD distributes broadcasts to.
 #[derive(Debug, Clone, PartialEq)]
@@ -72,7 +73,7 @@ impl Tables {
 /// Reads both tables of the device at `address`, one request each. A device that is no BBMD
 /// refuses or stays silent, which is an answer, not a failure.
 pub async fn read_tables(client: &Client, address: SocketAddrV4) -> Tables {
-    let target = mac(address);
+    let target = Address::Ip(address).mac();
     let broadcast = match client.read_bdt(&target).await {
         Ok(entries) => Ok(entries
             .into_iter()

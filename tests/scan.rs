@@ -29,7 +29,7 @@ async fn finds_device_by_asking_directly_and_reads_its_details() {
     assert_eq!(report.devices.len(), 1);
     let found = &report.devices[0];
     assert_eq!(found.instance, 1001);
-    assert_eq!(found.address, at(47910));
+    assert_eq!(found.address, at(47910).into());
     assert!(!found.answered_who_is);
     assert_eq!(found.details.name.as_deref(), Some("AHU-01"));
     assert!(found.details.vendor.is_some());
@@ -116,7 +116,10 @@ async fn requests_reach_the_device_aimed_at_among_two_with_one_id() {
     let name = |text: &str| PropertyValue::CharacterString(text.to_string());
     assert_eq!(
         names,
-        vec![(at(47916), name("Boiler A")), (at(47917), name("Boiler B"))]
+        vec![
+            (at(47916).into(), name("Boiler A")),
+            (at(47917).into(), name("Boiler B"))
+        ]
     );
 }
 
@@ -164,7 +167,7 @@ async fn lists_routers_and_the_networks_behind_them() {
     connection.close().await.unwrap();
     let report = report.unwrap();
     assert_eq!(report.routers.len(), 1);
-    assert_eq!(report.routers[0].address, at(47925));
+    assert_eq!(report.routers[0].address, at(47925).into());
     assert_eq!(report.routers[0].networks, vec![5, 7]);
 }
 
@@ -333,7 +336,7 @@ async fn a_device_that_stays_silent_gets_a_reason_instead_of_a_list() {
     let connection = connect(47974).await;
     connection
         .client
-        .add_device(999, &bacnetio::connection::mac(at(47975)))
+        .add_device(999, &bacnetio::address::Address::from(at(47975)).mac())
         .await
         .unwrap();
     let (listed, _progress) = tokio::sync::mpsc::unbounded_channel();

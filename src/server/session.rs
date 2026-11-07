@@ -13,6 +13,7 @@ use super::ApiError;
 use super::json::ObjectRef;
 use super::recording::Sampler;
 use super::scanning::ScanView;
+use crate::address::Address;
 use crate::alarms;
 use crate::connection::{self, BACNET_PORT, Client, Connection, Endpoint};
 use crate::interfaces::{self, Adapter};
@@ -124,7 +125,7 @@ impl AppState {
     pub async fn client_for(
         self: &Arc<Self>,
         device: u32,
-        address: Option<SocketAddrV4>,
+        address: Option<Address>,
     ) -> Result<Arc<Client>, ApiError> {
         let client = match self.client().await {
             Ok(client) => client,
@@ -288,7 +289,7 @@ async fn keep_devices_known(state: Shared, client: Weak<Client>) {
         let Some(client) = current.filter(|current| Arc::as_ptr(current) == client.as_ptr()) else {
             return;
         };
-        let known: Vec<(u32, Option<SocketAddrV4>)> = state
+        let known: Vec<(u32, Option<Address>)> = state
             .devices
             .lock()
             .expect("devices lock")
@@ -308,7 +309,7 @@ async fn keep_devices_known(state: Shared, client: Weak<Client>) {
             }
             match by_address {
                 Some(address) => {
-                    let _ = client.add_device(instance, &connection::mac(address)).await;
+                    let _ = client.add_device(instance, &address.mac()).await;
                 }
                 None => scan::ask_again(&client, instance).await,
             }

@@ -231,31 +231,9 @@ pub fn decode_values(bytes: &[u8]) -> Result<Vec<PropertyValue>, String> {
 }
 
 /// BACnet/IP MAC: four address bytes and the port, big-endian.
-pub fn mac(address: SocketAddrV4) -> [u8; 6] {
-    let [a, b, c, d] = address.ip().octets();
-    let [high, low] = address.port().to_be_bytes();
-    [a, b, c, d, high, low]
-}
-
-pub fn socket_address(mac: &[u8]) -> Option<SocketAddrV4> {
-    let [a, b, c, d, high, low] = mac.try_into().ok()?;
-    Some(SocketAddrV4::new(
-        Ipv4Addr::new(a, b, c, d),
-        u16::from_be_bytes([high, low]),
-    ))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn mac_round_trip() {
-        let address = SocketAddrV4::new(Ipv4Addr::new(192, 168, 10, 20), BACNET_PORT);
-        assert_eq!(mac(address), [192, 168, 10, 20, 0xBA, 0xC0]);
-        assert_eq!(socket_address(&mac(address)), Some(address));
-        assert_eq!(socket_address(&[1, 2, 3]), None);
-    }
 
     #[test]
     fn only_a_local_tsm_timeout_counts_as_no_answer() {

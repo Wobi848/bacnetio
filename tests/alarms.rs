@@ -15,7 +15,7 @@ async fn a_device_without_alarms_lists_none() {
     let instance = scan::locate(
         &connection.client,
         None,
-        Some(at(47948)),
+        Some(at(47948).into()),
         Duration::from_millis(500),
     )
     .await

@@ -14,7 +14,8 @@ use tokio::task::JoinSet;
 
 use bacnet_types::primitives::ObjectIdentifier;
 
-use crate::connection::{Client, mac, socket_address};
+use crate::address::Address;
+use crate::connection::Client;
 
 /// Highest device instance a device can have; the next one is the wildcard.
 pub const MAX_INSTANCE: u32 = 4_194_302;
@@ -72,7 +73,7 @@ pub struct ObjectList {
 pub struct Device {
     pub instance: u32,
     /// The device itself, or the router in front of it.
-    pub address: SocketAddrV4,
+    pub address: Address,
     pub remote: Option<RemoteStation>,
     pub answered_who_is: bool,
     pub details: Details,
@@ -82,7 +83,7 @@ pub struct Device {
 /// A BACnet router on the local network and the networks it reaches.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Router {
-    pub address: SocketAddrV4,
+    pub address: Address,
     pub networks: Vec<u16>,
 }
 
@@ -93,7 +94,7 @@ pub struct ScanReport {
     /// Routers that answered Who-Is-Router-To-Network.
     pub routers: Vec<Router>,
     /// Device instances that answered from more than one address.
-    pub duplicates: BTreeMap<u32, Vec<SocketAddrV4>>,
+    pub duplicates: BTreeMap<u32, Vec<Address>>,
     /// Addresses that answered the direct question with an error: BACnet is there, but the
     /// device does not accept the wildcard instance.
     pub refused: Vec<(SocketAddrV4, String)>,
@@ -271,7 +272,7 @@ fn report(live: Live, routers: Vec<DiscoveredRouter>, wanted: impl Fn(u32) -> bo
             .into_iter()
             .filter_map(|router| {
                 Some(Router {
-                    address: socket_address(&router.mac)?,
+                    address: Address::from_mac(&router.mac)?,
                     networks: router.networks,
                 })
             })
@@ -292,7 +293,7 @@ async fn spawn_details(
     let add = !device.answered_who_is && client.get_device(device.instance).await.is_none();
     if add {
         client
-            .add_device(device.instance, &mac(device.address))
+            .add_device(device.instance, &device.address.mac())
             .await
             .with_context(|| format!("cannot remember device {}", device.instance))?;
     }
@@ -309,8 +310,8 @@ async fn spawn_details(
     Ok(add)
 }
 
-fn duplicates(devices: &[Device]) -> BTreeMap<u32, Vec<SocketAddrV4>> {
-    let mut addresses: BTreeMap<u32, Vec<SocketAddrV4>> = BTreeMap::new();
+fn duplicates(devices: &[Device]) -> BTreeMap<u32, Vec<Address>> {
+    let mut addresses: BTreeMap<u32, Vec<Address>> = BTreeMap::new();
     for device in devices {
         addresses
             .entry(device.instance)
@@ -331,7 +332,7 @@ mod tests {
     fn duplicates_only_lists_instances_seen_twice() {
         let device = |instance, last| Device {
             instance,
-            address: SocketAddrV4::new(Ipv4Addr::new(10, 0, 0, last), BACNET_PORT),
+            address: SocketAddrV4::new(Ipv4Addr::new(10, 0, 0, last), BACNET_PORT).into(),
             remote: None,
             answered_who_is: false,
             details: Details::default(),

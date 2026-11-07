@@ -405,7 +405,7 @@ mod tests {
         use std::net::{Ipv4Addr, SocketAddrV4};
         let device = Device {
             instance: 20101,
-            address: SocketAddrV4::new(Ipv4Addr::new(10, 0, 0, 5), 47808),
+            address: SocketAddrV4::new(Ipv4Addr::new(10, 0, 0, 5), 47808).into(),
             remote: Some(RemoteStation {
                 network: 5,
                 mac: vec![0x0B],

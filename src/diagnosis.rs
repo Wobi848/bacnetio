@@ -224,7 +224,7 @@ pub fn notes(report: &ScanReport, context: &Context) -> Vec<Note> {
     for (instance, addresses) in &report.duplicates {
         notes.push(Note::DuplicateId {
             instance: *instance,
-            addresses: addresses.iter().map(|a| a.ip().to_string()).collect(),
+            addresses: addresses.iter().map(|a| a.shown()).collect(),
         });
     }
     if !report.refused.is_empty() {
@@ -290,7 +290,7 @@ mod tests {
     fn device(instance: u32, answered_who_is: bool) -> Device {
         Device {
             instance,
-            address: SocketAddrV4::new(Ipv4Addr::new(10, 0, 0, instance as u8), BACNET_PORT),
+            address: SocketAddrV4::new(Ipv4Addr::new(10, 0, 0, instance as u8), BACNET_PORT).into(),
             remote: None,
             answered_who_is,
             details: Details::default(),
@@ -364,7 +364,7 @@ mod tests {
             mac: vec![3],
         });
         let router = |networks: Vec<u16>| Router {
-            address: SocketAddrV4::new(Ipv4Addr::new(10, 0, 0, 9), BACNET_PORT),
+            address: SocketAddrV4::new(Ipv4Addr::new(10, 0, 0, 9), BACNET_PORT).into(),
             networks,
         };
         let report = ScanReport {

@@ -55,7 +55,7 @@ async fn reads_the_views_of_a_device_with_their_subordinates_and_annotations() {
         simulated_device(1001, "AHU-01", 47990, Segmentation::BOTH, plant_objects()).await;
     let connection = connect(47991).await;
 
-    let instance = scan::locate(&connection.client, Some(1001), Some(at(47990)), WAIT)
+    let instance = scan::locate(&connection.client, Some(1001), Some(at(47990).into()), WAIT)
         .await
         .unwrap();
     let listed = bacnetio::object_list::read(
@@ -125,7 +125,7 @@ async fn a_device_without_structured_views_has_no_plant_view() {
     .await;
     let connection = connect(47993).await;
 
-    let instance = scan::locate(&connection.client, Some(1003), Some(at(47992)), WAIT)
+    let instance = scan::locate(&connection.client, Some(1003), Some(at(47992).into()), WAIT)
         .await
         .unwrap();
     let listed = bacnetio::object_list::read(

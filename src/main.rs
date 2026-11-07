@@ -284,14 +284,19 @@ async fn locate(
         println!("Note: {}\n", diagnosis::port_note(reason));
     }
     let address = address.map(|ip| SocketAddrV4::new(ip, network.port));
-    let instance = scan::locate(&connection.client, device, address, wait(network))
-        .await
-        .map_err(|error| match address {
-            None => {
-                anyhow!("{error:#}. If `bacnetio scan` found it \"direct\", add --address <IP>.")
-            }
-            Some(_) => error,
-        })?;
+    let instance = scan::locate(
+        &connection.client,
+        device,
+        address.map(Into::into),
+        wait(network),
+    )
+    .await
+    .map_err(|error| match address {
+        None => {
+            anyhow!("{error:#}. If `bacnetio scan` found it \"direct\", add --address <IP>.")
+        }
+        Some(_) => error,
+    })?;
     Ok((connection, instance))
 }
 

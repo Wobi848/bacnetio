@@ -7,7 +7,7 @@ use std::net::SocketAddrV4;
 use bacnet_client::discovery::DiscoveredDevice;
 
 use super::{Details, Device, ObjectList, Phase, Progress, RemoteStation};
-use crate::connection::socket_address;
+use crate::address::Address;
 
 #[derive(Default)]
 pub(super) struct Live {
@@ -16,10 +16,10 @@ pub(super) struct Live {
     pub asked: usize,
     pub total: usize,
     /// Devices whose details are being read or were read.
-    detailed: BTreeSet<(u32, SocketAddrV4)>,
+    detailed: BTreeSet<(u32, Address)>,
     /// Devices found by asking directly and made known to the client by us; the client then
     /// lists them like answers to Who-Is.
-    added: BTreeSet<(u32, SocketAddrV4)>,
+    added: BTreeSet<(u32, Address)>,
 }
 
 impl Live {
@@ -33,7 +33,7 @@ impl Live {
     /// Devices that answered Who-Is; a device asked directly before is marked as answering too.
     pub fn merge(&mut self, found: Vec<DiscoveredDevice>) {
         for found in found {
-            let Some(address) = socket_address(&found.mac_address) else {
+            let Some(address) = Address::from_mac(&found.mac_address) else {
                 continue;
             };
             let instance = found.object_identifier.instance_number();
@@ -65,8 +65,9 @@ impl Live {
     }
 
     /// One address of the sweep has answered, or not.
-    pub fn answer(&mut self, address: SocketAddrV4, answer: Option<Result<u32, String>>) {
+    pub fn answer(&mut self, ip: SocketAddrV4, answer: Option<Result<u32, String>>) {
         self.asked += 1;
+        let address = Address::Ip(ip);
         match answer {
             Some(Ok(instance)) => {
                 let known = self
@@ -84,7 +85,7 @@ impl Live {
                     });
                 }
             }
-            Some(Err(reason)) => self.refused.push((address, reason)),
+            Some(Err(reason)) => self.refused.push((ip, reason)),
             None => {}
         }
     }

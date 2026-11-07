@@ -12,6 +12,7 @@ use serde::Deserialize;
 use serde_json::Value;
 
 use super::session::AppState;
+use crate::address::Address;
 use crate::connection::BACNET_PORT;
 use crate::points::{Point, StatusFlags};
 use crate::present::unit_text;
@@ -112,7 +113,7 @@ fn point(remembered: RememberedPoint) -> Option<Point> {
 fn device(remembered: RememberedDevice) -> Option<Device> {
     let address = remembered.address.parse().ok().or_else(|| {
         let ip = remembered.address.parse().ok()?;
-        Some(SocketAddrV4::new(ip, BACNET_PORT))
+        Some(Address::Ip(SocketAddrV4::new(ip, BACNET_PORT)))
     })?;
     let remote = remembered.network.map(|network| RemoteStation {
         network,
@@ -212,7 +213,7 @@ mod tests {
         }))
         .unwrap();
         let routed = device(routed).unwrap();
-        assert_eq!(routed.address.port(), 47809);
+        assert_eq!(routed.address.ip().unwrap().port(), 47809);
         assert_eq!(routed.remote.unwrap().mac, vec![0x0A, 0x1B]);
         assert!(!routed.answered_who_is);
     }

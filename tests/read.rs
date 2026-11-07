@@ -56,7 +56,7 @@ async fn reads_names_values_and_units_of_a_device_found_by_address() {
         simulated_device(1001, "AHU-01", 47940, Segmentation::BOTH, plant_objects()).await;
     let connection = connect(47941).await;
 
-    let instance = scan::locate(&connection.client, None, Some(at(47940)), WAIT)
+    let instance = scan::locate(&connection.client, None, Some(at(47940).into()), WAIT)
         .await
         .unwrap();
     let reading = points::read_device(&connection.client, instance)
@@ -102,7 +102,7 @@ async fn reads_a_large_object_list_entry_by_entry_without_segmentation() {
     .await;
     let connection = connect(47951).await;
 
-    let instance = scan::locate(&connection.client, Some(2040), Some(at(47950)), WAIT)
+    let instance = scan::locate(&connection.client, Some(2040), Some(at(47950).into()), WAIT)
         .await
         .unwrap();
     let reading = points::read_device(&connection.client, instance)
@@ -122,7 +122,7 @@ async fn refuses_a_device_with_another_id_at_the_address() {
     let mut device = simulated_device(5, "VAV-5", 47960, Segmentation::NONE, Vec::new()).await;
     let connection = connect(47961).await;
 
-    let result = scan::locate(&connection.client, Some(6), Some(at(47960)), WAIT).await;
+    let result = scan::locate(&connection.client, Some(6), Some(at(47960).into()), WAIT).await;
 
     connection.close().await.unwrap();
     device.stop().await.unwrap();
@@ -149,7 +149,7 @@ async fn reads_every_property_of_an_object() {
     let mut device =
         simulated_device(1003, "AHU-03", 47942, Segmentation::BOTH, plant_objects()).await;
     let connection = connect(47943).await;
-    let instance = scan::locate(&connection.client, None, Some(at(47942)), WAIT)
+    let instance = scan::locate(&connection.client, None, Some(at(47942).into()), WAIT)
         .await
         .unwrap();
 
@@ -197,7 +197,7 @@ async fn reads_a_device_without_segmentation_without_a_failed_request() {
     )
     .await;
     let connection = connect(47955).await;
-    let instance = scan::locate(&connection.client, Some(2050), Some(at(47954)), WAIT)
+    let instance = scan::locate(&connection.client, Some(2050), Some(at(47954).into()), WAIT)
         .await
         .unwrap();
     let requests = std::sync::Mutex::new(Vec::new());
@@ -244,7 +244,7 @@ async fn reading_a_list_gives_way_to_a_user_request() {
     let mut device =
         simulated_device(1004, "AHU-04", 47937, Segmentation::BOTH, plant_objects()).await;
     let connection = connect(47938).await;
-    let instance = scan::locate(&connection.client, Some(1004), Some(at(47937)), WAIT)
+    let instance = scan::locate(&connection.client, Some(1004), Some(at(47937).into()), WAIT)
         .await
         .unwrap();
     let precedence = Precedence::default();

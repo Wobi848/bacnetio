@@ -1,12 +1,10 @@
 //! Data points in plain words: "Analog input 3", "21.4 °C", "fault, overridden".
 
-use std::net::SocketAddrV4;
-
 use bacnet_types::constructed::BACnetAddress;
 use bacnet_types::enums::{EngineeringUnits, ObjectType};
 use bacnet_types::primitives::PropertyValue;
 
-use crate::connection::{BACNET_PORT, socket_address};
+use crate::address::Address;
 use crate::points::{Point, StatusFlags};
 
 mod dates;
@@ -227,19 +225,16 @@ pub fn bacnet_address_text(address: &BACnetAddress) -> String {
     if address.mac_address.is_empty() {
         return format!("{network}broadcast");
     }
-    match socket_address(&address.mac_address) {
-        Some(socket) => format!("{network}{}", address_text(socket)),
+    match Address::from_mac(&address.mac_address) {
+        Some(found) => format!("{network}{}", found.shown()),
         None => format!("{network}MAC {}", hex(&address.mac_address)),
     }
 }
 
-/// A device address: the IP alone on the standard port, else IP:PORT.
-pub fn address_text(address: SocketAddrV4) -> String {
-    if address.port() == BACNET_PORT {
-        address.ip().to_string()
-    } else {
-        address.to_string()
-    }
+/// A device address: the IP alone on the standard port, else IP:PORT; an MS/TP station as
+/// `MS/TP 5`.
+pub fn address_text(address: impl Into<Address>) -> String {
+    address.into().shown()
 }
 
 pub fn hex(bytes: &[u8]) -> String {

@@ -1,8 +1,8 @@
 //! Writing present values and releasing them again (concept section 6). Every write lands in the
 //! journal; the values still held are derived from it, so nothing is left behind when leaving.
 
+use crate::address::Address;
 use std::collections::HashSet;
-use std::net::SocketAddrV4;
 use std::time::SystemTime;
 
 use bacnet_encoding::primitives::encode_property_value;
@@ -55,7 +55,7 @@ pub struct Entry {
     pub time: SystemTime,
     pub device: u32,
     /// Where the device was reached, to find it again after a restart; `None` behind a router.
-    pub address: Option<SocketAddrV4>,
+    pub address: Option<Address>,
     pub object: ObjectIdentifier,
     /// `None` for objects without priority array.
     pub priority: Option<u8>,

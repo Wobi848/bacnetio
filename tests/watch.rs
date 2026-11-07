@@ -20,7 +20,7 @@ async fn the_device_reports_changes_after_a_subscription() {
     let mut device = simulated_device(6001, "AHU-06", 47930, Segmentation::BOTH, objects).await;
     let connection = connect(47931).await;
     let client = &connection.client;
-    let instance = scan::locate(client, None, Some(at(47930)), WAIT)
+    let instance = scan::locate(client, None, Some(at(47930).into()), WAIT)
         .await
         .unwrap();
     let object = ObjectIdentifier::new(ObjectType::ANALOG_OUTPUT, 1).unwrap();

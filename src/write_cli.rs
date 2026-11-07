@@ -6,7 +6,7 @@ use std::time::SystemTime;
 
 use anyhow::Context;
 use bacnet_types::primitives::ObjectIdentifier;
-use bacnetio::connection::socket_address;
+use bacnetio::address::Address;
 use bacnetio::object::{self, PRIORITIES};
 use bacnetio::present;
 use bacnetio::property_text;
@@ -53,7 +53,7 @@ async fn change(
         .get_device(device)
         .await
         .filter(|found| found.source_network.is_none())
-        .and_then(|found| socket_address(&found.mac_address));
+        .and_then(|found| Address::from_mac(&found.mac_address));
     let result = write::perform(client, device, object, priority, &action).await;
     let entry = Entry {
         time: SystemTime::now(),
