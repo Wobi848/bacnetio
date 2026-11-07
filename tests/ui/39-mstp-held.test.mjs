@@ -33,6 +33,13 @@ export default {
     await page.waitForSelector(".slots .slot.mine", { timeout: 15000 });
     // closed with the value still held: the trunk is left with the program
     await restart();
+    // the page still shows the trunk; searching again finds bacnetio on none and asks to listen
+    assert.equal(await page.locator(".side-trunk").count(), 1);
+    await page.click("[data-act=find] >> visible=true");
+    await page.waitForSelector(".search-settings #mstp-port");
+    assert.equal(await page.getAttribute("#link-mstp", "aria-pressed"), "true");
+    assert.equal(await page.locator(".side-trunk").count(), 0);
+    await page.click(".search-settings [data-act=close-menu]");
     await page.goto(`${base}/#/log`);
     await page.waitForSelector(".row.held");
     assert.match(await page.textContent(".row.held"), /MS\/TP 5/);

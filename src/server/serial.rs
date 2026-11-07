@@ -124,23 +124,26 @@ pub async fn search(
     Json(request): Json<SearchRequest>,
 ) -> Result<StatusCode, ApiError> {
     check_port(&state, &request.port)?;
-    let heard = state
-        .heard
-        .lock()
-        .expect("heard lock")
-        .clone()
-        .filter(|(port, _)| *port == request.port)
-        .map(|(_, heard)| heard)
-        .ok_or_else(|| ApiError::conflict("listen to the trunk first"))?;
-    mstp::may_join(&heard, request.baud, request.station).map_err(ApiError::conflict)?;
     let trunk = Trunk {
         port: request.port,
         baud: request.baud,
         station: request.station,
         max_master: mstp::MAX_MASTER,
     };
-    begin_scan(&state)?;
+    // searching again on the trunk bacnetio is on takes nothing new from it
     let joined = state.trunk().await.as_ref() == Some(&trunk);
+    if !joined {
+        let heard = state
+            .heard
+            .lock()
+            .expect("heard lock")
+            .clone()
+            .filter(|(port, _)| *port == trunk.port)
+            .map(|(_, heard)| heard)
+            .ok_or_else(|| ApiError::conflict("listen to the trunk first"))?;
+        mstp::may_join(&heard, trunk.baud, trunk.station).map_err(ApiError::conflict)?;
+    }
+    begin_scan(&state)?;
     let client = match state.join(&trunk).await {
         Ok(client) => client,
         Err(error) => {
