@@ -201,11 +201,10 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 
 ### Later (in this order, section 12)
 
-- Record values: chosen points polled or via COV, shown as a chart, exported as CSV
-- Android app
-- COV subscriptions (live values)
-- Save a site and compare later, Excel export
-- Read trend logs, show alarms/events
+Built since: recording (polled or COV, chart, CSV), the Android app, COV live values, sites kept
+and compared with a reference, trend logs, alarms and events. Still open:
+
+- Excel export (`.xlsx`); CSV for now
 
 ### Later or never
 
@@ -320,9 +319,10 @@ library's log reader), references per device to compare with later (JSON files i
 folder instead of SQLite: one file per device is all that is needed so far), device details and
 setting the device clock, writing objects without priority array, CLI `write`/`release`, scan by
 device ID range, opening a device by address, recording backup, held values releasable after a
-restart (the write log keeps each device's address). Not built: Who-Has search (answers are
-broadcasts that firewalls drop, and names must match exactly), a packet console, alarms
-(GetEventInformation), devices behind routers for trend logs.
+restart (the write log keeps each device's address). Not built then: Who-Has search, a packet
+console, alarms (GetEventInformation), devices behind routers for trend logs. Built since: Who-Has
+and active alarms with acknowledging; instead of a packet console, the capture for Wireshark
+(concept-toolbox.md part 3).
 
 Revised proposal: use `bacnet-client` and `bacnet-transport` (pinned), build discovery strategy,
 fallbacks, throttling and diagnosis on top. Keep rusty-bacnet types out of the UI-facing API, so

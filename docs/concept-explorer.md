@@ -60,7 +60,7 @@ text or design.
 | All properties of an object with data type, how each is updated (polling every 10 s or COV), changed values highlighted, update counter | Properties table with data type and live updates; highlight changes | step C |
 | Edit any writable property inline, not only the present value | Write other properties (out of service, COV increment, description, setpoints of limits) behind the session unlock, logged | after C, with a concept |
 | Present values of a device with status flags and the winning priority | Points table gets a column "priority now" from the priority array | step C |
-| Calendar view of schedules and calendars (day, week, month, year) | Show Schedule and Calendar objects as week and exception view, read only first | later |
+| Calendar view of schedules and calendars (day, week, month, year) | Schedule and Calendar objects shown as week, exceptions and dates in words; a day of the week changed behind the unlock | built |
 | Several panes side by side, pinned | Compare two devices by point name ([concept-toolbox.md](concept-toolbox.md)) | built |
 | Start a Wireshark capture with BACnet filters | bacnetio's own traffic captured and saved as pcapng ([concept-toolbox.md](concept-toolbox.md)) | built |
 | EDE export for one device, several or the whole site, header fields, XLS or CSV, UTF-8 | EDE exists per device; add whole site, project name, state text file | step D |
@@ -69,7 +69,7 @@ text or design.
 | User address schemes: regular expressions that group object names (plant keys) | Own grouping pattern per site, beside the automatic path grouping ([concept-toolbox.md](concept-toolbox.md)) | built |
 | Mass operations: one property to many objects | Behind the unlock, with a list of what changes and the log ([concept-toolbox.md](concept-toolbox.md)) | built |
 | CSV/XLS of properties and present values, priority arrays with only the set slots | CSV gains the winning priority and the set slots | step D |
-| BBMDs recognised, their BDT and FDT shown and edited | Show which devices are BBMDs and read their BDT/FDT; editing only with a concept | later |
+| BBMDs recognised, their BDT and FDT shown and edited | A device's BDT and FDT read on request and shown; editing only with a concept | read: built; editing: not planned |
 | PDF of the current view | Print view of a device's points, saved as PDF by the browser ([concept-toolbox.md](concept-toolbox.md)) | built |
 | BACnet Backup & Restore of device configurations | Possible later behind the unlock; not a browser's core | later or never |
 | Values pushed by unconfirmed COV without subscription | Show such values as live too | step C |
