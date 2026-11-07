@@ -148,6 +148,9 @@ export async function openDevice(instance, fresh = false) {
     state.object = null;
     state.points = null;
     state.compare = null;
+    state.selecting = false;
+    state.selected = [];
+    state.changeMany = null;
   }
   state.device = device;
   state.reading = true;

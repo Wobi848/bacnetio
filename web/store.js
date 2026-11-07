@@ -95,6 +95,11 @@ export const state = {
   deletingSite: null,
   renamingSite: null,
   siteTitle: "",
+  /** Choosing points of the list to change at once, and their keys (change-many.js). */
+  selecting: false,
+  selected: [],
+  /** One property changed at the points chosen: `{ kind, value, priority, phase, results }`. */
+  changeMany: null,
   /** The open device compared with another: `{ other, view, reading }`, or null (compare.js). */
   compare: null,
   /** The grouping pattern being typed above the point list, or null (grouping-panel.js). */

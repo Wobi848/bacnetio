@@ -12,6 +12,7 @@ import { pluginMarksHtml } from "./plugins.js";
 import { openSiteOf } from "./sites.js";
 import { groupingMenuHtml, groupingPanelHtml } from "./grouping-panel.js";
 import { compareHtml } from "./compare.js";
+import { MOST_POINTS, changeManyHtml } from "./change-many.js";
 import { matchesQuery, parseQuery } from "./point-query.js";
 import { AREA_ICONS, headToolHtml, readingText } from "./shell.js";
 import { sortHead, sortRows } from "./sorting.js";
@@ -113,6 +114,16 @@ function activeFilters(state) {
   return `<div class="filters">${chips}<button type="button" class="quiet" data-act="filters-clear">${t("filter.clearAll")}</button></div>`;
 }
 
+/** While choosing points: how many, and what to do with them. */
+function pickBar(state) {
+  if (!state.selecting) return "";
+  const count = state.selected.length;
+  return `<div class="filters pick-bar"><span class="chip">${t("many.selected", { n: count })}</span>
+    <button type="button" class="quiet" data-act="pick-shown">${t("many.pickShown")}</button>
+    <button type="button" class="quiet" data-act="pick-none"${count ? "" : " disabled"}>${t("many.pickNone")}</button>
+    <button type="button" data-act="many-open"${count && count <= MOST_POINTS ? "" : " disabled"}>${t("many.open")}</button></div>`;
+}
+
 /** What is used now and then, so that the toolbar stays with what is used all the time. */
 function moreMenu(state) {
   const device = state.device.instance;
@@ -167,9 +178,10 @@ function toolbar(state, points, also) {
       ${typesMenu(state, points)}
       <button type="button" class="quiet" data-act="reload"${state.reading ? " disabled" : ""}>${t("readAgain")}</button>
       <button type="button" class="${state.liveList ? "tonal" : "quiet"}" data-act="live-list" aria-pressed="${state.liveList}" title="${t("live.hint")}">${t(state.liveList ? "live.on" : "live.off")}</button>
+      <button type="button" class="${state.selecting ? "tonal" : "quiet"}" data-act="select-toggle" aria-pressed="${state.selecting}" title="${t("many.selectHint")}">${t("many.select")}</button>
       ${moreMenu(state)}
     </div>
-    ${activeFilters(state)}</div>`;
+    ${activeFilters(state)}${pickBar(state)}</div>`;
 }
 
 function pointRow(state, item, inGroup) {
@@ -183,9 +195,16 @@ function pointRow(state, item, inGroup) {
   const winner = wins ? `<span class="chip accent">${t("chip.priority", { n: wins })}</span>` : "";
   const { words } = parseQuery(state.filter);
   return `<div class="row points${active}" data-point="${pointKey(point)}" role="option" aria-selected="${Boolean(active)}" title="${h(point.name ?? "")}">
-    <span class="name${inGroup ? " indent" : ""}">${marked(name || objectText(point), words)}${pluginMarksHtml(state, state.device.instance, point.type, point.instance)}</span><span class="desc cut" title="${h(point.description ?? "")}">${marked(point.description ?? "", words)}</span>
+    <span class="name${inGroup ? " indent" : ""}">${pickBox(state, point)}${marked(name || objectText(point), words)}${pluginMarksHtml(state, state.device.instance, point.type, point.instance)}</span><span class="desc cut" title="${h(point.description ?? "")}">${marked(point.description ?? "", words)}</span>
     <span class="id mono sub">${point.instance}</span><span class="type mono sub">${typeShort(point.type)}</span>
     <span class="value mono">${valueHtml(point, point.state_texts)}</span><span class="chips">${winner}${chips(point, heldHere(state, point))}${was}${quickHtml(state, point)}</span></div>`;
+}
+
+/** A row's box while choosing points to change at once. */
+function pickBox(state, point) {
+  if (!state.selecting) return "";
+  const key = pointKey(point);
+  return `<input type="checkbox" class="pick" data-act="pick-point" data-key="${key}" aria-label="${h(t("many.pick", { name: point.name ?? key }))}"${state.selected.includes(key) ? " checked" : ""}>`;
 }
 
 /** Watch and record from the row, without opening the details: filled when on. */
@@ -209,8 +228,11 @@ function groupRow(state, group, open) {
     outOfService ? `<span class="chip warn">${t("ov.outOfService", { n: outOfService })}</span>` : "",
   ].join("");
   const title = group.type !== undefined ? objectTypeName(group.type) : group.kind ? t(group.title) : group.title;
+  const keys = group.items.map(({ point }) => pointKey(point));
+  const all = keys.every((key) => state.selected?.includes(key));
+  const box = state.selecting ? `<input type="checkbox" class="pick" data-act="pick-group" data-group="${h(group.key)}" aria-label="${h(t("many.pick", { name: title }))}"${all ? " checked" : ""}>` : "";
   return `<div class="row group${open ? " open" : ""}" data-group="${h(group.key)}" role="button" aria-expanded="${open}">
-    <span class="arrow">▶</span><span class="name">${h(title)}</span><span class="count">${marks}${group.items.length}</span></div>`;
+    <span class="arrow">▶</span><span class="name">${box}${h(title)}</span><span class="count">${marks}${group.items.length}</span></div>`;
 }
 
 /** The groups of all the device's points, so that a filter does not rename the plant parts, each
@@ -285,6 +307,7 @@ export function viewPoints(state, also = null) {
   const strips = notes || state.error ? `<div class="strips">${errorStrip(state.error)}${notes}</div>` : "";
   const detail = state.selectedPoint ? detailHtml(state) : deviceDetailHtml(state);
   if (state.compare) return { title: deviceName(device), lead: h(pointsLead(state, points)), html: `${compareHtml(state)}${detail}` };
+  if (state.changeMany) return { title: deviceName(device), lead: h(pointsLead(state, points)), html: `<section class="listwrap">${listBorders()}${changeManyHtml(state, points)}</section>${detail}` };
   const shown = visiblePoints(state);
   return {
     title: deviceName(device),

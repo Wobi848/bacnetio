@@ -22,6 +22,8 @@ import { setAccent, setBackground, setTheme } from "./settings.js";
 import { openSiteOf, siteName } from "./sites.js";
 import { chooseCompare, openComparedPoint, readBoth, startCompare } from "./compare-actions.js";
 import { captureRequest, loadCapture } from "./capture-actions.js";
+import { openChangeMany, pickGroup, pickNone, pickShown, toggleSelecting, togglePicked, writeMany } from "./change-many-actions.js";
+import { CHANGES } from "./change-many.js";
 import { nextSort } from "./sorting.js";
 import { checkForUpdate, setUpdateCheck } from "./update.js";
 import { TABLE_FILTERS, noTableFilter } from "./table-filter.js";
@@ -172,6 +174,17 @@ const actions = {
   "compare-read": () => readBoth(),
   "compare-close": () => { state.compare = null; render(); },
   "compare-open": (element) => openComparedPoint(Number(element.dataset.device), element.dataset.key),
+  "select-toggle": () => toggleSelecting(),
+  "pick-point": (element) => togglePicked(element.dataset.key),
+  "pick-shown": () => pickShown(),
+  "pick-group": (element) => pickGroup(element.dataset.group),
+  "pick-none": () => pickNone(),
+  "many-open": () => openChangeMany(),
+  "many-ask": () => { state.changeMany.phase = "confirm"; render(); },
+  "many-back": () => { state.changeMany.phase = "edit"; render(); },
+  "many-write": () => writeMany(),
+  "many-stop": () => { state.changeMany.stopping = true; render(); },
+  "many-close": () => { state.changeMany = null; render(); },
   "capture-start": () => captureRequest("start"),
   "capture-stop": () => captureRequest("stop"),
   "capture-clear": () => captureRequest("clear"),
@@ -445,6 +458,13 @@ document.addEventListener("input", (event) => {
   if (id === "day-changes") state.editDayText = event.target.value;
   if (id === "site-title") state.siteTitle = event.target.value;
   if (id === "grouping-pattern") { state.groupingEdit = event.target.value; render(); }
+  if (id === "many-kind") {
+    state.changeMany.kind = event.target.value;
+    state.changeMany.value = CHANGES[event.target.value].yesNo ? "true" : "";
+    render();
+  }
+  if (id === "many-value") { state.changeMany.value = event.target.value; render(); }
+  if (id === "many-priority") { state.changeMany.priority = Number(event.target.value); render(); }
   if (FIELDS[id]) FIELDS[id](event.target.value);
   if (FILTERS[id]) { FILTERS[id](event.target.value); render(); }
   if (id === "table-filter") { state[TABLE_FILTERS[event.target.dataset.list]].text = event.target.value; render(); }
@@ -488,6 +508,7 @@ function closeTopmost() {
   else if (state.detailOpen) state.detailOpen = false;
   else if (state.groupingEdit !== null) state.groupingEdit = null;
   else if (state.compare) state.compare = null;
+  else if (state.changeMany && state.changeMany.phase !== "writing") state.changeMany = null;
   else if (state.printing) state.printing = false;
   else return false;
   return true;
