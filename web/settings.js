@@ -1,5 +1,6 @@
 // Settings: language and theme. Both follow the system until chosen here; each choice applies at once.
 
+import { captureCardHtml } from "./capture.js";
 import { h } from "./html.js";
 import { LANGUAGES, languageChoice, t } from "./i18n.js";
 import { pluginsCardHtml } from "./plugins.js";
@@ -131,6 +132,7 @@ export function viewSettings(state) {
         ${backgroundsHtml("light")}${backgroundsHtml("dark")}</section>
       ${updateCardHtml(state)}
       ${pluginsCardHtml(state)}
+      ${captureCardHtml(state)}
       <section class="card"><h2>${t("set.keys")}</h2><dl class="facts">${keys}</dl></section>
     </div></div>`,
   };

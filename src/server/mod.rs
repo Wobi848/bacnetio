@@ -1,6 +1,7 @@
 //! The local web server: the user interface from `web/` and the JSON API it talks to
 //! (docs/api.md). Listens on 127.0.0.1 only, because the API can write to the plant.
 
+mod capturing;
 mod commands;
 mod devices;
 mod exports;
@@ -178,6 +179,11 @@ pub fn router(state: Shared) -> Router {
         .route("/api/recording/stop", post(recording::stop))
         .route("/api/recording/clear", post(recording::clear))
         .route("/api/recording.csv", get(recording::csv))
+        .route("/api/capture", get(capturing::state))
+        .route("/api/capture/start", post(capturing::start))
+        .route("/api/capture/stop", post(capturing::stop))
+        .route("/api/capture/clear", post(capturing::clear))
+        .route("/api/capture.pcapng", get(capturing::file))
         .fallback(static_file)
         .layer(axum::middleware::from_fn_with_state(
             Arc::clone(&state),

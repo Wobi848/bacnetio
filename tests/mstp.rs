@@ -239,3 +239,43 @@ async fn writing_releasing_and_cov_reports_work_over_the_trunk() {
     assert_eq!(released.point.value, Some(PropertyValue::Real(0.0)));
     connection.close().await.unwrap();
 }
+
+/// A capture on a trunk holds its frames as on the line, the token among them
+/// (docs/concept-toolbox.md part 3).
+#[tokio::test]
+async fn a_capture_on_a_trunk_holds_whole_frames() {
+    use std::sync::Arc;
+    let (_device, connection) = on_trunk().await;
+    let capture = Arc::new(bacnetio::capture::Capture::default());
+    capture.start(Some(&connection.client));
+    bacnetio::points::read_device(&connection.client, 2005)
+        .await
+        .unwrap();
+    tokio::time::sleep(Duration::from_millis(300)).await;
+    capture.stop();
+    let file = capture.pcapng();
+    connection.close().await.unwrap();
+    let mut frames = Vec::new();
+    let mut at = 0;
+    let word = |at: usize| u32::from_le_bytes(file[at..at + 4].try_into().unwrap()) as usize;
+    while at < file.len() {
+        if word(at) == 6 {
+            frames.push(&file[at + 28..at + 28 + word(at + 20)]);
+        }
+        at += word(at + 4);
+    }
+    assert!(!frames.is_empty());
+    assert!(
+        frames.iter().all(|frame| frame[..2] == [0x55, 0xFF]),
+        "every frame from its preamble"
+    );
+    // frame types: 0 token, 5 data expecting a reply, 6 data not expecting one
+    assert!(
+        frames.iter().any(|frame| frame[2] == 0),
+        "the token is in it"
+    );
+    assert!(
+        frames.iter().any(|frame| frame[2] == 5),
+        "the requests are in it"
+    );
+}

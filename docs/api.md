@@ -576,6 +576,20 @@ number. All write requests below answer with this same object.
   per point. `offset_min` is the viewer's offset from UTC (`-new Date().getTimezoneOffset()`), so
   times are local.
 
+## Capture for Wireshark
+
+bacnetio's own BACnet traffic, captured on request (docs/concept-toolbox.md part 3). Each answer
+but the file is the capture's state `{ "running": true, "frames": 1234, "overflowed": 0 }`;
+`overflowed` counts the oldest frames left out past 100 000.
+
+- `GET /api/capture`: the state.
+- `POST /api/capture/start`: capture from the connection open now and every one opened while it
+  runs. Nothing is captured before.
+- `POST /api/capture/stop`: stop; what was captured stays.
+- `POST /api/capture/clear`: forget what was captured.
+- `GET /api/capture.pcapng`: what was captured, as a pcapng file (`bacnetio.pcapng`): BACnet/IP as
+  IPv4/UDP packets whose headers are built from the addresses, MS/TP frames as on the line.
+
 ## Plugins
 
 Plugins (docs/concept-plugins.md, docs/plugins.md) are kept in the data folder under `plugins/`.

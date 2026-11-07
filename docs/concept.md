@@ -137,6 +137,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Print view of a device's points, with the list's filter and view, saved as PDF by the browser | table of a device, *More → Print …*; Ctrl+P in the list | `ui/40-print` |
 | Own grouping pattern per site, with a preview; kept with the site and over a new search | table of a device, *More → Grouping …* | `ui/43-grouping`, `tests/web/grouping.test.js`, `site.rs` (`a_grouping_pattern_stays_with_its_site`) |
 | Compare two devices by point name: differences, only left, only right; read both again | table of a device, *More → Compare with …* | `ui/41-compare`, `tests/web/compare.test.js` |
+| Capture bacnetio's own traffic and save it as pcapng for Wireshark, MS/TP with every frame on the line | *Settings*, card *Capture for Wireshark*; status bar while it runs | `tests/capture.rs`, `tests/mstp.rs` (`a_capture_on_a_trunk_holds_whole_frames`), `pcap.rs`, `ui/42-capture` |
 | Point list as CSV with the winning priority and set slots | table of a device, toolbar, *CSV with priorities* | `ui/13-exports`, `export.rs` |
 | Active alarms of a device (GetEventInformation) | device details | `ui/09-device`, `alarms.rs` (test) |
 | Save a reference, show what changed since | table of a device, toolbar | `ui/06-reference`, `reference.rs` |
@@ -433,10 +434,9 @@ Shown where the problem happens (principle 5), not in a separate area.
 | router reports network unreachable | "Network 7 behind router 192.168.1.5 unreachable (MS/TP trunk?)." |
 | error / reject / abort | class and code in words with a hint, not as a number |
 
-A packet console (live, decoded, click a packet to see every field) is not built. It belongs under
-*Advanced* once it is; until then the request log per device (concept-explorer section 2, point 5)
-says what was asked and what came back. The same for exporting bacnetio's own traffic as pcap
-(concept-explorer section 2b, "later").
+A packet console (live, decoded, click a packet to see every field) is not built; the request log
+per device (concept-explorer section 2, point 5) says what was asked and what came back, and
+bacnetio's own traffic is captured for Wireshark under *Settings* (concept-toolbox.md part 3).
 
 ## 9. Android
 

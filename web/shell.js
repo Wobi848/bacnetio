@@ -1,5 +1,6 @@
 // The frame around every page: sidebar (network, areas, settings), page head and status bar.
 
+import { captureChipHtml } from "./capture.js";
 import { h } from "./html.js";
 import { t } from "./i18n.js";
 import { heardHtml, linkChoiceHtml, mstpActsHtml, mstpFieldsHtml, trunkHtml } from "./mstp.js";
@@ -207,5 +208,5 @@ export function statusHtml(state) {
   return `<span class="state"><span class="dot ${busy ? "busy" : "on"}"></span>${h(activity(state))}</span>
     ${busy ? `<button type="button" class="quiet" data-act="stop-running">${t("stop")}</button>` : ""}
     <span class="cut">${h(link)}</span>
-    <span class="chips">${held}${recording}</span>`;
+    <span class="chips">${held}${recording}${captureChipHtml(state)}</span>`;
 }

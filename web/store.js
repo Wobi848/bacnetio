@@ -176,6 +176,8 @@ export const state = {
   held: [],
   log: [],
   recording: null,
+  /** The capture for Wireshark: `{ running, frames, overflowed }` (capture.js). */
+  capture: null,
   recordInterval: 10,
   /** How the recording is looked at: "compare" or "cards"; the last minutes, or a span drawn with the pointer. */
   recView: "compare",

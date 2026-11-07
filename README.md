@@ -36,6 +36,8 @@ light and dark theme, the system's language (English or German), keys `1`–`6`,
   CSV, a page to print, a comparison with another device by point name. The chosen point beside the list: value live (COV where offered), state texts, who holds it
   (priority array), write and release after unlocking, every property, trend logs as chart and CSV.
 - **Recording**: chosen values every 5 s to 1 min as charts and CSV, backed up every minute.
+- **Capture for Wireshark** (*Settings*): bacnetio's own BACnet traffic as a pcapng file, without
+  installing anything; on MS/TP every frame on the trunk.
 - **Site problems**: everything faulty, in alarm, overridden, out of service or offline across the
   devices read, and a search across the site in the sidebar.
 - **Watch list**: points across devices with their values live.

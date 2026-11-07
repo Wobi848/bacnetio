@@ -1,7 +1,7 @@
 # Concept: five functions from the K&P comparison
 
 Status: approved on 7 November 2026 with the recommendation to all four questions in section 8
-(branch `concept-toolbox`). Built so far: part 1 (print view), part 2 (compare two devices) and part 4 (own grouping pattern).
+(branch `concept-toolbox`). Built so far: parts 1 to 4 (print view, compare two devices, capture, own grouping pattern).
 
 ## Why
 
@@ -70,18 +70,19 @@ an installation. bacnetio sees its own traffic anyway.
 - What is in it: every BACnet packet bacnetio sends and receives, with its time, on IP and on
   MS/TP. Other programs' traffic is not in it. A broadcast that reaches bacnetio is in it, since
   bacnetio receives it.
-- On IP the file holds IPv4/UDP packets with their BVLC header. The headers below the BVLC
-  (Ethernet, IP and UDP) are built from the addresses, since bacnetio sees no frames. The
-  file says so in its comment. On MS/TP the frames are in the MS/TP format Wireshark knows
-  (link type 165), without the token frames, since the library hands over only the frames with
-  data.
+- On IP the file holds IPv4/UDP packets with their BVLL message as sent and received. The IP and UDP
+  headers are built from the addresses, since bacnetio sees no packets below the BVLL. The file says
+  so in its comment. On MS/TP the frames are in the MS/TP format Wireshark knows (link type 165),
+  from the preamble to the CRC, as heard on the line: the token, Poll For Master and the other
+  stations' frames too, since the trunk is shared.
 - Not more than 100 000 packets: past that the oldest go, and the page says so. The capture lives
   in memory and is gone after a restart. *Clear* empties it.
 - Capturing is off until started. It costs nothing while off.
 
-How: a wrapper around the transport records each packet sent and received before passing it on.
-It holds the time, the direction, the two addresses and the bytes. The `Client` type becomes a
-client over this wrapper; nothing else in bacnetio sees the change.
+How (as built): the library's frame tap (`bacnet_transport::tap`) hands over every frame a
+transport sends and receives once subscribed, at no cost before. The capture subscribes to the
+connection open when it starts and to every one opened while it runs, and lets go when it stops.
+The file is pcapng with one interface for IPv4 and one for MS/TP (`src/pcap.rs`).
 
 ## 4. Own grouping pattern per site
 
@@ -143,7 +144,7 @@ built:
 | --- | --- | --- |
 | Print view of a device's points, filters kept | point list, *More → Print* | `ui/40-print` |
 | Compare two devices by point name | point list, *More → Compare with …* | `ui/41-compare`, `tests/web/compare.test.js` |
-| Capture traffic and save as pcap | *Settings*, card *Capture*; status bar while running | `tests/capture.rs`, `ui/42-capture` |
+| Capture traffic and save as pcap | *Settings*, card *Capture*; status bar while running | `tests/capture.rs`, `tests/mstp.rs` (`a_capture_on_a_trunk_holds_whole_frames`), `pcap.rs`, `ui/42-capture` |
 | Own grouping pattern per site | point list, *More → Grouping …* | `tests/web/grouping.test.js`, `site.rs`, `ui/43-grouping` |
 | Change one property of many points | point list, *Select*, *Change selected …* | `tests/api.rs`, simulator test, `ui/44-change-many` |
 
