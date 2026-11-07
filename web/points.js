@@ -11,6 +11,7 @@ import { detailHtml } from "./point-detail.js";
 import { pluginMarksHtml } from "./plugins.js";
 import { openSiteOf } from "./sites.js";
 import { groupingMenuHtml, groupingPanelHtml } from "./grouping-panel.js";
+import { compareHtml } from "./compare.js";
 import { matchesQuery, parseQuery } from "./point-query.js";
 import { AREA_ICONS, headToolHtml, readingText } from "./shell.js";
 import { sortHead, sortRows } from "./sorting.js";
@@ -122,6 +123,7 @@ function moreMenu(state) {
     <a class="quiet" href="/api/devices/${device}/points-priorities.csv" download title="${t("csv.prioritiesHint")}">${t("csv.priorities")}</a>
     <a class="quiet" href="/api/devices/${device}/points.ede.csv" download title="${t("ede.hint")}">EDE</a>
     <a class="quiet" href="/api/devices/${device}/points.ede-states.csv" download title="${t("ede.statesHint")}">${t("ede.states")}</a>
+    <button type="button" class="quiet" data-act="compare-start" title="${t("compare.openHint")}">${t("compare.open")}</button>
     <button type="button" class="quiet" data-act="print-open" title="${t("print.openHint")}">${t("print.open")}</button>
     <hr>
     ${groupingMenuHtml(state)}
@@ -281,11 +283,13 @@ export function viewPoints(state, also = null) {
   const points = state.points.filter((point) => point.type !== DEVICE_TYPE);
   const notes = state.pointNotes.filter((item) => SHOWN_NOTES.includes(item.code)).map((item) => noteStrip(item)).join("");
   const strips = notes || state.error ? `<div class="strips">${errorStrip(state.error)}${notes}</div>` : "";
+  const detail = state.selectedPoint ? detailHtml(state) : deviceDetailHtml(state);
+  if (state.compare) return { title: deviceName(device), lead: h(pointsLead(state, points)), html: `${compareHtml(state)}${detail}` };
   const shown = visiblePoints(state);
   return {
     title: deviceName(device),
     lead: h(pointsLead(state, points)),
     html: `<section class="listwrap">${listBorders()}${toolbar(state, pointsOfNode(state), also)}${strips}${groupingPanelHtml(state, points)}<div class="rows${points.some((point) => point.description) ? "" : " no-desc"}" data-keep="points" tabindex="0" role="listbox" data-list="points">${listHtml(state, shown, points)}</div></section>
-      ${state.selectedPoint ? detailHtml(state) : deviceDetailHtml(state)}`,
+      ${detail}`,
   };
 }

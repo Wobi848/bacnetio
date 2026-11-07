@@ -20,6 +20,7 @@ import { pollRecording, recordHere, recordPoint, recordingRequest, removeRecorde
 import { chooseLink, leaveTrunk, listenToTrunk, loadSerialPorts, loadTrunk, searchOnTrunk, searchTrunkAgain } from "./mstp-actions.js";
 import { setAccent, setBackground, setTheme } from "./settings.js";
 import { openSiteOf, siteName } from "./sites.js";
+import { chooseCompare, openComparedPoint, readBoth, startCompare } from "./compare-actions.js";
 import { nextSort } from "./sorting.js";
 import { checkForUpdate, setUpdateCheck } from "./update.js";
 import { TABLE_FILTERS, noTableFilter } from "./table-filter.js";
@@ -164,6 +165,12 @@ const actions = {
   "grouping-save": () => groupSite(openSiteOf(state).name, state.groupingEdit.trim() ? state.groupingEdit : null),
   "grouping-auto": () => groupSite(openSiteOf(state).name, null),
   "grouping-cancel": () => { state.groupingEdit = null; render(); },
+  "compare-start": () => startCompare(),
+  "compare-choose": (element) => chooseCompare(Number(element.dataset.device)),
+  "compare-view": (element) => { state.compare.view = element.dataset.view; render(); },
+  "compare-read": () => readBoth(),
+  "compare-close": () => { state.compare = null; render(); },
+  "compare-open": (element) => openComparedPoint(Number(element.dataset.device), element.dataset.key),
   "print-open": () => openPrint(),
   "print-now": () => window.print(),
   "print-close": () => { state.printing = false; render(); },
@@ -476,6 +483,7 @@ function closeTopmost() {
   else if (state.asking) state.asking = false;
   else if (state.detailOpen) state.detailOpen = false;
   else if (state.groupingEdit !== null) state.groupingEdit = null;
+  else if (state.compare) state.compare = null;
   else if (state.printing) state.printing = false;
   else return false;
   return true;
