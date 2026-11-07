@@ -208,19 +208,27 @@ export function releaseOther(priority) {
 }
 
 export async function releaseHeld(entries) {
+  let released = 0;
   for (const entry of entries) {
     try {
       if (entry.action === "property") await api.writeProperty(entry.device, entry.type, entry.instance, { property_id: OUT_OF_SERVICE_PROPERTY, data_type: "boolean", value: "false" });
       // days may have passed: the server releases only while the slot still holds our value
       else await api.release(entry.device, entry.type, entry.instance, entry.priority, true);
+      released += 1;
     } catch (error) {
       toast(`${entry.object}: ${error.message}`, true);
     }
   }
   await refreshHeld();
   state.log = await api.log();
-  if (state.object && state.device) {
-    state.object = await api.object(state.device.instance, state.object.type, state.object.instance);
+  // the open object shows the release; with nothing released there is nothing new to show, and
+  // after a restart there may be no connection to read it over
+  if (released && state.object && state.device) {
+    try {
+      state.object = await api.object(state.device.instance, state.object.type, state.object.instance);
+    } catch (error) {
+      toast(error.message, true);
+    }
   }
   render();
 }

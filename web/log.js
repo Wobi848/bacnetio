@@ -64,7 +64,8 @@ function heldValue(state, entry) {
 function heldRows(state) {
   if (!state.held.length) return `<div class="empty"><h2>${t("held.noneTitle")}</h2><span>${t("held.noneText")}</span></div>`;
   return state.held.map((entry, index) => {
-    const place = [pointPlace(state, entry), t("held.since", { time: heldSince(entry) })].filter(Boolean).join(" · ");
+    // after a restart, where the value sits says how to reach it again: on a trunk or on IP
+    const place = [pointPlace(state, entry), entry.address, t("held.since", { time: heldSince(entry) })].filter(Boolean).join(" · ");
     const chip = entry.priority ? `${t("priority")} ${entry.priority}` : t("chip.outOfService");
     return `<div class="row held"><span class="name">${h(pointName(state, entry))}<span class="desc">${h(place)}</span></span>
       <span class="val">${heldValue(state, entry)}</span><span class="chips"><span class="chip warn">${h(chip)}</span></span>

@@ -239,6 +239,8 @@ pub struct EntryView {
     /// The value written, in words; `None` for a release.
     pub value: Option<String>,
     pub error: Option<String>,
+    /// Where the device was reached, for people: `10.0.0.20`, `MS/TP 5`; `None` behind a router.
+    pub address: Option<String>,
 }
 
 impl EntryView {
@@ -255,6 +257,7 @@ impl EntryView {
             action,
             value,
             error: entry.error.clone(),
+            address: entry.address.map(|address| address.shown()),
         }
     }
 }

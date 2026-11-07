@@ -137,6 +137,12 @@ impl AppState {
         device: u32,
         address: Option<Address>,
     ) -> Result<Arc<Client>, ApiError> {
+        // a value held over a trunk is released over that trunk: bacnetio joins one only after
+        // listening, never by itself (docs/concept-mstp.md)
+        let on_trunk = self.trunk().await.is_some();
+        if let Some(reason) = other_link(device, address, on_trunk) {
+            return Err(ApiError::conflict(reason));
+        }
         let client = match self.client().await {
             Ok(client) => client,
             Err(_) => {
@@ -379,6 +385,21 @@ async fn keep_devices_known(state: Shared, client: Weak<Client>) {
     }
 }
 
+/// Why `device`, last reached at `address`, cannot be reached on the connection bacnetio has now:
+/// it sits on an MS/TP trunk and bacnetio is not on one, or the other way round.
+fn other_link(device: u32, address: Option<Address>, on_trunk: bool) -> Option<String> {
+    match (address, on_trunk) {
+        (Some(Address::Mstp(station)), false) => Some(format!(
+            "device {device} sits on an MS/TP trunk as station {station}: listen to the trunk \
+             and join it first"
+        )),
+        (Some(Address::Ip(_)), true) => Some(format!(
+            "device {device} is on BACnet/IP: leave the trunk and search on BACnet/IP first"
+        )),
+        _ => None,
+    }
+}
+
 /// Adapter, port and BBMD of a request; all optional.
 #[derive(Deserialize, Default)]
 pub struct NetworkRequest {
@@ -418,6 +439,26 @@ mod tests {
             port,
             bbmd: None,
         }
+    }
+
+    #[test]
+    fn a_device_is_reached_only_over_the_link_it_was_written_on() {
+        let station = Some(Address::Mstp(5));
+        let ip = Some(Address::Ip("10.0.0.20:47808".parse().unwrap()));
+        assert!(
+            other_link(2005, station, false)
+                .unwrap()
+                .contains("sits on an MS/TP trunk as station 5")
+        );
+        assert_eq!(other_link(2005, station, true), None);
+        assert!(
+            other_link(3001, ip, true)
+                .unwrap()
+                .contains("is on BACnet/IP")
+        );
+        assert_eq!(other_link(3001, ip, false), None);
+        // behind a router no address is kept: the open connection is tried
+        assert_eq!(other_link(3001, None, true), None);
     }
 
     /// The tasks that follow a connection must not keep it open: a search on another adapter or

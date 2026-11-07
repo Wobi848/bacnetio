@@ -179,6 +179,12 @@ Each step leaves everything working and is its own pull request:
    waiting for the token, and leaving failed with "a request is still running".
 5. **Field test** with the maintainer's adapter, then fixes.
 
+After step 4 (7 November 2026): a value held over a trunk, after a restart. Releasing it asks to
+listen and join first (`409`, `session::other_link`), because bacnetio joins a trunk only after
+listening, never by itself; on the trunk it is released as on IP. *Held by you* shows each value's
+address. The simulator clears the exclusive mark a killed bacnetio leaves on its pseudo-terminal,
+as the system does for a real adapter (`ui/39-mstp-held`).
+
 ## Decided (7 November 2026)
 
 1. **Android:** left out for now. Windows and Linux first.

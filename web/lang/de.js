@@ -268,6 +268,8 @@ export default {
     mstpNoBbmd: "Nur ein Gerät an BACnet/IP hat BBMD-Tabellen.",
     mstpCannotOpen: "$1 lässt sich nicht öffnen. $2",
     mstpCannotJoin: "Am MS/TP-Strang an $1 lässt sich nicht teilnehmen. $2",
+    mstpHeldOnTrunk: "Gerät $1 liegt als Station $2 an einem MS/TP-Strang: zuerst den Strang mithören und daran teilnehmen.",
+    mstpHeldOnIp: "Gerät $1 ist an BACnet/IP: zuerst den Strang verlassen und über BACnet/IP suchen.",
     mstpPermission: "Keine Berechtigung für $1: den Benutzer in die Gruppe dialout aufnehmen (sudo usermod -aG dialout $USER) und neu anmelden.",
     pluginNoFolder: "Erweiterungen brauchen einen Datenordner.",
     pluginMissing: "Die Erweiterung $1 ist nicht installiert.",
