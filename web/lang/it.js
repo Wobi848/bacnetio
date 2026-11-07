@@ -256,6 +256,8 @@ export default {
     mstpNoBbmd: "Solo un dispositivo su BACnet/IP ha tabelle BBMD.",
     mstpCannotOpen: "Impossibile aprire $1. $2",
     mstpCannotJoin: "Impossibile entrare nel bus MS/TP su $1. $2",
+    mstpHeldOnTrunk: "Il dispositivo $1 è su un bus MS/TP come stazione $2: ascoltare prima il bus ed entrarvi.",
+    mstpHeldOnIp: "Il dispositivo $1 è su BACnet/IP: lasciare prima il bus e cercare su BACnet/IP.",
     mstpPermission: "Nessun permesso per aprire $1: aggiungersi al gruppo dialout (sudo usermod -aG dialout $USER) e accedere di nuovo.",
     pluginNoFolder: "Le estensioni richiedono una cartella dati.",
     pluginMissing: "L’estensione $1 non è installata.",

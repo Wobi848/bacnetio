@@ -507,12 +507,15 @@ Both return the same entries:
 [
   {
     "time": 1793534400, "device": 3001, "type": 1, "instance": 1, "object": "Analog output 1",
-    "priority": 8, "action": "write", "value": "42.5", "error": null
+    "priority": 8, "action": "write", "value": "42.5", "error": null, "address": "10.0.0.20"
   }
 ]
 ```
 
-`time` is seconds since 1970 (UTC). `value` is `null` for a release. `action` is one of five:
+`time` is seconds since 1970 (UTC). `value` is `null` for a release. `address` is where the device
+was reached (`10.0.0.20`, `MS/TP 5`), `null` behind a router. A device on an MS/TP trunk is written
+and released only while bacnetio is on a trunk, one on BACnet/IP only while it is not: `409` says
+which, as bacnetio never joins a trunk by itself. `action` is one of five:
 
 - `write` — a value written at a priority, or directly on an object without a priority array.
 - `release` — a priority given up again.

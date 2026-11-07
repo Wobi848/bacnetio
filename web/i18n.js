@@ -29,6 +29,8 @@ const ERROR_PATTERNS = [
   // a serial port that cannot be opened, with the system's reason after the colon
   [/^cannot open ([^\s:]+)(?:: (.*))?$/, "mstpCannotOpen"],
   [/^cannot join the MS\/TP trunk on ([^\s:]+)(?:: (.*))?$/, "mstpCannotJoin"],
+  [/^device (\d+) sits on an MS\/TP trunk as station (\d+): listen to the trunk and join it first$/, "mstpHeldOnTrunk"],
+  [/^device (\d+) is on BACnet\/IP: leave the trunk and search on BACnet\/IP first$/, "mstpHeldOnIp"],
   [/^no permission to open (\S+): add yourself to the group dialout .*$/, "mstpPermission"],
   [/^read the device's points first$/, "readFirst"],
   [/^add a point to the recording first$/, "recordFirst"],

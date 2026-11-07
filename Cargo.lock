@@ -341,6 +341,7 @@ dependencies = [
  "bytes",
  "clap",
  "if-addrs",
+ "libc",
  "mime_guess",
  "rust-embed",
  "rustls",

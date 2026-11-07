@@ -228,6 +228,11 @@ async fn still_mine(
     object: ObjectIdentifier,
     priority: u8,
 ) -> Result<(), ApiError> {
+    // after a restart the device is found again first, as for the release itself; a device on a
+    // trunk asks for the trunk instead
+    state
+        .client_for(device, held_address(state, device))
+        .await?;
     let view = object_view(state, device, object).await?;
     let slot = view
         .priority_array

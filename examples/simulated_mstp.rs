@@ -40,6 +40,18 @@ mod pty {
 
     /// The device's transport and the terminal's name for bacnetio. The terminal stays open
     /// here too, without a lock, so the device keeps running while no bacnetio has it open.
+    /// A bacnetio that was killed cannot take back its exclusive mark on the terminal, and as the
+    /// terminal stays open here, the system never clears it as it does for a USB adapter: every
+    /// later opening would be refused as busy. So it is cleared here, now and then.
+    pub async fn keep_openable(terminal: std::fs::File) {
+        use std::os::fd::AsRawFd;
+        loop {
+            // SAFETY: TIOCNXCL takes no argument and only clears a flag of this open terminal
+            unsafe { libc::ioctl(terminal.as_raw_fd(), libc::TIOCNXCL) };
+            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+        }
+    }
+
     pub fn open(station: u8) -> (MstpTransport<Port>, String, std::fs::File) {
         use tokio_serial::SerialPort as _;
         let (device_end, other_end) = SerialStream::pair().expect("cannot open a pseudo-terminal");
@@ -93,7 +105,8 @@ async fn main() {
         .unwrap()
         .with_name(&name);
     let database = build_database_with_extra(&identity, objects).unwrap();
-    let (transport, terminal, _other_end) = pty::open(station);
+    let (transport, terminal, other_end) = pty::open(station);
+    tokio::spawn(pty::keep_openable(other_end));
     let _server = BACnetServer::generic_builder()
         .transport(transport)
         .device(identity)

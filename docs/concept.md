@@ -109,6 +109,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Listen to an MS/TP trunk without sending: speed, stations, a free address | *Search settings* with MS/TP, *Listen to the trunk* | `tests/mstp.rs`, `mstp.rs`, `ui/37-mstp` |
 | Join an MS/TP trunk and search it; refused before listening, at another speed or an address in use | *Search settings* with MS/TP, *Join the trunk and search*; *Search again* | `tests/mstp.rs` (`joining_a_trunk_finds_its_device_and_reads_it`), `mstp.rs` (`joining_needs_…`), `ui/38-mstp-join` |
 | Leave the trunk; asks first while values are held; joining and leaving logged | sidebar head while on a trunk; *Written* log | `ui/38-mstp-join` |
+| A value held on a trunk, after a restart: its address shown, releasing asks to join the trunk first | *Held by you* | `session.rs` (`a_device_is_reached_only_over_the_link_it_was_written_on`), `ui/39-mstp-held` |
 | Read, write, release, COV over MS/TP | as on IP | `tests/mstp.rs` (`writing_releasing_and_cov_reports_work_over_the_trunk`), `ui/38-mstp-join` |
 | BBMD tables read (BDT and FDT), never written; a device that is none says so | device details, *BBMD tables* | `ui/24-bbmd`, `tests/bbmd.rs` (both tables, no BBMD), `web/ui.test.js` |
 | Device by IP address | table of the site, toolbar, *Device by IP …* (BACnet/IP only, not on a trunk) | `ui/10-locate` |

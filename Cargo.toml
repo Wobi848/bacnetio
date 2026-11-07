@@ -32,6 +32,10 @@ bacnet-objects = "=0.15.0"
 bacnet-server = "=0.15.0"
 tower = { version = "0.5", features = ["util"] }
 
+# simulated_mstp: clears the exclusive mark a killed bacnetio leaves on its pseudo-terminal
+[target.'cfg(unix)'.dev-dependencies]
+libc = "0.2"
+
 [profile.release]
 lto = true
 strip = true
