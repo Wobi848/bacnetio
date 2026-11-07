@@ -1,6 +1,6 @@
 # Concept: BACnet MS/TP over a USB RS-485 adapter
 
-Proposal, 7 November 2026, branch `concept-mstp`. Nothing is built.
+Approved on 7 November 2026 (branch `concept-mstp`). Nothing is built yet.
 
 ## Why
 
@@ -164,17 +164,13 @@ Each step leaves everything working and is its own pull request:
    one against the simulator.
 5. **Field test** with the maintainer's adapter, then fixes.
 
-## Open for the decision
+## Decided (7 November 2026)
 
-1. **Android:** leave it out for now? Recommendation: yes. Windows and Linux first. Android needs
-   a USB serial driver per chip (FTDI, CH340, CP2102) in the app, a project of its own.
-2. **Joining:** listen first, then join with a confirmation in the page, no unlock. Is that enough,
-   or should joining need the unlock like writing? Recommendation: confirmation without unlock,
-   because joining writes no value. The log records it.
-3. **Own address proposed:** the highest free one (often 127), or the lowest free above the
-   stations found? Recommendation: the highest free one up to the Max_Master heard while
-   listening. Devices are usually numbered from below, so the highest address collides least.
-4. **IP and MS/TP at once**, or one connection at a time? Recommendation: one at a time. A switch
-   in *Search settings*. Two at once means two sites in one view and doubles every state.
-5. **Your adapter:** which one do you have (chip, Windows or Linux)? It decides what the field
-   test checks first.
+1. **Android:** left out for now. Windows and Linux first.
+2. **Joining:** listen first, then join after a confirmation in the page, without the unlock. The
+   log records joining and leaving.
+3. **Own address proposed:** the highest free one up to the Max_Master heard while listening.
+4. **One connection at a time:** BACnet/IP or MS/TP, switched in *Search settings*. A trunk
+   behind a router is already reached over IP.
+5. **The maintainer's adapter:** not known yet. bacnetio shows the adapter's name in the port
+   list, so the field test finds out.
