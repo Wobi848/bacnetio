@@ -7,7 +7,7 @@ import { readBbmdTables } from "./bbmd-actions.js";
 import { compareTime, hideCompareCrosshair, hideCrosshair, showCompareCrosshair, showCrosshair } from "./chart.js";
 import { acknowledgeAlarm, askAcknowledge, askWhoHas, changeInstance, readWinners, renameDevice, runCommand } from "./device-commands.js";
 import { find, locate, openDevice, openPointAt, pollScan, saveReference, selectDevice, toggleRequests } from "./device-actions.js";
-import { deleteSite, exportSiteEde, groupSite, importSite, loadSitePoints, loadSites, openSite, readAllDevices, renameSite, stopRunning } from "./site-actions.js";
+import { deleteSite, exportSiteEde, exportSiteExcel, groupSite, importSite, loadSitePoints, loadSites, openSite, readAllDevices, renameSite, stopRunning } from "./site-actions.js";
 import { setLanguage, t } from "./i18n.js";
 import { toggleLiveList } from "./live-list.js";
 import { loadMemory, loadPropertyNames, loadTreeView, loadWatch, saveMemory, savePropertyNames, saveTreeView } from "./memory.js";
@@ -337,6 +337,7 @@ const actions = {
   "set-clock": () => setClock(),
   requests: () => toggleRequests(),
   "site-ede": () => exportSiteEde(),
+  "site-excel": () => exportSiteExcel(),
   "rec-add": () => recordHere(true),
   "rec-remove-here": () => recordHere(false),
   "rec-remove": (element) => removeRecorded(element.dataset.key),

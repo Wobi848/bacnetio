@@ -45,8 +45,8 @@ light and dark theme, the system's language (English or German), keys `1`–`6`,
 - **Held by you**: values you still hold, also after a restart, with their unit and priority; every
   write, with the device's reason where it refused, also as CSV; leaving the site with what you
   hold released.
-- **Exports**: device list and points as CSV, also with priorities; EDE files with state texts, per
-  device or for the whole site. A device's points as a page to print or save as PDF, with the
+- **Exports**: device list and points as CSV and as Excel files, also with priorities; the whole
+  site in one Excel file; EDE files with state texts, per device or for the whole site. A device's points as a page to print or save as PDF, with the
   list's filter.
 - **Sites**: each site searched is kept, named by you, opened again, saved to and read from a file;
   its points grouped by the paths in their names or by your own pattern.

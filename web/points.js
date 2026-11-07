@@ -6,6 +6,7 @@ import { DEVICE_TYPE, RECORDABLE, chips, deviceMaker, deviceName, errorStrip, ha
 import { groupPoints, sitePattern, typeShort } from "./grouping.js";
 import { h, marked } from "./html.js";
 import { currentLocale, objectText, objectTypeName, t } from "./i18n.js";
+import { excelLink } from "./excel.js";
 import { listBorders } from "./panels.js";
 import { detailHtml } from "./point-detail.js";
 import { pluginMarksHtml } from "./plugins.js";
@@ -132,6 +133,8 @@ function moreMenu(state) {
     <hr class="drawer-only">
     <a class="quiet" href="/api/devices/${device}/points.csv" download>CSV</a>
     <a class="quiet" href="/api/devices/${device}/points-priorities.csv" download title="${t("csv.prioritiesHint")}">${t("csv.priorities")}</a>
+    ${excelLink(state, `/api/devices/${device}/points.xlsx`, "Excel", [deviceName(state.device)])}
+    ${excelLink(state, `/api/devices/${device}/points-priorities.xlsx`, t("xlsx.priorities"), [deviceName(state.device)])}
     <a class="quiet" href="/api/devices/${device}/points.ede.csv" download title="${t("ede.hint")}">EDE</a>
     <a class="quiet" href="/api/devices/${device}/points.ede-states.csv" download title="${t("ede.statesHint")}">${t("ede.states")}</a>
     <button type="button" class="quiet" data-act="compare-start" title="${t("compare.openHint")}">${t("compare.open")}</button>

@@ -1,6 +1,7 @@
 // The log: values you still hold in the plant, with release, and every write of this session.
 
 import { DEVICE_TYPE, deviceName } from "./format.js";
+import { excelLink } from "./excel.js";
 import { h } from "./html.js";
 import { currentLocale, objectText, t, valueWord } from "./i18n.js";
 
@@ -121,6 +122,7 @@ export function viewLog(state) {
     next,
     html: `<div class="split single"><section class="listwrap"><div class="toolbar"><div class="end">
       <a class="quiet" href="/api/log.csv?offset_min=${offset}" download>${t("log.export")}</a>
+      ${excelLink(state, "/api/log.xlsx", t("xlsx.logExport"), [t("tab.log")])}
       <button type="button" class="quiet" data-act="leave">${t("leave")}</button></div></div><div class="rows" data-keep="log">
       <div class="row group plain"><span class="name">${t("held.now")}</span><span class="count">${state.held.length}</span></div>
       ${heldRows(state)}

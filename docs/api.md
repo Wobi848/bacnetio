@@ -590,6 +590,24 @@ but the file is the capture's state `{ "running": true, "frames": 1234, "overflo
 - `GET /api/capture.pcapng`: what was captured, as a pcapng file (`bacnetio.pcapng`): BACnet/IP as
   IPv4/UDP packets whose headers are built from the addresses, MS/TP frames as on the line.
 
+## Excel files
+
+The lists as `.xlsx` beside their CSV (docs/concept-excel.md), with the same rows: the header bold,
+frozen and filtered, numbers as numbers and times as Excel times. Each takes `?heads=` (a JSON
+object of column heads and sheet names by their English names, such as `{"Device ID":"Geräte-ID"}`;
+heads not given stay English), `?title=` (a line above the header) and `?offset_min=` (as for the
+CSV). Heads of more than 80 characters, more than 100 of them, a title of more than 300 characters
+or heads that are no JSON object of texts answer `400`.
+
+- `GET /api/devices.xlsx`: the devices of the last finished scan.
+- `GET /api/devices/{instance}/points.xlsx`: the last reading of a device; `409` before one.
+- `GET /api/devices/{instance}/points-priorities.xlsx`: the same with the priority arrays read now,
+  as `points-priorities.csv`.
+- `GET /api/site.xlsx`: the device list, then a sheet per device read, by device ID; `409` before
+  any device was read.
+- `GET /api/log.xlsx`: the log, as `log.csv`.
+- `GET /api/recording.xlsx`: the recording, as `recording.csv`.
+
 ## Plugins
 
 Plugins (docs/concept-plugins.md, docs/plugins.md) are kept in the data folder under `plugins/`.

@@ -35,4 +35,5 @@ pub mod table;
 pub mod trend;
 pub mod update;
 pub mod watch;
+pub mod workbook;
 pub mod write;

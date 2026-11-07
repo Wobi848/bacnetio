@@ -134,6 +134,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Point list as EDE file | table of a device, toolbar, *EDE* | `ui/13-exports`, `ede.rs` |
 | EDE state text file, per device and for all | table of a device, toolbar, table of the site, toolbar | `ui/13-exports`, `ede.rs` |
 | EDE file of all devices, reading those not read yet | table of the site, toolbar, *EDE (all devices)* | `ui/13-exports` |
+| Excel files beside each CSV: devices, a device's points (also with priorities), the whole site with a sheet per device, log, recording; heads in the page's language | export menus beside *CSV* | `workbook.rs`, `tests/api.rs` (`excel_files_check_what_the_page_sends`), `tests/web/excel.test.js`, `ui/45-excel` |
 | Print view of a device's points, with the list's filter and view, saved as PDF by the browser | table of a device, *More → Print …*; Ctrl+P in the list | `ui/40-print` |
 | Own grouping pattern per site, with a preview; kept with the site and over a new search | table of a device, *More → Grouping …* | `ui/43-grouping`, `tests/web/grouping.test.js`, `site.rs` (`a_grouping_pattern_stays_with_its_site`) |
 | Compare two devices by point name: differences, only left, only right; read both again | table of a device, *More → Compare with …* | `ui/41-compare`, `tests/web/compare.test.js` |

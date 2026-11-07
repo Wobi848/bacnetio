@@ -1,4 +1,5 @@
-//! Point list as CSV for Excel: semicolon, UTF-8 with BOM, CRLF, as in mbusio.
+//! The lists bacnetio exports, each built once as a [`Table`]: as CSV for scripts and Excel
+//! (semicolon, UTF-8 with BOM, CRLF, as in mbusio), and as an Excel file (workbook.rs).
 
 use std::collections::BTreeMap;
 use std::time::SystemTime;
@@ -27,14 +28,46 @@ const COLUMNS: [&str; 9] = [
     "Error",
 ];
 
-pub fn point_list_csv(device: u32, points: &[Point]) -> String {
-    // BOM, so Excel reads UTF-8 (°C, m³) correctly
-    let mut out = String::from("\u{FEFF}");
-    out.push_str(&row(&COLUMNS));
-    for point in points {
-        out.push_str(&row(&point_fields(device, point)));
+/// A list to export: its column heads (English, as scripts read them) and its rows of text.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Table {
+    pub columns: Vec<String>,
+    pub rows: Vec<Vec<String>>,
+}
+
+impl Table {
+    fn new<S: AsRef<str>>(columns: &[S]) -> Self {
+        Table {
+            columns: columns
+                .iter()
+                .map(|head| head.as_ref().to_string())
+                .collect(),
+            rows: Vec::new(),
+        }
     }
-    out
+
+    pub fn csv(&self) -> String {
+        // BOM, so Excel reads UTF-8 (°C, m³) correctly
+        let mut out = String::from("\u{FEFF}");
+        out.push_str(&row(&self.columns));
+        for fields in &self.rows {
+            out.push_str(&row(fields));
+        }
+        out
+    }
+}
+
+pub fn point_list(device: u32, points: &[Point]) -> Table {
+    let mut table = Table::new(&COLUMNS);
+    table.rows = points
+        .iter()
+        .map(|point| point_fields(device, point))
+        .collect();
+    table
+}
+
+pub fn point_list_csv(device: u32, points: &[Point]) -> String {
+    point_list(device, points).csv()
 }
 
 fn point_fields(device: u32, point: &Point) -> Vec<String> {
@@ -55,19 +88,22 @@ fn point_fields(device: u32, point: &Point) -> Vec<String> {
 pub type Priorities = Result<Option<Vec<Option<PropertyValue>>>, String>;
 
 /// The point list with the priority that wins now and every set slot, such as `8=21.5 °C | 16=0`.
-pub fn point_priorities_csv(device: u32, points: &[(Point, Priorities)]) -> String {
-    let mut out = String::from("\u{FEFF}");
+pub fn point_priorities(device: u32, points: &[(Point, Priorities)]) -> Table {
     let mut columns = COLUMNS.to_vec();
     columns.extend(["Winning priority", "Set priorities"]);
-    out.push_str(&row(&columns));
+    let mut table = Table::new(&columns);
     for (point, priorities) in points {
         let mut fields = point_fields(device, point);
         let (winning, set) = priorities_text(point, priorities);
         fields.push(winning);
         fields.push(set);
-        out.push_str(&row(&fields));
+        table.rows.push(fields);
     }
-    out
+    table
+}
+
+pub fn point_priorities_csv(device: u32, points: &[(Point, Priorities)]) -> String {
+    point_priorities(device, points).csv()
 }
 
 fn priorities_text(point: &Point, priorities: &Priorities) -> (String, String) {
@@ -104,11 +140,10 @@ const DEVICE_COLUMNS: [&str; 8] = [
 ];
 
 /// The devices of a scan, for the site documentation.
-pub fn device_list_csv(devices: &[Device]) -> String {
-    let mut out = String::from("\u{FEFF}");
-    out.push_str(&row(&DEVICE_COLUMNS));
+pub fn device_list(devices: &[Device]) -> Table {
+    let mut table = Table::new(&DEVICE_COLUMNS);
     for device in devices {
-        out.push_str(&row(&[
+        table.rows.push(vec![
             device.instance.to_string(),
             device.details.name.clone().unwrap_or_default(),
             device.details.vendor.clone().unwrap_or_default(),
@@ -130,9 +165,13 @@ pub fn device_list_csv(devices: &[Device]) -> String {
                 "direct"
             }
             .to_string(),
-        ]));
+        ]);
     }
-    out
+    table
+}
+
+pub fn device_list_csv(devices: &[Device]) -> String {
+    device_list(devices).csv()
 }
 
 /// A trend log read from a device: its local time and the value.
@@ -150,7 +189,7 @@ pub fn trend_csv(title: &str, records: &[TrendRecord]) -> String {
 
 /// One row per sampling round, one column per point. `offset_minutes` is the viewer's time zone,
 /// so the times read as local times in Excel.
-pub fn recording_csv(recording: &Recording, offset_minutes: i32) -> String {
+pub fn recording_table(recording: &Recording, offset_minutes: i32) -> Table {
     let series = recording.series();
     let mut header = vec!["Time".to_string()];
     header.extend(series.iter().map(|series| match series.mode {
@@ -166,8 +205,7 @@ pub fn recording_csv(recording: &Recording, offset_minutes: i32) -> String {
                 .or_insert_with(|| vec![None; columns])[column] = sample.value;
         }
     }
-    let mut out = String::from("\u{FEFF}");
-    out.push_str(&row(&header));
+    let mut table = Table::new(&header);
     for (time, values) in rounds {
         let mut fields = vec![date_time_text(time, offset_minutes)];
         fields.extend(
@@ -175,9 +213,13 @@ pub fn recording_csv(recording: &Recording, offset_minutes: i32) -> String {
                 .iter()
                 .map(|value| value.map(|v| v.to_string()).unwrap_or_default()),
         );
-        out.push_str(&row(&fields));
+        table.rows.push(fields);
     }
-    out
+    table
+}
+
+pub fn recording_csv(recording: &Recording, offset_minutes: i32) -> String {
+    recording_table(recording, offset_minutes).csv()
 }
 
 /// "1001 Analog input 1 Supply air temp (°C)"
@@ -204,12 +246,11 @@ const LOG_COLUMNS: [&str; 8] = [
 ];
 
 /// Every write of the session, oldest first, as the page lists it; `offset_minutes` as above.
-pub fn log_csv(entries: &[Entry], offset_minutes: i32) -> String {
-    let mut out = String::from("\u{FEFF}");
-    out.push_str(&row(&LOG_COLUMNS));
+pub fn log_table(entries: &[Entry], offset_minutes: i32) -> Table {
+    let mut table = Table::new(&LOG_COLUMNS);
     for entry in entries {
         let (action, value) = entry_action(entry);
-        out.push_str(&row(&[
+        table.rows.push(vec![
             date_time_text(entry.time, offset_minutes),
             entry.device.to_string(),
             object_type_text(entry.object.object_type()),
@@ -221,9 +262,13 @@ pub fn log_csv(entries: &[Entry], offset_minutes: i32) -> String {
             action.to_string(),
             value.unwrap_or_default(),
             entry.error.clone().unwrap_or_default(),
-        ]));
+        ]);
     }
-    out
+    table
+}
+
+pub fn log_csv(entries: &[Entry], offset_minutes: i32) -> String {
+    log_table(entries, offset_minutes).csv()
 }
 
 /// "2026-11-01 09:30:00" at the given offset from UTC.

@@ -188,3 +188,30 @@ async fn listening_opens_only_a_listed_port_at_an_mstp_speed() {
         "{body}"
     );
 }
+
+/// The Excel files (docs/concept-excel.md): a workbook even of an empty list, heads checked at the
+/// border, and a device's points only after reading them.
+#[tokio::test]
+async fn excel_files_check_what_the_page_sends() {
+    let request = |path: &str| Request::builder().uri(path).body(Body::empty()).unwrap();
+    let app = || server::router(Arc::new(AppState::default()));
+    let answer = app()
+        .oneshot(request(
+            "/api/devices.xlsx?heads=%7B%22Device%20ID%22%3A%22Ger%C3%A4te-ID%22%7D&title=Site",
+        ))
+        .await
+        .unwrap();
+    assert_eq!(answer.status(), StatusCode::OK);
+    let bytes = to_bytes(answer.into_body(), usize::MAX).await.unwrap();
+    assert_eq!(&bytes[..2], b"PK", "an xlsx file is a zip");
+    let (status, _) = call(Method::GET, "/api/devices.xlsx?heads=nonsense", "").await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    let long = "x".repeat(400);
+    let (status, _) = call(Method::GET, &format!("/api/log.xlsx?title={long}"), "").await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    let (status, body) = call(Method::GET, "/api/devices/1/points.xlsx", "").await;
+    assert_eq!(status, StatusCode::CONFLICT);
+    assert_eq!(body["error"], "read the device's points first");
+    let (status, _) = call(Method::GET, "/api/site.xlsx", "").await;
+    assert_eq!(status, StatusCode::CONFLICT);
+}

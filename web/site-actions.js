@@ -1,6 +1,7 @@
 // The site as a whole: reading every device, exporting them, and the sites kept on disk.
 
 import { api } from "./api.js";
+import { excelHref } from "./excel.js";
 import { saveMemory } from "./memory.js";
 import { searchScope } from "./shell.js";
 import { go, render, state, toast } from "./store.js";
@@ -122,6 +123,22 @@ export async function stopRunning() {
   try {
     if (state.scan.state === "running") await api.stopScan();
     if (state.reading && state.readingDevice !== null) await api.stopRead(state.readingDevice);
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+/** Reads what is not read yet, then downloads the site as an Excel file: the devices and a sheet
+ * per device. */
+export async function exportSiteExcel() {
+  try {
+    const failed = await readAllDevices();
+    if (state.stopping) return;
+    const link = document.createElement("a");
+    link.href = excelHref(state, "/api/site.xlsx");
+    link.download = "";
+    link.click();
+    if (failed) toast(t("ede.siteFailed", { n: failed }), true);
   } catch (error) {
     toast(error.message, true);
   }
