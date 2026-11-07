@@ -9,7 +9,8 @@ use bacnet_services::who_is::DeviceInstanceRange;
 use bacnet_types::enums::Segmentation;
 
 use super::{Device, ObjectList, RemoteStation, details, sweep};
-use crate::connection::{Client, mac};
+use crate::address::Address;
+use crate::connection::Client;
 
 /// What is assumed of a device behind a router until it says otherwise: the common size on MS/TP.
 const ASSUMED_ROUTED_APDU: u32 = 480;
@@ -22,7 +23,7 @@ const LOCATE_POLL: Duration = Duration::from_millis(100);
 pub async fn locate(
     client: &Client,
     instance: Option<u32>,
-    address: Option<SocketAddrV4>,
+    address: Option<Address>,
     who_is_wait: Duration,
 ) -> anyhow::Result<u32> {
     match (instance, address) {
@@ -38,10 +39,10 @@ pub async fn find_one(
     instance: Option<u32>,
     address: SocketAddrV4,
 ) -> anyhow::Result<Device> {
-    let instance = locate_at(client, instance, address).await?;
+    let instance = locate_at(client, instance, Address::Ip(address)).await?;
     Ok(Device {
         instance,
-        address,
+        address: Address::Ip(address),
         remote: None,
         answered_who_is: false,
         details: details::device_details(client, instance).await,
@@ -52,7 +53,7 @@ pub async fn find_one(
 async fn locate_at(
     client: &Client,
     instance: Option<u32>,
-    address: SocketAddrV4,
+    address: Address,
 ) -> anyhow::Result<u32> {
     let found = match (sweep::ask_instance(client, address).await, instance) {
         (None, _) => bail!("no BACnet device answers at {address}"),
@@ -67,7 +68,7 @@ async fn locate_at(
         ),
     };
     client
-        .add_device(found, &mac(address))
+        .add_device(found, &address.mac())
         .await
         .with_context(|| format!("cannot remember device {found}"))?;
     Ok(found)
@@ -126,7 +127,7 @@ pub async fn find_routed(
     network: u16,
     station: Vec<u8>,
 ) -> anyhow::Result<Device> {
-    remember_routed(client, instance, router, network, &station).await?;
+    remember_routed(client, instance, Address::Ip(router), network, &station).await?;
     let details = details::device_details(client, instance).await;
     if details.name.is_none()
         && let Some(reason) = &details.error
@@ -135,7 +136,7 @@ pub async fn find_routed(
     }
     Ok(Device {
         instance,
-        address: router,
+        address: Address::Ip(router),
         remote: Some(RemoteStation {
             network,
             mac: station,
@@ -149,14 +150,14 @@ pub async fn find_routed(
 async fn remember_routed(
     client: &Client,
     instance: u32,
-    router: SocketAddrV4,
+    router: Address,
     network: u16,
     station: &[u8],
 ) -> anyhow::Result<()> {
     client
         .add_routed_device(RoutedDeviceConfig {
             instance,
-            router_mac: mac(router).to_vec(),
+            router_mac: router.mac(),
             remote_network: network,
             remote_mac: station.to_vec(),
             max_apdu_length: ASSUMED_ROUTED_APDU,
@@ -180,10 +181,11 @@ pub async fn aim_at(client: &Client, device: &Device) -> anyhow::Result<()> {
                     .as_ref()
                     .map(|station| station.as_slice())
                     == Some(remote.mac.as_slice())
-                && known.mac_address.as_slice() == mac(device.address)
+                && known.mac_address.as_slice() == device.address.mac().as_slice()
         }
         None => {
-            known.source_network.is_none() && known.mac_address.as_slice() == mac(device.address)
+            known.source_network.is_none()
+                && known.mac_address.as_slice() == device.address.mac().as_slice()
         }
     });
     if already {
@@ -201,7 +203,7 @@ pub async fn aim_at(client: &Client, device: &Device) -> anyhow::Result<()> {
             .await
         }
         None => client
-            .add_device(device.instance, &mac(device.address))
+            .add_device(device.instance, &device.address.mac())
             .await
             .with_context(|| format!("cannot remember device {}", device.instance)),
     }

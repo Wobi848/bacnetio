@@ -20,6 +20,15 @@ const ERROR_PATTERNS = [
   // opening a serial port without the rights for it (Linux: the group dialout)
   [/^(.+) is not a serial port of this computer$/, "notSerialPort"],
   [/^(\d+) baud is no MS\/TP speed: .*$/, "noMstpSpeed"],
+  [/^listen to the trunk first$/, "mstpListenFirst"],
+  [/^station (\d+) answered while listening: another device uses it$/, "mstpStationUsed"],
+  [/^the trunk was heard at (\d+) baud, not (\d+): listen again at \d+ first$/, "mstpWrongSpeed"],
+  [/^no master took bacnetio into the token ring as station (\d+) within (\d+) s: .*$/, "mstpNotInRing"],
+  [/^bacnetio is on this trunk: leave it before listening again$/, "mstpOnTrunk"],
+  [/^only a device on BACnet\/IP has BBMD tables$/, "mstpNoBbmd"],
+  // a serial port that cannot be opened, with the system's reason after the colon
+  [/^cannot open ([^\s:]+)(?:: (.*))?$/, "mstpCannotOpen"],
+  [/^cannot join the MS\/TP trunk on ([^\s:]+)(?:: (.*))?$/, "mstpCannotJoin"],
   [/^no permission to open (\S+): add yourself to the group dialout .*$/, "mstpPermission"],
   [/^read the device's points first$/, "readFirst"],
   [/^add a point to the recording first$/, "recordFirst"],

@@ -33,7 +33,7 @@ async fn samples_numbers_and_gaps_into_the_csv() {
     let objects: Vec<Box<dyn BACnetObject>> = vec![Box::new(supply), Box::new(pump)];
     let mut device = simulated_device(4001, "AHU-04", 47995, Segmentation::BOTH, objects).await;
     let connection = connect(47996).await;
-    scan::locate(&connection.client, None, Some(at(47995)), WAIT)
+    scan::locate(&connection.client, None, Some(at(47995).into()), WAIT)
         .await
         .unwrap();
 

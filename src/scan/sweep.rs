@@ -11,7 +11,8 @@ use tokio::sync::{Semaphore, mpsc};
 use tokio::task::JoinSet;
 use tokio::time::timeout;
 
-use crate::connection::{Client, decode_value, is_timeout, mac};
+use crate::address::Address;
+use crate::connection::{Client, decode_value, is_timeout};
 use crate::present::value_kind_text;
 
 /// Parallel direct questions while sweeping. Asking an address nobody holds leaves its packet
@@ -43,7 +44,11 @@ pub(super) async fn ask_all(
                 .acquire_owned()
                 .await
                 .expect("semaphore is never closed");
-            let answer = timeout(SWEEP_ANSWER_WAIT, ask_instance(&client, target)).await;
+            let answer = timeout(
+                SWEEP_ANSWER_WAIT,
+                ask_instance(&client, Address::Ip(target)),
+            )
+            .await;
             (target, answer.unwrap_or(None))
         });
     }
@@ -58,15 +63,12 @@ pub(super) async fn ask_all(
     }
 }
 
-pub(super) async fn ask_instance(
-    client: &Client,
-    target: SocketAddrV4,
-) -> Option<Result<u32, String>> {
+pub(super) async fn ask_instance(client: &Client, target: Address) -> Option<Result<u32, String>> {
     let wildcard = ObjectIdentifier::new(ObjectType::DEVICE, WILDCARD_INSTANCE)
         .expect("wildcard instance is valid");
     match client
         .read_property(
-            &mac(target),
+            &target.mac(),
             wildcard,
             PropertyIdentifier::OBJECT_IDENTIFIER,
             None,

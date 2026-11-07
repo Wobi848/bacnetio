@@ -50,6 +50,9 @@ fn serial_routes() -> Router<Shared> {
     Router::new()
         .route("/api/serial-ports", get(serial::serial_ports))
         .route("/api/mstp/listen", post(serial::listen))
+        .route("/api/mstp/search", post(serial::search))
+        .route("/api/mstp/leave", post(serial::leave))
+        .route("/api/mstp/trunk", get(serial::trunk))
 }
 
 #[cfg(target_os = "android")]

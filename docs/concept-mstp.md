@@ -1,6 +1,6 @@
 # Concept: BACnet MS/TP over a USB RS-485 adapter
 
-Approved on 7 November 2026 (branch `concept-mstp`). Steps 1 and 2 of the building order are built.
+Approved on 7 November 2026 (branch `concept-mstp`). Steps 1 to 4 of the building order are built; the field test is open.
 
 ## Why
 
@@ -164,9 +164,19 @@ Each step leaves everything working and is its own pull request:
    every speed.
 3. **Join and search**: the address type for IP and MS/TP, the transport in the client, Who-Is,
    the device table with MACs, the log entry, address refusal. The address type comes here, with
-   the first MS/TP device, not before.
+   the first MS/TP device, not before. Built on 7 November 2026 (`src/address.rs`,
+   `connection::open_mstp`, `src/server/serial.rs`, `web/mstp-actions.js`). bacnetio waits after
+   joining until it has held the token (passed it on, or took it alone on a quiet trunk), up to
+   20 s, then sends Who-Is, which waits 5 s on MS/TP. Joining and leaving are logged as commands
+   under device 4194303. *Device by IP …* is not offered on a trunk; BBMD tables are refused for an
+   MS/TP device.
 4. **Everything else on MS/TP**: points, writing, recording, exports and plugins checked one by
-   one against the simulator.
+   one against the simulator. Done on 7 November 2026: reading points, writing and releasing, COV
+   reports (`tests/mstp.rs`), the device list and its CSV with `MS/TP 5`, writing in the page and
+   leaving the trunk while a value is held, which asks first (`ui/38-mstp-join`). Recording polls
+   and plugins read through the same client calls by device ID, which the trunk serves like IP.
+   Closing a connection now waits up to 5 s for the requests under way: on MS/TP one is often
+   waiting for the token, and leaving failed with "a request is still running".
 5. **Field test** with the maintainer's adapter, then fixes.
 
 ## Decided (7 November 2026)
@@ -174,7 +184,10 @@ Each step leaves everything working and is its own pull request:
 1. **Android:** left out for now. Windows and Linux first.
 2. **Joining:** listen first, then join after a confirmation in the page, without the unlock. The
    log records joining and leaving.
-3. **Own address proposed:** the highest free one up to the Max_Master heard while listening.
+3. **Own address proposed:** first decided as the highest free one. Changed on 7 November 2026
+   after the test: a master polls the addresses after its own one by one, in a ring only one
+   every 50 token passes, so at 127 bacnetio waited for minutes, right above a station half a
+   second. Now the first free address right above the highest station heard, up to Max_Master.
 4. **One connection at a time:** BACnet/IP or MS/TP, switched in *Search settings*. A trunk
    behind a router is already reached over IP.
 5. **The maintainer's adapter:** a QinHeng CH343 (USB `1a86:55d3`), on Linux `/dev/ttyACM0`

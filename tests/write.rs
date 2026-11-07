@@ -29,7 +29,7 @@ async fn writes_at_a_priority_and_releases_again() {
     let mut device = simulated_device(3001, "HC-01", 47990, Segmentation::BOTH, objects()).await;
     let connection = connect(47991).await;
     let client = &connection.client;
-    let instance = scan::locate(client, None, Some(at(47990)), WAIT)
+    let instance = scan::locate(client, None, Some(at(47990).into()), WAIT)
         .await
         .unwrap();
     let valve = analog(ObjectType::ANALOG_OUTPUT, 1);
@@ -43,7 +43,7 @@ async fn writes_at_a_priority_and_releases_again() {
         journal.record(Entry {
             time: SystemTime::now(),
             device: instance,
-            address: Some(at(47990)),
+            address: Some(at(47990).into()),
             object: valve,
             priority: Some(priority),
             action: action.clone(),
@@ -75,7 +75,7 @@ async fn an_input_is_not_commandable_and_refuses_writes() {
     let mut device = simulated_device(3002, "HC-02", 47992, Segmentation::BOTH, objects()).await;
     let connection = connect(47993).await;
     let client = &connection.client;
-    let instance = scan::locate(client, None, Some(at(47992)), WAIT)
+    let instance = scan::locate(client, None, Some(at(47992).into()), WAIT)
         .await
         .unwrap();
     let sensor = analog(ObjectType::ANALOG_INPUT, 2);

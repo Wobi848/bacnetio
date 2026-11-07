@@ -151,6 +151,9 @@ pub async fn bbmd_tables(
         .find(|found| found.instance == device)
         .map(|found| found.address)
         .ok_or_else(|| ApiError::conflict("search for devices first"))?;
+    let address = address
+        .ip()
+        .ok_or_else(|| ApiError::conflict("only a device on BACnet/IP has BBMD tables"))?;
     let client = state.client().await?;
     let tables = bbmd::read_tables(&client, address).await;
     let peer = |peer: &bbmd::Peer| PeerView {

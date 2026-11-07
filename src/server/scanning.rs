@@ -66,13 +66,7 @@ pub async fn start_scan(
         None | Some("") => None,
         Some(text) => Some(Subnet::parse(text).map_err(ApiError::bad_request)?),
     };
-    {
-        let mut status = state.scan.lock().expect("scan status lock");
-        if matches!(*status, ScanStatus::Running(_)) {
-            return Err(ApiError::conflict("a search is already running"));
-        }
-        *status = ScanStatus::Running(Progress::start());
-    }
+    begin_scan(&state)?;
     let (client, port_unavailable) = match state.connect(&endpoint).await {
         Ok(opened) => opened,
         Err(error) => {
@@ -96,9 +90,32 @@ pub async fn start_scan(
         port_unavailable,
         instances,
     };
+    spawn_scan(state, scope, |state| async move {
+        scan_with(&state, &client, &adapter, plan).await
+    });
+    Ok(StatusCode::ACCEPTED)
+}
+
+/// Marks a search as running; refused while one runs.
+pub(super) fn begin_scan(state: &AppState) -> Result<(), ApiError> {
+    let mut status = state.scan.lock().expect("scan status lock");
+    if matches!(*status, ScanStatus::Running(_)) {
+        return Err(ApiError::conflict("a search is already running"));
+    }
+    *status = ScanStatus::Running(Progress::start());
+    Ok(())
+}
+
+/// Runs a search in the background until it ends or is stopped, and remembers the site it found
+/// under `scope`, the network or trunk it searched.
+pub(super) fn spawn_scan<F, W>(state: Shared, scope: String, work: W)
+where
+    W: FnOnce(Shared) -> F + Send + 'static,
+    F: std::future::Future<Output = anyhow::Result<ScanView>> + Send,
+{
     tokio::spawn(async move {
         let status = tokio::select! {
-            result = scan_with(&state, &client, &adapter, plan) => match result {
+            result = work(Arc::clone(&state)) => match result {
                 Ok(view) => ScanStatus::Done(view),
                 Err(error) => ScanStatus::Failed(format!("{error:#}")),
             },
@@ -116,7 +133,6 @@ pub async fn start_scan(
         }
         state.set_scan(status);
     });
-    Ok(StatusCode::ACCEPTED)
 }
 
 /// A stopped search ends like a finished one, with the devices it has found.
@@ -243,7 +259,7 @@ struct Refusal {
 }
 
 impl ScanView {
-    fn new(report: &ScanReport, notes: Vec<Note>) -> Self {
+    pub(super) fn new(report: &ScanReport, notes: Vec<Note>) -> Self {
         ScanView {
             devices: report.devices.iter().map(DeviceView::new).collect(),
             notes: notes.into_iter().map(NoteView::new).collect(),

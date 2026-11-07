@@ -34,6 +34,11 @@ export async function find() {
   if (state.settings.idFrom.trim()) settings.id_from = Number(state.settings.idFrom);
   if (state.settings.idTo.trim()) settings.id_to = Number(state.settings.idTo);
   saveMemory(state);
+  return runSearch(() => api.startScan(settings));
+}
+
+/** A new search: the old devices go, the workspace shows the new ones as they come. */
+export async function runSearch(start) {
   state.scan = { state: "running", phase: "who_is", found: 0, asked: 0, total: 0, devices: [] };
   state.selectedDevice = null;
   state.device = null;
@@ -42,13 +47,14 @@ export async function find() {
   state.node = null;
   go("workspace");
   try {
-    await api.startScan(settings);
+    await start();
   } catch (error) {
     state.scan = { state: "failed", error: error.message };
     render();
-    return;
+    return false;
   }
   pollScan();
+  return true;
 }
 
 export async function pollScan() {

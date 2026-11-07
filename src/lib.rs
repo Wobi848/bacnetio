@@ -2,6 +2,7 @@
 
 #[cfg(windows)]
 mod adapter_descriptions;
+pub mod address;
 pub mod alarms;
 pub mod bbmd;
 pub mod commands;

@@ -1,9 +1,9 @@
 //! The write log on disk, so values still held survive a crash or restart (concept section 6):
 //! one JSON object per line, appended after every write and release.
 
+use crate::address::Address;
 use std::fs::{self, OpenOptions};
 use std::io::{self, Write};
-use std::net::SocketAddrV4;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, UNIX_EPOCH};
 
@@ -21,7 +21,7 @@ struct StoredEntry {
     device: u32,
     /// Missing in logs written before it was stored.
     #[serde(default)]
-    address: Option<SocketAddrV4>,
+    address: Option<Address>,
     object_type: u32,
     instance: u32,
     priority: Option<u8>,

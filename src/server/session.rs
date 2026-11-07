@@ -1,5 +1,5 @@
 //! The open BACnet connection and the scan running on it. One connection at a time: a new scan
-//! on another adapter, port or BBMD replaces it.
+//! on another adapter, port or BBMD, or on an MS/TP trunk, replaces it.
 
 use std::collections::{HashMap, VecDeque};
 use std::net::{Ipv4Addr, SocketAddrV4};
@@ -13,8 +13,9 @@ use super::ApiError;
 use super::json::ObjectRef;
 use super::recording::Sampler;
 use super::scanning::ScanView;
+use crate::address::Address;
 use crate::alarms;
-use crate::connection::{self, BACNET_PORT, Client, Connection, Endpoint};
+use crate::connection::{self, BACNET_PORT, Client, Connection, Endpoint, Trunk};
 use crate::interfaces::{self, Adapter};
 use crate::points::Point;
 use crate::record::Recording;
@@ -56,14 +57,24 @@ pub struct AppState {
     /// Where the web server listens; requests must name it (guard.rs). `None` in tests that call
     /// the router directly.
     pub web_address: Option<std::net::SocketAddr>,
+    /// What listening to an MS/TP trunk last heard, and on which port: joining needs it
+    /// (docs/concept-mstp.md).
+    #[cfg(not(target_os = "android"))]
+    pub(super) heard: Mutex<Option<(String, crate::mstp::Heard)>>,
 }
 
 pub type Shared = Arc<AppState>;
 
 struct Open {
-    /// Interface, port and BBMD the connection was opened with.
-    key: (Ipv4Addr, u16, Option<SocketAddrV4>),
+    key: Key,
     connection: Connection,
+}
+
+/// What a connection was opened with: interface, port and BBMD, or an MS/TP trunk.
+#[derive(PartialEq)]
+enum Key {
+    Ip(Ipv4Addr, u16, Option<SocketAddrV4>),
+    Mstp(Trunk),
 }
 
 #[derive(Default)]
@@ -124,7 +135,7 @@ impl AppState {
     pub async fn client_for(
         self: &Arc<Self>,
         device: u32,
-        address: Option<SocketAddrV4>,
+        address: Option<Address>,
     ) -> Result<Arc<Client>, ApiError> {
         let client = match self.client().await {
             Ok(client) => client,
@@ -149,7 +160,56 @@ impl AppState {
         self: &Arc<Self>,
         endpoint: &Endpoint,
     ) -> anyhow::Result<(Arc<Client>, Option<String>)> {
-        let key = (endpoint.interface, endpoint.port, endpoint.bbmd);
+        let key = Key::Ip(endpoint.interface, endpoint.port, endpoint.bbmd);
+        self.connect_with(key, || connection::open(endpoint)).await
+    }
+
+    /// Joins the MS/TP trunk, or stays on it when already there with the same settings.
+    #[cfg(not(target_os = "android"))]
+    pub(super) async fn join(self: &Arc<Self>, trunk: &Trunk) -> anyhow::Result<Arc<Client>> {
+        let key = Key::Mstp(trunk.clone());
+        let (client, _) = self
+            .connect_with(key, || connection::open_mstp(trunk))
+            .await?;
+        Ok(client)
+    }
+
+    /// Leaves the MS/TP trunk, closing its port; the trunk it was on, if bacnetio was on one.
+    pub(super) async fn leave(&self) -> anyhow::Result<Option<Trunk>> {
+        let mut current = self.connection.lock().await;
+        let Some(Open {
+            key: Key::Mstp(trunk),
+            ..
+        }) = current.as_ref()
+        else {
+            return Ok(None);
+        };
+        let trunk = trunk.clone();
+        if let Some(open) = current.take() {
+            open.connection.close_when_idle(REQUESTS_END_WAIT).await?;
+        }
+        Ok(Some(trunk))
+    }
+
+    /// The trunk bacnetio is on, if it is on one.
+    pub(super) async fn trunk(&self) -> Option<Trunk> {
+        match &*self.connection.lock().await {
+            Some(Open {
+                key: Key::Mstp(trunk),
+                ..
+            }) => Some(trunk.clone()),
+            _ => None,
+        }
+    }
+
+    async fn connect_with<F>(
+        self: &Arc<Self>,
+        key: Key,
+        open: impl FnOnce() -> F,
+    ) -> anyhow::Result<(Arc<Client>, Option<String>)>
+    where
+        F: std::future::Future<Output = anyhow::Result<Connection>>,
+    {
         let mut current = self.connection.lock().await;
         if let Some(open) = current.as_ref().filter(|open| open.key == key) {
             let connection = &open.connection;
@@ -159,9 +219,9 @@ impl AppState {
             ));
         }
         if let Some(old) = current.take() {
-            old.connection.close().await?;
+            old.connection.close_when_idle(REQUESTS_END_WAIT).await?;
         }
-        let connection = connection::open(endpoint).await?;
+        let connection = open().await?;
         tokio::spawn(follow_notifications(
             Arc::clone(self),
             connection.client.cov_notifications(),
@@ -186,6 +246,9 @@ impl AppState {
         *self.scan.lock().expect("scan status lock") = status;
     }
 }
+
+/// How long closing a connection waits for the requests under way; new ones wait for the lock.
+const REQUESTS_END_WAIT: std::time::Duration = std::time::Duration::from_secs(5);
 
 /// Alarm messages kept, the latest ones: a chattering device must not fill the memory.
 const KEPT_EVENTS: usize = 500;
@@ -288,7 +351,7 @@ async fn keep_devices_known(state: Shared, client: Weak<Client>) {
         let Some(client) = current.filter(|current| Arc::as_ptr(current) == client.as_ptr()) else {
             return;
         };
-        let known: Vec<(u32, Option<SocketAddrV4>)> = state
+        let known: Vec<(u32, Option<Address>)> = state
             .devices
             .lock()
             .expect("devices lock")
@@ -308,7 +371,7 @@ async fn keep_devices_known(state: Shared, client: Weak<Client>) {
             }
             match by_address {
                 Some(address) => {
-                    let _ = client.add_device(instance, &connection::mac(address)).await;
+                    let _ = client.add_device(instance, &address.mac()).await;
                 }
                 None => scan::ask_again(&client, instance).await,
             }

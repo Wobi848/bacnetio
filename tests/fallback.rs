@@ -92,7 +92,7 @@ async fn reads_one_by_one_when_read_property_multiple_is_unknown() {
     proxy(47998, 47997).await;
     let connection = connect(47999).await;
 
-    let instance = scan::locate(&connection.client, None, Some(at(47998)), WAIT)
+    let instance = scan::locate(&connection.client, None, Some(at(47998).into()), WAIT)
         .await
         .unwrap();
     let reading = points::read_device(&connection.client, instance)

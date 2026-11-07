@@ -4,8 +4,20 @@ import { DEVICE_TYPE, deviceName } from "./format.js";
 import { h } from "./html.js";
 import { currentLocale, objectText, t, valueWord } from "./i18n.js";
 
+/** Joining and leaving an MS/TP trunk are logged under no device (docs/concept-mstp.md). */
+const TRUNK_DEVICE = 4194303;
+const TRUNK_ENTRY = /^(Joined|Left) the MS\/TP trunk on (\S+) at (\d+) baud as station (\d+)$/;
+
+/** "Joined the trunk on COM3 at 38400 baud as station 9" in the interface's language. */
+function trunkText(text) {
+  const [, done, port, baud, station] = text.match(TRUNK_ENTRY) ?? [];
+  if (!done) return text;
+  return t(done === "Joined" ? "log.joined" : "log.left", { port, baud, station });
+}
+
 /** The device's name as found, or its number. */
 function ownerName(state, entry) {
+  if (entry.device === TRUNK_DEVICE) return t("log.trunk");
   const device = state.scan.devices?.find((found) => found.instance === entry.device);
   return device ? deviceName(device) : t("device", { n: entry.device });
 }
@@ -62,7 +74,7 @@ function heldRows(state) {
 
 /** What a log entry did, in words: "set to 50 % at priority 8". */
 function logWhat(state, entry) {
-  const actions = { write: () => t("log.wrote", { value: writtenValue(state, entry).filter(Boolean).join(" ") }), release: () => t("log.released"), clock: () => t("log.clock", { value: entry.value }), property: () => t("log.property", { value: entry.value }), command: () => entry.value ?? "" };
+  const actions = { write: () => t("log.wrote", { value: writtenValue(state, entry).filter(Boolean).join(" ") }), release: () => t("log.released"), clock: () => t("log.clock", { value: entry.value }), property: () => t("log.property", { value: entry.value }), command: () => trunkText(entry.value ?? "") };
   const what = actions[entry.action]?.() ?? entry.action;
   return entry.priority ? what + t("log.atPriority", { priority: entry.priority }) : what;
 }
