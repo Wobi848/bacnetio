@@ -8,8 +8,8 @@ const count = (capture) => (capture.frames === 1 ? t("capture.one") : t("capture
 export function captureCardHtml(state) {
   const capture = state.capture ?? { running: false, frames: 0, overflowed: 0 };
   const toggle = capture.running
-    ? `<button type="button" data-act="capture-stop">${t("capture.stop")}</button>`
-    : `<button type="button" data-act="capture-start">${t("capture.start")}</button>`;
+    ? `<button type="button" class="quiet" data-act="capture-stop">${t("capture.stop")}</button>`
+    : `<button type="button" class="quiet" data-act="capture-start">${t("capture.start")}</button>`;
   const kept = capture.frames
     ? `<a class="quiet" href="/api/capture.pcapng" download>${t("capture.save")}</a>
        <button type="button" class="quiet" data-act="capture-clear">${t("capture.clear")}</button>`
