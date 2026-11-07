@@ -5,8 +5,18 @@ import { assert, open, openDevice, searchInUi } from "./helpers.mjs";
 
 const width = (page, selector) => page.evaluate((query) => Math.round(document.querySelector(query).getBoundingClientRect().width), selector);
 
+// the page may be drawn again between finding an element and reading its place: read until it has one
+async function placed(locator) {
+  for (let tries = 0; tries < 20; tries += 1) {
+    const box = await locator.boundingBox();
+    if (box) return box;
+    await locator.page().waitForTimeout(100);
+  }
+  throw new Error(`no place for ${locator}`);
+}
+
 async function drag(page, panel, by) {
-  const box = await page.locator(`.resize[data-panel=${panel}]`).boundingBox();
+  const box = await placed(page.locator(`.resize[data-panel=${panel}]`));
   await page.mouse.move(box.x + box.width / 2, box.y + 200);
   await page.mouse.down();
   await page.mouse.move(box.x + box.width / 2 + by, box.y + 200, { steps: 5 });
@@ -69,7 +79,7 @@ export default {
     const value = () => page.$eval(".row.points.head", (head) => [...head.children].filter((cell) => cell.offsetParent).indexOf(head.children[4]));
     const column = async () => Number.parseFloat((await tracks(".row.points:not(.head)")).split(" ")[await value()]);
     const before = await column();
-    const border = await page.locator(".row.points.head [role=columnheader]:nth-child(5) .col-border").boundingBox();
+    const border = await placed(page.locator(".row.points.head [role=columnheader]:nth-child(5) .col-border"));
     await page.mouse.move(border.x + border.width / 2, border.y + border.height / 2);
     await page.mouse.down();
     await page.mouse.move(border.x + border.width / 2 + 50, border.y + border.height / 2, { steps: 5 });

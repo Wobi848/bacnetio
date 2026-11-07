@@ -12,6 +12,7 @@ import { viewSites } from "./sites.js";
 import { viewSearch } from "./site-search.js";
 import { viewWatch } from "./watch.js";
 import { viewWorkspace } from "./workspace.js";
+import { measureCharts } from "./chart.js";
 import { nextbarHtml, searchDialog, sideHtml, statusHtml } from "./shell.js";
 
 /** The areas in the order of their keys 1 to 6; the sites are reached from the top of the sidebar. */
@@ -225,6 +226,8 @@ export function render() {
   document.title = `${view.title} · bacnetio`;
   syncFrames(state);
   restore(kept);
+  // a chart drawn at a guessed width is drawn again at its own, once
+  if (measureCharts()) render();
 }
 
 export function go(area) {

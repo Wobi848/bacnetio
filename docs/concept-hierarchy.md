@@ -179,6 +179,29 @@ column 200 px (problems) and 150 px (watch list), as wide as a state chip.
 Nothing moves out. Row of 3.3: "Recording: add, interval, start, stop, remove, clear, CSV, backup"
 (*Start* stays reachable in the head; the copy in the note goes).
 
+Built on 6 November 2026 after the design system's *PageRecording* and *Chart* (branch
+`hierarchy-recording`): the head says what the page does ("Chosen values every 10 s, as charts and
+CSV. Choose points with the record switch in the point list.") at the interval it runs at; *Start
+recording* is the one filled button, and while it runs *Stop recording* is a tool button in the
+head, also on a phone; the note names the button in words. The toolbar: *Every* (German
+*Intervall*) with the interval, *Single · Compare*, the window, and on the right the state with a
+dot (*Running · 2 points · 40 values*), *Clear values* and *Export CSV*. A chart is drawn for the
+width of its card, 220 px high (150 px in the compare view), so its text keeps its size and as many
+time marks as fit; one chart per row until 1600 px. Under each chart *Measured 11:20:10 · every
+10 s* (*on change* for COV), *Poll · COV* and *Remove from recording*. The compare view keeps one
+chart per unit: points of one unit share one chart, as the design shows, and different units never
+share an axis (decided with the maintainer). Functions, each with its test:
+
+| Function | Where | Test |
+|---|---|---|
+| Add a point to the recording, take it out | point details, the record switch; *Remove from recording* | `ui/05-recording`, `ui/28-quick` |
+| Interval 5 s to 1 min, also while running | *Every* | `ui/05-recording` |
+| Start, stop | head: *Start recording*, *Stop recording* | `ui/05-recording`, `ui/13-exports` |
+| Poll or COV per point, a refused COV said | *Poll · COV* under each chart and in the figures | `ui/05-recording` |
+| Single charts or compare, window, zoom by drawing a span | toolbar, the compare chart | `ui/05-recording` |
+| Figures: last, lowest, highest, mean, samples, gaps | compare view | `ui/05-recording`, `analysis` tests |
+| Clear values, CSV, backup every minute | toolbar; data folder | `ui/05-recording`, `ui/13-exports`, `record.rs` |
+
 ### 6. Held by you
 
 | Level | Today | Then |

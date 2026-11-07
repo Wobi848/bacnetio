@@ -45,7 +45,7 @@ export default {
     await page.waitForFunction(() => /\d/.test(document.querySelector(".stats tbody td")?.textContent ?? ""), null, { timeout: 15000 });
     const recording = await download(page, ".toolbar a[href*='recording.csv']");
     assert.match(recording.text, /Outdoor air temp/);
-    await page.click("#next");
+    await page.click("button[data-act=rec-stop]");
     // the whole site: the device not read yet is read first
     await showSite(page);
     const site = await download(page, "button[data-act=site-ede]");
