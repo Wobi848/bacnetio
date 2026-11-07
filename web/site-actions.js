@@ -108,8 +108,7 @@ export async function readAllDevices() {
     if (state.stopping) break;
     if ((await api.readProgress(device.instance)).state === "done") continue;
     state.readingDevice = device.instance;
-    await api.startRead(device.instance);
-    if (!(await waitForReading(device.instance))) failed += 1;
+    if (!(await readDevice(device.instance))) failed += 1;
   }
   state.reading = false;
   state.readProgress = null;
@@ -145,6 +144,12 @@ export async function exportSiteEde() {
   } catch (error) {
     toast(error.message, true);
   }
+}
+
+/** Reads a device's points afresh; true when the reading ended well. */
+export async function readDevice(instance) {
+  await api.startRead(instance);
+  return waitForReading(instance);
 }
 
 /** True when the reading of the device ended well. */

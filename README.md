@@ -33,7 +33,7 @@ light and dark theme, the system's language (English or German), keys `1`–`6`,
   `dialout` once.
 - **A device** in the workspace, its points: grouped by plant part where the names are paths (`/21/000/00/00/HZ_Kessel.01/temp`),
   otherwise by kind; search, filters for faults, overrides and changes since a saved reference,
-  CSV. The chosen point beside the list: value live (COV where offered), state texts, who holds it
+  CSV, a page to print, a comparison with another device by point name. The chosen point beside the list: value live (COV where offered), state texts, who holds it
   (priority array), write and release after unlocking, every property, trend logs as chart and CSV.
 - **Recording**: chosen values every 5 s to 1 min as charts and CSV, backed up every minute.
 - **Site problems**: everything faulty, in alarm, overridden, out of service or offline across the

@@ -147,6 +147,7 @@ export async function openDevice(instance, fresh = false) {
     state.selectedPoint = null;
     state.object = null;
     state.points = null;
+    state.compare = null;
   }
   state.device = device;
   state.reading = true;

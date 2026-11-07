@@ -1,7 +1,7 @@
 # Concept: five functions from the K&P comparison
 
 Status: approved on 7 November 2026 with the recommendation to all four questions in section 8
-(branch `concept-toolbox`). Built so far: part 1, the print view, and part 4, the own grouping pattern.
+(branch `concept-toolbox`). Built so far: part 1 (print view), part 2 (compare two devices) and part 4 (own grouping pattern).
 
 ## Why
 
@@ -48,8 +48,9 @@ type should have the same points. Today the technician opens one, then the other
   and number, value and state on the left; the same on the right.
 - Views: *All*, *Differences* (another value, state, unit or type), *Only left*, *Only right*.
   A difference is marked in the cell, with a word in the tooltip.
-- The values are the ones read. *Read both again* reads both devices. Live values work as in the
-  list, for the points on screen.
+- The values are the ones read. *Read both again* reads both devices, one after the other. As built,
+  the comparison has no live values: two devices read at almost the same moment compare better than
+  values that arrive at different times, and the list beside keeps its live values.
 - A click on a side opens that point in the details, as from the list.
 - *Close comparison* returns to the one device.
 
@@ -141,7 +142,7 @@ built:
 | Function | Where | Test |
 | --- | --- | --- |
 | Print view of a device's points, filters kept | point list, *More → Print* | `ui/40-print` |
-| Compare two devices by point name | point list, *More → Compare with …* | `ui/41-compare`, `tests/web` |
+| Compare two devices by point name | point list, *More → Compare with …* | `ui/41-compare`, `tests/web/compare.test.js` |
 | Capture traffic and save as pcap | *Settings*, card *Capture*; status bar while running | `tests/capture.rs`, `ui/42-capture` |
 | Own grouping pattern per site | point list, *More → Grouping …* | `tests/web/grouping.test.js`, `site.rs`, `ui/43-grouping` |
 | Change one property of many points | point list, *Select*, *Change selected …* | `tests/api.rs`, simulator test, `ui/44-change-many` |

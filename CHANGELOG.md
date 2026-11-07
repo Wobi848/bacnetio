@@ -10,6 +10,7 @@ All notable changes for users of bacnetio.
 - A simulated MS/TP device on a pseudo-terminal (`cargo run --example simulated_mstp`, Linux).
 - *More → Print …* in a device's point list shows its points as a page to print or to save as PDF from the browser's print dialog: the site, the device, its address and maker, when the values were read, then the points in the list's groups with value, state in words and the priority now. The filter and view of the list stay, and the page says what is shown. Ctrl+P in the list opens it too.
 - *More → Grouping …* in a device's point list gives the site its own pattern to group points by, for keys such as `ZUL_VEN_01_TT01` that are no paths: a regular expression whose brackets give the plant part. A preview shows how the open device's points fall and how many go under *Other*. The pattern holds for every device of the site, in the list, the tree and the print view, is kept with the site and over a new search of the same network, and *Group automatically* gives it up.
+- *More → Compare with …* in a device's point list shows its points beside those of another device of the site, matched by name without each device's shared start (`AHU-01 Supply temp` meets `AHU-02 Supply temp`). Devices of the same maker and model are offered first; one not read yet is read. The views *Differences*, *Only left* and *Only right* count their rows, a difference in type, value, unit or state is marked in its cell, and *Read both again* reads both devices.
 
 ### Fixed
 
