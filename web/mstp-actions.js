@@ -57,9 +57,16 @@ export async function searchOnTrunk() {
 }
 
 /** Searches the trunk bacnetio is on again, as it joined it. */
-export function searchTrunkAgain() {
+export async function searchTrunkAgain() {
+  // bacnetio may have been restarted meanwhile and be on no trunk: then listening comes first
+  await loadTrunk();
   const trunk = state.mstp.trunk;
-  return runSearch(() => api.mstpSearch(trunk.port, trunk.baud, trunk.station));
+  if (!trunk) {
+    state.menu = "network";
+    chooseLink("mstp");
+    return;
+  }
+  await runSearch(() => api.mstpSearch(trunk.port, trunk.baud, trunk.station));
 }
 
 /** Leaves the trunk; its port is free again for listening. */
@@ -77,7 +84,10 @@ export async function leaveTrunk() {
 
 /** Whether bacnetio is on a trunk, also after a reload of the page: MS/TP is chosen then. */
 export async function loadTrunk() {
-  const trunk = await api.mstpTrunk();
+  const trunk = await api.mstpTrunk().catch((error) => {
+    toast(error.message, true);
+    return state.mstp.trunk;
+  });
   state.mstp.trunk = trunk;
   if (trunk) {
     state.link = "mstp";
