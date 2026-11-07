@@ -48,6 +48,9 @@ function connection(state) {
 export function searchScope(state) {
   const trunk = state.mstp?.trunk;
   if (trunk) return `${trunk.port} · ${trunk.baud}`;
+  // a finished search is the site it found: where it looked then, not what the settings say now
+  const site = state.scan.state === "done" ? openSiteOf(state) : null;
+  if (site) return site.name;
   if (state.settings.subnet.trim()) return state.settings.subnet.trim();
   if (state.settings.bbmd.trim()) return `BBMD ${state.settings.bbmd.trim()}`;
   return state.adapter ? `${state.adapter.ip}/${state.adapter.prefix_len}` : "";

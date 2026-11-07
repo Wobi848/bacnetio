@@ -48,12 +48,15 @@ export function mstpFieldsHtml(state) {
 }
 
 /** Joining needs a speed heard on this port: listening comes first (docs/concept-mstp.md). */
-export const canJoin = (mstp) => Boolean(mstp.heard?.baud) && !mstp.listening;
+export const canJoin = (mstp) => heardHere(mstp) && Boolean(mstp.heard.baud) && !mstp.listening;
+
+/** What was heard counts only for the port it was heard on. */
+const heardHere = (mstp) => Boolean(mstp.heard) && mstp.heardOn === mstp.port;
 
 /** The buttons of the dialog with MS/TP: listen, and once a speed was heard, join as the next step. */
 export function mstpActsHtml(state) {
   const mstp = state.mstp;
-  const busy = !mstp.port || mstp.listening;
+  const busy = !mstp.ports?.length || !mstp.port || mstp.listening;
   if (!canJoin(mstp)) return `<button type="button" data-act="mstp-listen"${busy ? " disabled" : ""}>${t("mstp.listen")}</button>`;
   return `<button type="button" class="quiet" data-act="mstp-listen"${busy ? " disabled" : ""}>${t("mstp.listenAgain")}</button>
     <button type="button" data-act="mstp-search">${t("mstp.join")}</button>`;
@@ -79,7 +82,7 @@ export function heardHtml(state) {
   const { heard, error, listening } = state.mstp;
   if (listening) return `<div class="strip info mstp-heard" role="status">${t("mstp.listening")}</div>`;
   if (error) return `<div class="strip err mstp-heard" role="alert">${h(error)}</div>`;
-  if (!heard) return "";
+  if (!heardHere(state.mstp)) return "";
   if (heard.baud === null) {
     const damaged = heard.trials.filter((trial) => trial.damaged > 0).map((trial) => trial.baud);
     const text = damaged.length ? t("mstp.onlyDamaged", { speeds: damaged.join(", ") }) : t("mstp.nothingHeard");
@@ -88,6 +91,7 @@ export function heardHtml(state) {
   const stations = heard.stations.length ? heard.stations.join(", ") : "–";
   const free = heard.proposed_station === null ? t("mstp.noFree") : t("mstp.free", { station: heard.proposed_station });
   return `<div class="strip info mstp-heard" role="status"><dl class="facts">
+    <dt>${t("mstp.port")}</dt><dd class="mono">${h(state.mstp.heardOn)}</dd>
     <dt>${t("mstp.speed")}</dt><dd class="mono">${heard.baud}</dd>
     <dt>${t("mstp.stations")}</dt><dd class="mono">${stations}</dd>
     <dt>${t("mstp.ownAddress")}</dt><dd>${free}</dd>

@@ -30,6 +30,15 @@ export default {
     assert.match(heard, /38400/);
     assert.match(heard, /Stations heard\s*5\b/);
     assert.match(heard, /\d+ is free/);
+    // what was heard belongs to its port: another port shows nothing heard and offers no joining
+    const others = await page.$$eval("#mstp-port option", (options) => options.map((option) => option.value).slice(1));
+    if (others.length) {
+      const chosen = await page.inputValue("#mstp-port");
+      await page.selectOption("#mstp-port", others[0]);
+      assert.equal(await page.locator(".mstp-heard").count(), 0);
+      assert.equal(await page.locator("[data-act=mstp-search]").count(), 0);
+      await page.selectOption("#mstp-port", chosen);
+    }
     // back to BACnet/IP: its fields and its next step again
     await page.click("#link-ip");
     await page.waitForSelector("#adapter");

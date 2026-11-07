@@ -38,6 +38,7 @@ export async function listenToTrunk() {
   render();
   try {
     mstp.heard = await api.mstpListen(mstp.port, mstp.baud ? Number(mstp.baud) : undefined);
+    mstp.heardOn = mstp.port;
     mstp.station = mstp.heard.proposed_station === null ? "" : String(mstp.heard.proposed_station);
   } catch (error) {
     mstp.error = error.message;
@@ -92,6 +93,8 @@ export async function loadTrunk() {
   if (trunk) {
     state.link = "mstp";
     state.mstp.port = trunk.port;
+    // the port list belongs to MS/TP: without it the dialog would listen on a port it does not show
+    if (state.mstp.ports === null) loadSerialPorts();
   }
   render();
 }
