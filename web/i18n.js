@@ -73,6 +73,7 @@ const ERROR_PATTERNS = [
   [/^read the devices' points first$/, "readAllFirst"],
   [/^bacnetio has no data folder to save to$/, "noDataFolder"],
   [/^no site named (.*)$/, "noSite"],
+  [/^a grouping pattern has at most (\d+) characters$/, "patternTooLong"],
   [/^(.*) is not in alarm any more$/, "notInAlarm"],
   [/^the device does not tell when the alarm began, so it cannot be acknowledged from here$/, "noAlarmTime"],
   [/^"(.*)" is not true or false$/, "notBool"],

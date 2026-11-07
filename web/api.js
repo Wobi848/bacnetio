@@ -56,6 +56,7 @@ export const api = {
   openSite: (name) => call("POST", "/api/sites/open", { name }),
   deleteSite: (name) => call("POST", "/api/sites/delete", { name }),
   renameSite: (name, title) => call("POST", "/api/sites/rename", { name, title }),
+  groupSite: (name, pattern) => call("POST", "/api/sites/grouping", { name, pattern }),
   importSite: (site) => call("POST", "/api/site.json", site),
   changeInstance: (device, instance) => call("POST", `/api/devices/${device}/instance`, { instance }),
   restart: (device, kind, password) => call("POST", `/api/devices/${device}/restart`, { kind, password }),

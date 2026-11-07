@@ -139,6 +139,7 @@ export default {
     "port.taken": "un altro programma usa {address}",
     "list.all": "Mostra tutte le {n} righe", "list.more": "… altri {n}",
     "more": "Altro …", "live.off": "Valori in tempo reale", "live.on": "Valori in tempo reale attivi", "live.hint": "Legge le righe visibili ogni 5 s.", "groups.open": "Apri tutti i gruppi", "groups.close": "Chiudi tutti i gruppi",
+    "grouping.open": "Raggruppamento …", "grouping.hint": "Raggruppare i punti di questo impianto con un proprio schema invece che con i percorsi nei nomi.", "grouping.noSite": "Cercare o aprire prima un impianto: lo schema viene salvato con l'impianto.", "grouping.title": "Raggruppamento di questo impianto", "grouping.lead": "Un'espressione regolare: ciò che trovano le sue parentesi diventa la parte d'impianto, il resto del nome il punto. Vale per tutti i dispositivi dell'impianto.", "grouping.pattern": "Schema", "grouping.automatic": "Senza schema i punti sono raggruppati secondo i percorsi nei nomi, altrimenti per tipo.", "grouping.invalid": "Schema non valido: {reason}", "grouping.fit": "{fit} punti su {n} corrispondono, {other} vanno sotto Altri.", "grouping.save": "Salva per questo impianto", "grouping.toAutomatic": "Raggruppa automaticamente",
     "print.open": "Stampa …", "print.openHint": "I punti di questo dispositivo come pagina da stampare o in PDF, con il filtro e la vista dell'elenco.", "print.now": "Stampa …", "print.back": "Torna all'elenco", "print.hint": "Nella finestra di stampa si può anche scegliere «Salva come PDF».", "print.site": "Impianto", "print.device": "Dispositivo", "print.address": "Indirizzo", "print.maker": "Produttore", "print.read": "Letto", "print.shown": "Mostrato", "print.some": "{what}: {shown} di {n} punti", "print.all": "Tutti i {n} punti", "print.one": "1 punto", "print.made": "Creato", "print.priority": "Priorità attiva",
     "tree.plantView": "Impianto", "tree.plantNone": "Nessuna parte d’impianto: il dispositivo non ha una vista d’impianto propria e i suoi nomi non contengono un percorso. Tutti i suoi oggetti sono sotto Per tipo.", "tree.plantEmpty": "Le parti dell’impianto appaiono dopo la lettura del dispositivo.",
     "rec.all": "Tutto", "rec.last60": "60 min", "rec.last15": "15 min", "rec.last5": "5 min", "rec.zoomOut": "Annulla zoom", "rec.compare": "Confronta", "rec.oneByOne": "Uno per uno", "rec.clear": "Cancella i valori", "rec.figures": "Dati in questo periodo", "rec.last": "Ultimo", "rec.low": "Minimo", "rec.high": "Massimo", "rec.mean": "Media / attivo", "rec.samples": "Misure", "rec.gaps": "{n} senza risposta", "rec.changes": "{n} cambi", "rec.removeShort": "Rimuovi", "rec.state": "Stati", "rec.noUnit": "Senza unità",
@@ -247,6 +248,7 @@ export default {
   },
   /** Known server errors by key (patterns in i18n.js); others stay English. */
   errors: {
+    patternTooLong: "Uno schema di raggruppamento ha al massimo $1 caratteri.",
     notSerialPort: "$1 non è una porta seriale di questo computer.",
     noMstpSpeed: "$1 baud non è una velocità MS/TP: 9600, 19200, 38400, 76800 o 115200.",
     mstpListenFirst: "Ascoltare prima il bus.",

@@ -2,11 +2,12 @@
 // parts and object types. Faults and overrides show on a closed device too.
 
 import { DEVICE_TYPE, deviceName, isFault, isHeldEntry, isOverridden, ownObjects } from "./format.js";
-import { groupPoints, typeShort } from "./grouping.js";
+import { groupPoints, sitePattern, typeShort } from "./grouping.js";
 import { h } from "./html.js";
 import { pluginMarksHtml } from "./plugins.js";
 import { objectTypeName, t } from "./i18n.js";
 import { searchScope } from "./shell.js";
+import { openSiteOf } from "./sites.js";
 import { OUTSIDE, nodePoints, outsidePoints, plantNodes } from "./structure.js";
 
 /** What is known about a device's points: the open device's, or what was read before. */
@@ -69,7 +70,7 @@ function childrenHtml(state, device, points) {
   if (views) {
     parts = plantHtml(state, device, views, objects);
   } else if (objects.length) {
-    parts = groupPoints(objects).filter((group) => !group.kind).map((group) =>
+    parts = groupPoints(objects, sitePattern(openSiteOf(state))).filter((group) => !group.kind).map((group) =>
       partHtml(state, device, group.key, 2, group.title, group.items.map(({ point }) => point))).join("");
   }
   const counts = new Map();

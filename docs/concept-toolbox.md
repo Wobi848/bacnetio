@@ -1,7 +1,7 @@
 # Concept: five functions from the K&P comparison
 
 Status: approved on 7 November 2026 with the recommendation to all four questions in section 8
-(branch `concept-toolbox`). Built so far: part 1, the print view.
+(branch `concept-toolbox`). Built so far: part 1, the print view, and part 4, the own grouping pattern.
 
 ## Why
 
@@ -92,7 +92,8 @@ other keys, such as `ZUL_VEN_01_TT01` or `B12.AHU1.SupplyTemp`, which it groups 
   point's name. Example: `^(\w+_\w+_\d+)_` gives *ZUL_VEN_01* with the point *TT01*.
 - Under the field a preview takes the first points of the open device and shows "*ZUL_VEN_01* ·
   TT01" for each. It says how many points fit and how many fall under *Other*.
-- An invalid pattern says why in words and is not saved.
+- An invalid pattern says why in words and is not saved. Spaces count in a pattern; one of
+  nothing but spaces is none.
 - The pattern belongs to the site and holds for all of its devices: in the list, the tree, the
   print view, the comparison and the site search. It is saved with the site and comes back when
   the site is opened.
@@ -142,7 +143,7 @@ built:
 | Print view of a device's points, filters kept | point list, *More → Print* | `ui/40-print` |
 | Compare two devices by point name | point list, *More → Compare with …* | `ui/41-compare`, `tests/web` |
 | Capture traffic and save as pcap | *Settings*, card *Capture*; status bar while running | `tests/capture.rs`, `ui/42-capture` |
-| Own grouping pattern per site | point list, *More → Grouping …* | `tests/web` (grouping), `api.rs`, `ui/43-grouping` |
+| Own grouping pattern per site | point list, *More → Grouping …* | `tests/web/grouping.test.js`, `site.rs`, `ui/43-grouping` |
 | Change one property of many points | point list, *Select*, *Change selected …* | `tests/api.rs`, simulator test, `ui/44-change-many` |
 
 ## Compatibility

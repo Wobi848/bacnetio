@@ -77,6 +77,17 @@ export async function renameSite(name, title) {
   await loadSites();
 }
 
+/** Keeps a grouping pattern with the open site; none groups by itself again. */
+export async function groupSite(name, pattern) {
+  try {
+    await api.groupSite(name, pattern);
+    state.groupingEdit = null;
+  } catch (error) {
+    toast(error.message, true);
+  }
+  await loadSites();
+}
+
 export async function loadSites() {
   try {
     // the site shown first, then the latest
