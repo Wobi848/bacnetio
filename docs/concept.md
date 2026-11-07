@@ -195,7 +195,8 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 
 ### Later or never
 
-- BACnet MS/TP directly (USB RS-485 adapter): maybe later, as its own connection type
+- BACnet MS/TP directly (USB RS-485 adapter), as its own connection type: proposal in
+  [concept-mstp.md](concept-mstp.md)
 - Raspberry Pi: not a target
 - BACnet/IPv6, BACnet/SC, BACnet Ethernet: not planned
 - Acting as a BACnet server: only the minimum (a device object for devices that ask back)
