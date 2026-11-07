@@ -73,9 +73,10 @@ text or design.
 | PDF of the current view | Print layout of a device's points, so the browser's "print to PDF" gives a clean report | later |
 | BACnet Backup & Restore of device configurations | Possible later behind the unlock; not a browser's core | later or never |
 | Values pushed by unconfirmed COV without subscription | Show such values as live too | step C |
-| Own device ID and name of the client changeable | Configurable client device ID, so two tools on one site do not clash | later |
+| Own device ID and name of the client changeable | Not needed: bacnetio has no device object on the network. It only asks, answers no Who-Is and rejects requests to it, so there is no ID to clash with another tool | never |
 | Users, roles, licence, tray monitor, Windows service, installer | Not needed: bacnetio is one local program without installation; the session unlock guards writing | never |
-| Modbus devices, MS/TP over an RS-485 adapter | Out of scope (concept section 4) | never for now |
+| MS/TP over an RS-485 adapter | Its own connection type ([concept-mstp.md](concept-mstp.md)) | built |
+| Modbus devices | Out of scope (concept section 4) | never for now |
 
 ## 2c. Search as built: objects within seconds
 

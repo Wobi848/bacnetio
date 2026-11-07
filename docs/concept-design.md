@@ -99,7 +99,7 @@ shown before they go in.
 
 ## 10. Order of building
 
-Built so far: parts 1 to 4 and the backgrounds of part 5; the logo waits for the maintainer's choice. Charts of states are lower than charts of numbers in the comparison,
+Built: parts 1 to 5, the logo in its two forms included. Charts of states are lower than charts of numbers in the comparison,
 since two or three states need less room; the single view already had two charts side by side from
 720 px. The line below the adapter shows only while the next search would look
 elsewhere than the open site. The views of the point list wrap onto a second line in a narrow list
