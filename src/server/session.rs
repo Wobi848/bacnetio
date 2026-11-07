@@ -61,6 +61,8 @@ pub struct AppState {
     /// (docs/concept-mstp.md).
     #[cfg(not(target_os = "android"))]
     pub(super) heard: Mutex<Option<(String, crate::mstp::Heard)>>,
+    /// bacnetio's own traffic, while a capture runs (docs/concept-toolbox.md part 3).
+    pub(super) capture: Arc<crate::capture::Capture>,
 }
 
 pub type Shared = Arc<AppState>;
@@ -228,6 +230,7 @@ impl AppState {
             old.connection.close_when_idle(REQUESTS_END_WAIT).await?;
         }
         let connection = open().await?;
+        self.capture.follow(&connection.client);
         tokio::spawn(follow_notifications(
             Arc::clone(self),
             connection.client.cov_notifications(),
@@ -246,6 +249,15 @@ impl AppState {
         );
         *current = Some(Open { key, connection });
         Ok(found)
+    }
+
+    /// The client of the connection open now, if there is one.
+    pub(super) async fn open_client(&self) -> Option<Arc<Client>> {
+        self.connection
+            .lock()
+            .await
+            .as_ref()
+            .map(|open| Arc::clone(&open.connection.client))
     }
 
     pub(super) fn set_scan(&self, status: ScanStatus) {

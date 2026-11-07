@@ -21,6 +21,7 @@ import { chooseLink, leaveTrunk, listenToTrunk, loadSerialPorts, loadTrunk, sear
 import { setAccent, setBackground, setTheme } from "./settings.js";
 import { openSiteOf, siteName } from "./sites.js";
 import { chooseCompare, openComparedPoint, readBoth, startCompare } from "./compare-actions.js";
+import { captureRequest, loadCapture } from "./capture-actions.js";
 import { nextSort } from "./sorting.js";
 import { checkForUpdate, setUpdateCheck } from "./update.js";
 import { TABLE_FILTERS, noTableFilter } from "./table-filter.js";
@@ -171,6 +172,9 @@ const actions = {
   "compare-read": () => readBoth(),
   "compare-close": () => { state.compare = null; render(); },
   "compare-open": (element) => openComparedPoint(Number(element.dataset.device), element.dataset.key),
+  "capture-start": () => captureRequest("start"),
+  "capture-stop": () => captureRequest("stop"),
+  "capture-clear": () => captureRequest("clear"),
   "print-open": () => openPrint(),
   "print-now": () => window.print(),
   "print-close": () => { state.printing = false; render(); },
@@ -682,6 +686,7 @@ async function start() {
   ]).catch((error) => { state.error = error.message; });
   render();
   pollRecording();
+  loadCapture();
   watchAdapters();
   checkForUpdate();
 }
