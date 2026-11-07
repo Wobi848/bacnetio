@@ -83,7 +83,10 @@ export default {
     assert.equal(await page.locator(".chip.mark").count(), 0);
 
     await page.click("a.settings-link");
+    // removing asks in a dialog, the focus in it
     await page.click("button[data-act=plugin-remove]");
+    await page.waitForSelector(".modal .modal-box:has-text('Remove Test plugin')");
+    assert.ok(await page.evaluate(() => document.querySelector(".modal-box").contains(document.activeElement)));
     await page.click("button[data-act=plugin-remove-yes]");
     await page.waitForSelector("text=No extension installed");
   },

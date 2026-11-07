@@ -5,6 +5,20 @@ export default {
   name: "Settings: language and theme",
   async run({ page, base }) {
     await open(page, base, { area: "settings" });
+    // no next step on this page, so nothing on it is filled: a chosen choice is light, every tool quiet
+    const filled = await page.$$eval(".work button, .work a, .work label.button", (controls) => controls.filter((control) => {
+      const ground = getComputedStyle(control).backgroundColor;
+      const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+      const probe = document.createElement("span");
+      probe.style.color = accent;
+      document.body.append(probe);
+      const accentColor = getComputedStyle(probe).color;
+      probe.remove();
+      return ground === accentColor;
+    }).map((control) => control.textContent.trim()));
+    assert.deepEqual(filled, []);
+    // the version large, once bacnetio has said which it is
+    await page.waitForFunction(() => /\d+\.\d+\.\d+/.test(document.querySelector(".card .figure")?.textContent ?? ""));
     await page.click("button[data-code=de]");
     assert.equal(await page.textContent(".pagehead h1"), "Einstellungen");
     await page.click("button[data-theme=dark]");

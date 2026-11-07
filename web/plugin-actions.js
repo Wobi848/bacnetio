@@ -54,6 +54,8 @@ export async function installPlugin(file, replace = false) {
   }
   await loadPlugins();
   render();
+  // a question about replacing it: the focus goes into its dialog
+  if (state.pluginReplacing) document.querySelector(".modal-box button")?.focus();
 }
 
 export async function switchPlugin(id, on) {
