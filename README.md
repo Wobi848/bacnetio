@@ -57,6 +57,9 @@ on that address; `simulated_controller` is one named by paths with about a hundr
 `simulated_commands` a controller whose outputs are held at several priorities. They have to run
 on another machine or network namespace than bacnetio, because two programs on one host cannot
 both use port 47808 properly; the browser tests run them on loopback addresses with port 47809.
+On Linux, `cargo run --example simulated_mstp -- [station]` is an MS/TP device on a
+pseudo-terminal: it prints the terminal's name (`/dev/pts/7`), which bacnetio opens like a USB
+RS-485 adapter.
 
 ```text
 bacnetio interfaces                   list network adapters (* = used by default)

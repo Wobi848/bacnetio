@@ -37,6 +37,12 @@ lto = true
 strip = true
 codegen-units = 1
 
+# MS/TP over a serial port (docs/concept-mstp.md): Windows and Linux; Android has no serial port
+[target.'cfg(not(target_os = "android"))'.dependencies]
+bacnet-transport = { version = "=0.15.0", features = ["serial"] }
+# the adapter's own name for the port list; the version bacnet-transport uses
+tokio-serial = "5"
+
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_Networking_WinSock"] }
 

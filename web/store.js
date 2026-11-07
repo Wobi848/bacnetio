@@ -35,6 +35,12 @@ export const state = {
   adapter: null,
   /** Search settings from the "Change" form in the sidebar. */
   settings: { bbmd: "", port: "47808", locate: "", locateNetwork: "", locateMac: "", locateId: "", idFrom: "", idTo: "", subnet: "" },
+  /** How the search reaches devices: "ip", or "mstp" over a serial port (docs/concept-mstp.md). */
+  link: "ip",
+  /** Whether this bacnetio can use MS/TP at all (not on Android), from /api/info. */
+  mstpAvailable: false,
+  /** MS/TP: the serial ports (null until asked), the chosen one and speed ("" = find out), and what listening heard. */
+  mstp: { ports: null, port: "", baud: "", listening: false, heard: null, error: null },
   /** Which menu is open: "network", "locate" or "export". */
   menu: null,
   scan: { state: "idle" },

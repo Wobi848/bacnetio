@@ -11,6 +11,8 @@ pub mod ede;
 pub mod export;
 pub mod interfaces;
 pub mod limits;
+#[cfg(not(target_os = "android"))]
+pub mod mstp;
 pub mod object;
 pub mod object_list;
 pub mod observe;

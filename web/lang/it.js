@@ -172,6 +172,7 @@ export default {
     bbmd: "BBMD in un’altra sottorete",
     port: "Porta BACnet", searchWithSettings: "Cercare con queste impostazioni",
     "vpn.hint": "Dietro una VPN: scegliere la scheda VPN, poi inserire la sottorete dell’impianto o il suo BBMD. Una VPN non inoltra i broadcast.",
+    "link.title": "Connessione", "link.ip": "BACnet/IP", "link.mstp": "MS/TP (RS-485)", "mstp.port": "Porta seriale", "mstp.speed": "Velocità", "mstp.portsLoading": "Ricerca delle porte seriali …", "mstp.noPort": "Nessuna porta seriale trovata. Collegare l’adattatore USB RS-485.", "mstp.lookAgain": "Cercare di nuovo", "mstp.findSpeed": "Determinare ascoltando", "mstp.listenHint": "L’ascolto non invia nulla e non disturba il bus: bacnetio trova la velocità, le stazioni e un indirizzo libero per sé.", "mstp.listen": "Ascoltare il bus", "mstp.listening": "Ascolto del bus … fino a 10 s.", "mstp.nothingHeard": "Nulla sentito a nessuna velocità. Controllare il cablaggio (A e B), la terminazione e che l’adattatore sia collegato al bus.", "mstp.onlyDamaged": "Solo frame danneggiati a {speeds} baud: forse A e B invertiti, nessuna terminazione o una velocità che bacnetio non prova.", "mstp.stations": "Stazioni sentite", "mstp.ownAddress": "Indirizzo per bacnetio", "mstp.free": "{station} è libero", "mstp.noFree": "Nessun indirizzo libero fino a Max_Master",
     subnet: "Sottorete dell’impianto (ogni indirizzo viene interrogato)",
     "range.from": "ID dispositivo da", "range.to": "a", "range.hint": "Solo per grandi impianti: limita la ricerca ai dispositivi con questi ID. Lasciare vuoto per tutti.",
     "locate.label": "Dispositivo per indirizzo IP", "locate.hint": "Se la ricerca non trova un dispositivo, aprirlo direttamente con il suo indirizzo.",
@@ -244,6 +245,9 @@ export default {
   },
   /** Known server errors by key (patterns in i18n.js); others stay English. */
   errors: {
+    notSerialPort: "$1 non è una porta seriale di questo computer.",
+    noMstpSpeed: "$1 baud non è una velocità MS/TP: 9600, 19200, 38400, 76800 o 115200.",
+    mstpPermission: "Nessun permesso per aprire $1: aggiungersi al gruppo dialout (sudo usermod -aG dialout $USER) e accedere di nuovo.",
     pluginNoFolder: "Le estensioni richiedono una cartella dati.",
     pluginMissing: "L’estensione $1 non è installata.",
     pluginInstalled: "$1 $2 è già installata.",

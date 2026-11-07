@@ -2,6 +2,13 @@
 
 All notable changes for users of bacnetio.
 
+## Unreleased
+
+### Added
+
+- MS/TP, first step (Windows and Linux): *Search settings* choose between *BACnet/IP* and *MS/TP (RS-485)*. With MS/TP, bacnetio lists the serial ports, USB RS-485 adapters first with their own name, and *Listen to the trunk* finds the trunk's speed, the stations on it and a free address for bacnetio. Listening sends nothing. Searching and reading devices over MS/TP follow.
+- A simulated MS/TP device on a pseudo-terminal (`cargo run --example simulated_mstp`, Linux).
+
 ## v0.2.0 (07.11.2026)
 
 ### Added

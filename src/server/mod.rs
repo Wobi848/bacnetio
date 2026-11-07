@@ -13,6 +13,8 @@ mod references;
 mod remembered;
 mod running;
 mod scanning;
+#[cfg(not(target_os = "android"))]
+mod serial;
 mod session;
 mod site;
 mod writing;
@@ -42,12 +44,26 @@ const MOST_SITE_BYTES: usize = 64 * 1024 * 1024;
 #[folder = "web/"]
 struct Assets;
 
+/// MS/TP over a serial port: Windows and Linux; Android has none (docs/concept-mstp.md).
+#[cfg(not(target_os = "android"))]
+fn serial_routes() -> Router<Shared> {
+    Router::new()
+        .route("/api/serial-ports", get(serial::serial_ports))
+        .route("/api/mstp/listen", post(serial::listen))
+}
+
+#[cfg(target_os = "android")]
+fn serial_routes() -> Router<Shared> {
+    Router::new()
+}
+
 pub fn router(state: Shared) -> Router {
     let object = "/api/devices/{device}/objects/{type}/{instance}";
     Router::new()
         .route("/api/info", get(info))
         .route("/api/update", get(update))
         .route("/api/adapters", get(scanning::adapters))
+        .merge(serial_routes())
         .route("/api/scan/stop", post(scanning::stop))
         .route(
             "/api/scan",
@@ -237,7 +253,11 @@ fn open_browser(url: &str) {
 
 /// The version, for the About line.
 async fn info() -> Json<serde_json::Value> {
-    Json(json!({ "version": env!("CARGO_PKG_VERSION") }))
+    Json(json!({
+        "version": env!("CARGO_PKG_VERSION"),
+        // MS/TP over a serial port (docs/concept-mstp.md): not on Android
+        "mstp": cfg!(not(target_os = "android")),
+    }))
 }
 
 /// The newest release on GitHub and whether it is newer than this one; asked only by the page,

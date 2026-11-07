@@ -17,6 +17,7 @@ import { installDragToggle } from "./drag-toggle.js";
 import { editDay, editProperty, releaseHeld, releaseHere, releaseOther, selectPoint, setClock, showTechnical, writeDay, writeProperty, writeValue } from "./object-actions.js";
 import { installPlugin, installPluginBridge, loadPlugins, pluginsMayAsk, removePlugin, switchPlugin } from "./plugin-actions.js";
 import { pollRecording, recordHere, recordPoint, recordingRequest, removeRecorded, setRecordMode } from "./recording-actions.js";
+import { chooseLink, listenToTrunk, loadSerialPorts } from "./mstp-actions.js";
 import { setAccent, setBackground, setTheme } from "./settings.js";
 import { siteName } from "./sites.js";
 import { nextSort } from "./sorting.js";
@@ -111,6 +112,9 @@ const actions = {
   network: () => { state.menu = state.menu === "network" ? null : "network"; render(); document.getElementById("subnet")?.focus(); },
   "locate-menu": () => { state.menu = state.menu === "locate" ? null : "locate"; render(); document.getElementById("locate-address")?.focus(); },
   "close-menu": () => closeMenu(),
+  link: (element) => chooseLink(element.dataset.link),
+  "mstp-ports": () => loadSerialPorts(),
+  "mstp-listen": () => listenToTrunk(),
   "toggle-head": () => { state.headOpen = !state.headOpen; render(); },
   // the adapter is chosen in the search settings: open them with the choice in focus
   "focus-adapter": () => {
@@ -387,6 +391,12 @@ document.addEventListener("change", (event) => {
     render();
     return;
   }
+  if (event.target.id === "mstp-port" || event.target.id === "mstp-baud") {
+    state.mstp[event.target.id === "mstp-port" ? "port" : "baud"] = event.target.value;
+    state.mstp.heard = null;
+    render();
+    return;
+  }
   if (event.target.id !== "adapter") return;
   state.adapter = state.adapters[Number(event.target.value)];
   saveMemory(state);
@@ -619,7 +629,7 @@ async function start() {
     refreshHeld(),
     api.log().then((log) => { state.log = log; }),
     api.recording().then((recording) => { state.recording = recording; }),
-    api.info().then((info) => { state.version = info.version; }),
+    api.info().then((info) => { state.version = info.version; state.mstpAvailable = Boolean(info.mstp); }),
   ]).catch((error) => { state.error = error.message; });
   render();
   pollRecording();

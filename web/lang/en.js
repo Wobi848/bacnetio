@@ -183,6 +183,7 @@ export default {
 
     port: "BACnet port", searchWithSettings: "Search with these settings",
     "vpn.hint": "Behind a VPN: choose the VPN adapter, then enter the plant's subnet or its BBMD. A VPN does not pass on broadcasts.",
+    "link.title": "Connection", "link.ip": "BACnet/IP", "link.mstp": "MS/TP (RS-485)", "mstp.port": "Port", "mstp.speed": "Speed", "mstp.portsLoading": "Looking for serial ports …", "mstp.noPort": "No serial port found. Plug in the USB RS-485 adapter.", "mstp.lookAgain": "Look again", "mstp.findSpeed": "Find out by listening", "mstp.listenHint": "Listening sends nothing and does not disturb the trunk: bacnetio finds the speed, the stations and a free address for itself.", "mstp.listen": "Listen to the trunk", "mstp.listening": "Listening to the trunk … up to 10 s.", "mstp.nothingHeard": "Nothing heard at any speed. Check the wiring (A and B), the termination and that the adapter sits on the trunk.", "mstp.onlyDamaged": "Only damaged frames at {speeds} baud: possibly A and B swapped, no termination or a speed bacnetio does not try.", "mstp.stations": "Stations heard", "mstp.ownAddress": "Address for bacnetio", "mstp.free": "{station} is free", "mstp.noFree": "No free address up to Max_Master",
     subnet: "Plant subnet (asked address by address)",
     "range.from": "Device IDs from", "range.to": "to", "range.hint": "Only for large sites: limits the search to devices with these IDs. Leave empty for all.",
     "locate.label": "Device by IP address", "locate.hint": "When the search does not find a device, open it directly by its address.",
@@ -237,6 +238,7 @@ export default {
   },
   /** Known server errors by key (patterns in i18n.js) where English says it better than the server. */
   errors: {
+    mstpPermission: "No permission to open $1: add yourself to the group dialout (sudo usermod -aG dialout $USER) and log in again.",
     refusedWriteAccess: "The device does not allow this to be changed (write-access-denied).",
     refusedPassword: "The device refused: wrong or missing password (password-failure).",
     refusedRange: "The device refused: the value is outside the range it allows (value-out-of-range).",

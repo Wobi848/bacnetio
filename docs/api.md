@@ -21,7 +21,8 @@ from `web/` and this JSON API under `/api/`.
 
 ## Version
 
-`GET /api/info`: `{ "version": "0.1.0" }`
+`GET /api/info`: `{ "version": "0.1.0", "mstp": true }`. `mstp` says whether this bacnetio can use
+MS/TP over a serial port (not the Android app).
 
 `GET /api/update` asks GitHub for the newest release (docs/concept-update-check.md):
 `{ "current": "0.1.0", "latest": { "version": "0.2.0", "url": "https://github.com/…/releases/tag/v0.2.0" }, "newer": true }`.
@@ -43,6 +44,41 @@ bacnetio would pick. `description` is the system's adapter description where it 
 from the name (Windows: `"VirtualBox Host-Only Ethernet Adapter"` behind `"Ethernet 2"`), else
 `null`.
 
+
+## MS/TP over a serial port
+
+Windows and Linux only; the Android app has no serial port (`docs/concept-mstp.md`).
+
+`GET /api/serial-ports`: the serial ports of this computer, USB adapters first. `description` is
+the adapter's own name, when it gives one.
+
+```json
+[
+  { "name": "/dev/ttyACM0", "description": "USB Single Serial", "usb": true },
+  { "name": "/dev/ttyS0", "description": null, "usb": false }
+]
+```
+
+`POST /api/mstp/listen` `{ "port": "/dev/ttyACM0", "baud": 38400 }`: listens to the trunk on that
+port without joining it; nothing is sent. Without `baud`, it listens about two seconds at each
+speed (38400, 76800, 19200, 9600, 115200) until one gives clean frames. The answer:
+
+```json
+{
+  "baud": 38400,
+  "trials": [{ "baud": 38400, "frames": 212, "damaged": 0 }],
+  "stations": [5, 6, 7, 8],
+  "max_master": 127,
+  "lost_tokens": 0,
+  "proposed_station": 127
+}
+```
+
+`baud` is `null` when no speed gave clean frames; `trials` then says what each speed heard
+(`damaged`: broken CRC, cut-off frames, octets that make no frame). `stations` sent a frame,
+`max_master` is the highest address their polls reach, `proposed_station` the highest free
+address up to it. `400` for a port the system does not list or a speed MS/TP does not use, `409`
+when the port cannot be opened (in use, no permission: the text says what to do).
 ## Search for devices
 
 `POST /api/scan/stop` stops a running search (`204`); it ends as done, with the devices found so far.

@@ -17,6 +17,10 @@ const STORAGE_KEY = "bacnetio.language";
 const ERROR_PATTERNS = [
   [/^search for devices first$/, "searchFirst"],
   [/^a search is already running$/, "searching"],
+  // opening a serial port without the rights for it (Linux: the group dialout)
+  [/^(.+) is not a serial port of this computer$/, "notSerialPort"],
+  [/^(\d+) baud is no MS\/TP speed: .*$/, "noMstpSpeed"],
+  [/^no permission to open (\S+): add yourself to the group dialout .*$/, "mstpPermission"],
   [/^read the device's points first$/, "readFirst"],
   [/^add a point to the recording first$/, "recordFirst"],
   [/^this point is not in the recording$/, "notRecorded"],
