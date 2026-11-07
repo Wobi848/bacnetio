@@ -94,6 +94,7 @@ const MSTP_MAX_APDU: u16 = 480;
 /// How long a master may take to poll for bacnetio's address and pass it the token.
 const RING_WAIT: Duration = Duration::from_secs(20);
 const RING_POLL: Duration = Duration::from_millis(100);
+const CLOSE_POLL: Duration = Duration::from_millis(50);
 
 /// Opens the serial port and joins the trunk as a master station.
 #[cfg(not(target_os = "android"))]
@@ -196,10 +197,22 @@ async fn finish(
 impl Connection {
     /// Fails while a request still holds the client.
     pub async fn close(self) -> anyhow::Result<()> {
-        let Some(mut client) = Arc::into_inner(self.client) else {
-            bail!("a request is still running");
-        };
-        client.stop().await.context("cannot close the UDP socket")
+        self.close_when_idle(Duration::ZERO).await
+    }
+
+    /// Closes once the requests running now have ended, waiting up to `wait` for them. A request
+    /// on MS/TP waits for the token, so one is often under way.
+    pub async fn close_when_idle(self, wait: Duration) -> anyhow::Result<()> {
+        let deadline = Instant::now() + wait;
+        let mut client = self.client;
+        loop {
+            match Arc::try_unwrap(client) {
+                Ok(mut alone) => return alone.stop().await.context("cannot close the connection"),
+                Err(_) if Instant::now() >= deadline => bail!("a request is still running"),
+                Err(shared) => client = shared,
+            }
+            tokio::time::sleep(CLOSE_POLL).await;
+        }
     }
 }
 

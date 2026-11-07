@@ -3,6 +3,7 @@
 
 import { h } from "./html.js";
 import { t } from "./i18n.js";
+import { releaseLabel } from "./log.js";
 
 /** The speeds MS/TP trunks run at, as the server takes them. */
 export const MSTP_SPEEDS = [9600, 19200, 38400, 76800, 115200];
@@ -62,6 +63,13 @@ export function mstpActsHtml(state) {
 export function trunkHtml(state) {
   const trunk = state.mstp.trunk;
   if (!trunk) return "";
+  // what bacnetio holds stays in the plant after leaving, as after closing bacnetio
+  const count = state.held.length;
+  if (state.mstp.leaving && count) {
+    return `<div class="side-trunk"><div class="strip" role="alert">${count === 1 ? t("mstp.leaveHeldOne") : t("mstp.leaveHeld", { n: count })}</div>
+      <button type="button" data-act="release-all">${releaseLabel(count)}</button>
+      <button type="button" class="quiet" data-act="mstp-leave-anyway">${t("mstp.leaveAnyway")}</button></div>`;
+  }
   return `<div class="side-trunk"><span class="side-detail">${t("mstp.onTrunk", { station: trunk.station, baud: trunk.baud })}</span>
     <button type="button" class="quiet" data-act="mstp-leave">${t("mstp.leave")}</button></div>`;
 }

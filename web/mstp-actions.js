@@ -67,6 +67,7 @@ export async function leaveTrunk() {
   try {
     await api.mstpLeave();
     state.mstp.trunk = null;
+    state.mstp.leaving = false;
     state.log = await api.log();
   } catch (error) {
     toast(error.message, true);

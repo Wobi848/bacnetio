@@ -80,7 +80,7 @@ async fn device_on(
 ) -> bacnet_server::server::BACnetServer<
     bacnet_transport::mstp::MstpTransport<bacnet_transport::mstp::LoopbackSerial>,
 > {
-    use bacnet_objects::analog::AnalogInputObject;
+    use bacnet_objects::analog::{AnalogInputObject, AnalogOutputObject};
     use bacnet_objects::device_identity::{DeviceIdentity, build_database_with_extra};
     use bacnet_objects::traits::BACnetObject;
     use bacnet_transport::mstp::{MstpConfig, MstpTransport};
@@ -88,7 +88,9 @@ async fn device_on(
     let mut temperature =
         AnalogInputObject::new(1, "Room temperature", EngineeringUnits::DEGREES_CELSIUS).unwrap();
     temperature.set_present_value(21.5);
-    let objects: Vec<Box<dyn BACnetObject>> = vec![Box::new(temperature)];
+    let mut damper = AnalogOutputObject::new(1, "Damper", EngineeringUnits::PERCENT).unwrap();
+    damper.set_relinquish_default(0.0).unwrap();
+    let objects: Vec<Box<dyn BACnetObject>> = vec![Box::new(temperature), Box::new(damper)];
     let identity = DeviceIdentity::new(2005, 42)
         .unwrap()
         .with_max_apdu(480)
@@ -150,5 +152,90 @@ async fn joining_a_trunk_finds_its_device_and_reads_it() {
         "{:?}",
         temperature.value
     );
+    connection.close().await.unwrap();
+}
+
+/// bacnetio on an in-memory trunk with the device as station 5, the device known to the client.
+async fn on_trunk() -> (
+    bacnet_server::server::BACnetServer<
+        bacnet_transport::mstp::MstpTransport<bacnet_transport::mstp::LoopbackSerial>,
+    >,
+    bacnetio::connection::Connection,
+) {
+    use bacnetio::connection::{Trunk, open_mstp_on};
+    let (ours, theirs) = bacnet_transport::mstp::LoopbackSerial::pair();
+    let device = device_on(theirs).await;
+    let trunk = Trunk {
+        port: "loopback".to_string(),
+        baud: 38_400,
+        station: 6,
+        max_master: 127,
+    };
+    let connection = open_mstp_on(ours, &trunk).await.unwrap();
+    let station = bacnetio::address::Address::Mstp(5);
+    bacnetio::scan::locate(
+        &connection.client,
+        Some(2005),
+        Some(station),
+        Duration::from_secs(3),
+    )
+    .await
+    .unwrap();
+    (device, connection)
+}
+
+#[tokio::test]
+async fn writing_releasing_and_cov_reports_work_over_the_trunk() {
+    use bacnet_types::enums::ObjectType;
+    use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
+    use bacnetio::write::{self, Action};
+    let (_device, connection) = on_trunk().await;
+    let client = &connection.client;
+    let damper = ObjectIdentifier::new(ObjectType::ANALOG_OUTPUT, 1).unwrap();
+    let mut notifications = client.cov_notifications();
+    bacnetio::watch::subscribe(client, 2005, damper)
+        .await
+        .unwrap();
+    write::perform(
+        client,
+        2005,
+        damper,
+        Some(8),
+        &Action::Write(PropertyValue::Real(42.0)),
+    )
+    .await
+    .unwrap();
+    let held = bacnetio::object::read_object(client, 2005, damper).await;
+    assert_eq!(held.point.value, Some(PropertyValue::Real(42.0)));
+    assert_eq!(
+        held.priority_array.unwrap()[7],
+        Some(PropertyValue::Real(42.0))
+    );
+    // the device reports the change by itself, over the trunk
+    let reported = tokio::time::timeout(Duration::from_secs(5), async {
+        loop {
+            let received = notifications.recv().await.unwrap();
+            let value = received
+                .notification
+                .list_of_values
+                .iter()
+                .find_map(|value| {
+                    (value.property_identifier
+                        == bacnet_types::enums::PropertyIdentifier::PRESENT_VALUE)
+                        .then(|| value.value.clone())
+                });
+            let decoded = value.and_then(|value| bacnetio::connection::decode_value(&value).ok());
+            if decoded == Some(PropertyValue::Real(42.0)) {
+                return;
+            }
+        }
+    })
+    .await;
+    assert!(reported.is_ok(), "no COV report of 42 within 5 s");
+    write::perform(client, 2005, damper, Some(8), &Action::Release)
+        .await
+        .unwrap();
+    let released = bacnetio::object::read_object(client, 2005, damper).await;
+    assert_eq!(released.point.value, Some(PropertyValue::Real(0.0)));
     connection.close().await.unwrap();
 }

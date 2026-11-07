@@ -68,7 +68,7 @@ mod pty {
 #[cfg(unix)]
 #[tokio::main]
 async fn main() {
-    use bacnet_objects::analog::AnalogInputObject;
+    use bacnet_objects::analog::{AnalogInputObject, AnalogOutputObject};
     use bacnet_objects::device_identity::{DeviceIdentity, build_database_with_extra};
     use bacnet_objects::traits::BACnetObject;
     use bacnet_server::server::BACnetServer;
@@ -83,7 +83,9 @@ async fn main() {
     let mut temperature =
         AnalogInputObject::new(1, "Room temperature", EngineeringUnits::DEGREES_CELSIUS).unwrap();
     temperature.set_present_value(21.5);
-    let objects: Vec<Box<dyn BACnetObject>> = vec![Box::new(temperature)];
+    let mut damper = AnalogOutputObject::new(1, "Damper", EngineeringUnits::PERCENT).unwrap();
+    damper.set_relinquish_default(0.0).unwrap();
+    let objects: Vec<Box<dyn BACnetObject>> = vec![Box::new(temperature), Box::new(damper)];
     // an MS/TP frame carries at most 480 octets of APDU (Clause 9.3)
     let identity = DeviceIdentity::new(instance, 42)
         .unwrap()

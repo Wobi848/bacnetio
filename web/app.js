@@ -118,7 +118,10 @@ const actions = {
   "mstp-ports": () => loadSerialPorts(),
   "mstp-listen": () => listenToTrunk(),
   "mstp-search": () => { forgetDeviceReads(); searchOnTrunk(); },
-  "mstp-leave": () => leaveTrunk(),
+  "mstp-leave": () => {
+    if (state.held.length) { state.mstp.leaving = true; render(); } else leaveTrunk();
+  },
+  "mstp-leave-anyway": () => leaveTrunk(),
   "toggle-head": () => { state.headOpen = !state.headOpen; render(); },
   // the adapter is chosen in the search settings: open them with the choice in focus
   "focus-adapter": () => {

@@ -1,6 +1,6 @@
 # Concept: BACnet MS/TP over a USB RS-485 adapter
 
-Approved on 7 November 2026 (branch `concept-mstp`). Steps 1 to 3 of the building order are built.
+Approved on 7 November 2026 (branch `concept-mstp`). Steps 1 to 4 of the building order are built; the field test is open.
 
 ## Why
 
@@ -171,7 +171,12 @@ Each step leaves everything working and is its own pull request:
    under device 4194303. *Device by IP …* is not offered on a trunk; BBMD tables are refused for an
    MS/TP device.
 4. **Everything else on MS/TP**: points, writing, recording, exports and plugins checked one by
-   one against the simulator.
+   one against the simulator. Done on 7 November 2026: reading points, writing and releasing, COV
+   reports (`tests/mstp.rs`), the device list and its CSV with `MS/TP 5`, writing in the page and
+   leaving the trunk while a value is held, which asks first (`ui/38-mstp-join`). Recording polls
+   and plugins read through the same client calls by device ID, which the trunk serves like IP.
+   Closing a connection now waits up to 5 s for the requests under way: on MS/TP one is often
+   waiting for the token, and leaving failed with "a request is still running".
 5. **Field test** with the maintainer's adapter, then fixes.
 
 ## Decided (7 November 2026)

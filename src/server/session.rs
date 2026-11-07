@@ -186,7 +186,7 @@ impl AppState {
         };
         let trunk = trunk.clone();
         if let Some(open) = current.take() {
-            open.connection.close().await?;
+            open.connection.close_when_idle(REQUESTS_END_WAIT).await?;
         }
         Ok(Some(trunk))
     }
@@ -219,7 +219,7 @@ impl AppState {
             ));
         }
         if let Some(old) = current.take() {
-            old.connection.close().await?;
+            old.connection.close_when_idle(REQUESTS_END_WAIT).await?;
         }
         let connection = open().await?;
         tokio::spawn(follow_notifications(
@@ -246,6 +246,9 @@ impl AppState {
         *self.scan.lock().expect("scan status lock") = status;
     }
 }
+
+/// How long closing a connection waits for the requests under way; new ones wait for the lock.
+const REQUESTS_END_WAIT: std::time::Duration = std::time::Duration::from_secs(5);
 
 /// Alarm messages kept, the latest ones: a chattering device must not fill the memory.
 const KEPT_EVENTS: usize = 500;

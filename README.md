@@ -26,6 +26,11 @@ light and dark theme, the system's language (English or German), keys `1`–`6`,
   device's facts (vendor, firmware, clock …) beside the list, its clock set to this computer's
   time. Each device's object count shows from the search on. A device the search does not reach
   opens by its IP address.
+- **MS/TP** (Windows and Linux): a USB RS-485 adapter on an MS/TP trunk, chosen under *Search
+  settings*. bacnetio first listens, sending nothing: the trunk's speed, the stations on it, a free
+  address. Then it joins the trunk and searches it; its devices are read, written and recorded as
+  on IP. *Leave the trunk* in the sidebar frees the port. On Linux the user must be in the group
+  `dialout` once.
 - **A device** in the workspace, its points: grouped by plant part where the names are paths (`/21/000/00/00/HZ_Kessel.01/temp`),
   otherwise by kind; search, filters for faults, overrides and changes since a saved reference,
   CSV. The chosen point beside the list: value live (COV where offered), state texts, who holds it

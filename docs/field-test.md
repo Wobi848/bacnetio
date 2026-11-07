@@ -62,6 +62,23 @@ happens over the VPN; *Device by IP* still finds it.
 
 | *Device by IP …* with router address, network, MAC and device ID | The device opens and reads; this has only been tested on its input so far | |
 
+## 4b. MS/TP directly over a USB RS-485 adapter
+
+Listening sends nothing. **Joining takes part in the trunk's timing**: do it on a trunk where a
+short disturbance does no harm, and leave the trunk when done (`docs/concept-mstp.md`). The
+maintainer's adapter: WCH CH343 (`/dev/ttyACM0` on Linux, a COM port on Windows).
+
+| Check | Expected | Result |
+| --- | --- | --- |
+| *Search settings → MS/TP*: the port list | The adapter first, with its name | |
+| *Listen to the trunk*, speed found by listening | The trunk's speed within 10 s; the stations as YABE or the K&P browser show them | |
+| Listen with A and B swapped, or the wrong speed chosen | "Only damaged frames …" or "Nothing heard …", nothing sent | |
+| *Join the trunk and search* at the proposed address, with a stopwatch | In the ring within a few seconds; every device of the trunk found | |
+| Open a device, read all its points | Complete, without timeouts in the request log | |
+| Write and release a point you may change | As on IP; the value held while written, gone after the release | |
+| *Leave the trunk*, then listen again | The port is free; the stations as before, bacnetio's address no longer heard | |
+| On Windows: the same on a COM port | As on Linux, without administrator rights | |
+
 ## 5. Writing, on a point you may change
 
 | Check | Expected | Result |

@@ -34,6 +34,19 @@ export default {
     // the device's points are read over the trunk as over IP
     await openDevice(page, "MSTP-05");
     assert.match(await page.textContent(".row[data-point]:has-text('Room temperature')"), /21[.,]5/);
+    // a value written over the trunk is held; leaving the trunk asks first, as leaving bacnetio does
+    await page.click(".row[data-point]:has-text('Damper')");
+    await page.waitForSelector(".detail .big");
+    await page.click("text=Change value");
+    await page.click("text=Allow changes for this session");
+    await page.fill("#new-value", "40");
+    await page.click("button[data-act=write]");
+    await page.waitForSelector(".slots .slot.mine", { timeout: 15000 });
+    await page.click("[data-act=mstp-leave]");
+    assert.match(await page.textContent(".side-trunk"), /You still hold a value/);
+    // releasing first, then leaving
+    await page.click(".side-trunk [data-act=release-all]");
+    await page.waitForFunction(() => !/held/.test(document.querySelector(".status .chips")?.textContent ?? ""), null, { timeout: 15000 });
     // leaving closes the port; joining and leaving stand in the log
     await page.click("[data-act=mstp-leave]");
     await page.waitForFunction(() => !document.querySelector(".side-trunk"));

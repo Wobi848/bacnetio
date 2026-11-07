@@ -6,8 +6,12 @@ All notable changes for users of bacnetio.
 
 ### Added
 
-- MS/TP directly over a USB RS-485 adapter (Windows and Linux): *Search settings* choose between *BACnet/IP* and *MS/TP (RS-485)*. With MS/TP, bacnetio lists the serial ports, USB adapters first with their own name. *Listen to the trunk* sends nothing and finds the trunk's speed, the stations on it and a free address for bacnetio, right above the highest station, where a master takes it into the token ring at once. *Join the trunk and search* then searches the trunk; its devices show as `MS/TP 5` and are read, written and recorded as on IP. An address that answered while listening is refused. *Leave the trunk* in the sidebar closes the port. Joining and leaving are in the log.
+- MS/TP directly over a USB RS-485 adapter (Windows and Linux): *Search settings* choose between *BACnet/IP* and *MS/TP (RS-485)*. With MS/TP, bacnetio lists the serial ports, USB adapters first with their own name. *Listen to the trunk* sends nothing and finds the trunk's speed, the stations on it and a free address for bacnetio, right above the highest station, where a master takes it into the token ring at once. *Join the trunk and search* then searches the trunk; its devices show as `MS/TP 5` and are read, written and recorded as on IP. An address that answered while listening is refused. *Leave the trunk* in the sidebar closes the port; while you hold values it asks first, as leaving bacnetio does. Joining and leaving are in the log.
 - A simulated MS/TP device on a pseudo-terminal (`cargo run --example simulated_mstp`, Linux).
+
+### Fixed
+
+- A search on another adapter, port or trunk no longer fails with "a request is still running" while a request is under way: the old connection waits up to 5 s for it before it closes.
 
 ## v0.2.0 (07.11.2026)
 
