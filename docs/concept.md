@@ -138,6 +138,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Own grouping pattern per site, with a preview; kept with the site and over a new search | table of a device, *More → Grouping …* | `ui/43-grouping`, `tests/web/grouping.test.js`, `site.rs` (`a_grouping_pattern_stays_with_its_site`) |
 | Compare two devices by point name: differences, only left, only right; read both again | table of a device, *More → Compare with …* | `ui/41-compare`, `tests/web/compare.test.js` |
 | Capture bacnetio's own traffic and save it as pcapng for Wireshark, MS/TP with every frame on the line | *Settings*, card *Capture for Wireshark*; status bar while it runs | `tests/capture.rs`, `tests/mstp.rs` (`a_capture_on_a_trunk_holds_whole_frames`), `pcap.rs`, `ui/42-capture` |
+| Choose points and change one property of all at once: present value with priority, release, out of service, COV increment, description, alarm limits; behind the unlock, one more question, each write logged and held | table of a device, *Select*, *Change selected …* | `tests/web/change-many.test.js`, `ui/44-change-many` |
 | Point list as CSV with the winning priority and set slots | table of a device, toolbar, *CSV with priorities* | `ui/13-exports`, `export.rs` |
 | Active alarms of a device (GetEventInformation) | device details | `ui/09-device`, `alarms.rs` (test) |
 | Save a reference, show what changed since | table of a device, toolbar | `ui/06-reference`, `reference.rs` |

@@ -1,7 +1,7 @@
 # Concept: five functions from the K&P comparison
 
 Status: approved on 7 November 2026 with the recommendation to all four questions in section 8
-(branch `concept-toolbox`). Built so far: parts 1 to 4 (print view, compare two devices, capture, own grouping pattern).
+(branches `concept-toolbox`, `own-grouping`, `compare-devices`, `capture`, `change-many`). Built on 7 November 2026: all five parts.
 
 ## Why
 
@@ -128,11 +128,15 @@ takes long and is easy to get wrong.
 
 - Behind the session unlock, as every write. Without it, *Change selected …* first asks to allow
   changes.
-- One device at a time and not more than 200 points per change. The server refuses more.
-- The server checks each value as for a single write (the same check). A point that fails the
-  check is left out with the reason. The rest are written.
+- One device at a time and not more than 200 points per change.
+- As built, the page writes each point through the routes of a single write (`…/write`,
+  `…/release`, `…/property`), one after the other. So the server checks each value exactly as for
+  a single write, and nothing new reaches the plant on a way of its own; the limit of 200 points
+  is the page's. The page leaves out beforehand a point that has no such property or cannot take
+  the value, with the reason; a point the server or the device refuses shows *not written* with
+  the reason in words.
 - Every point gets its own log entry, refused or not, as a single write gets. A present value
-  written with a priority counts as held by you and shows in the leaving check.
+  written with a priority, and out of service, count as held by you and show in the leaving check.
 - The confirmation names the device, the property, the value, the priority and how many points.
 
 ## 6. Functions and where they live
@@ -146,7 +150,7 @@ built:
 | Compare two devices by point name | point list, *More → Compare with …* | `ui/41-compare`, `tests/web/compare.test.js` |
 | Capture traffic and save as pcap | *Settings*, card *Capture*; status bar while running | `tests/capture.rs`, `tests/mstp.rs` (`a_capture_on_a_trunk_holds_whole_frames`), `pcap.rs`, `ui/42-capture` |
 | Own grouping pattern per site | point list, *More → Grouping …* | `tests/web/grouping.test.js`, `site.rs`, `ui/43-grouping` |
-| Change one property of many points | point list, *Select*, *Change selected …* | `tests/api.rs`, simulator test, `ui/44-change-many` |
+| Change one property of many points | point list, *Select*, *Change selected …* | `tests/web/change-many.test.js`, `ui/44-change-many` (against the simulated AHU-01) |
 
 ## Compatibility
 

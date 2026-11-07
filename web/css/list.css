@@ -306,3 +306,18 @@ button.chip.removable:hover { border-color: var(--accent-strong); }
 .compare-table td { white-space: nowrap; }
 .compare-table td.differs { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
 .compare-table .compare-none { color: var(--muted); font-style: italic; }
+
+/* Choosing points and changing them at once (change-many.js) */
+.row .pick { margin: 0 8px 0 0; vertical-align: middle; width: 16px; height: 16px; }
+.pick-bar { align-items: center; }
+.many-panel { display: grid; gap: 10px; margin: 12px 20px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); min-height: 0; }
+.many-panel h3 { margin: 0; font-size: 14px; }
+.many-panel p { margin: 0; }
+.many-fields { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.many-field { display: flex; gap: 8px; align-items: center; }
+.many-scroll { overflow: auto; max-height: 50vh; }
+.many-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.many-table th, .many-table td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); }
+.many-table thead th { position: sticky; top: 0; background: var(--sunken); font-size: 12px; }
+.many-table tr.left-out td { color: var(--muted); }
+.many-panel .acts, .many-panel .actions { display: flex; flex-wrap: wrap; gap: 8px; }
