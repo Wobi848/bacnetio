@@ -1,6 +1,6 @@
 # Concept: BACnet MS/TP over a USB RS-485 adapter
 
-Approved on 7 November 2026 (branch `concept-mstp`). Nothing is built yet.
+Approved on 7 November 2026 (branch `concept-mstp`). Step 1 of the building order is built.
 
 ## Why
 
@@ -154,12 +154,13 @@ search settings show them only with BACnet/IP chosen. Their rows in 3.3 get the 
 
 Each step leaves everything working and is its own pull request:
 
-1. **Address type** for IP and MS/TP, client over `AnyTransport`. Nothing visible changes, all
-   tests stay green.
+1. **Client over `AnyTransport`.** Nothing visible changes, all tests stay green. Built on
+   7 November 2026 (`src/connection.rs`).
 2. **Serial ports and listening**: `GET /api/serial-ports`, the monitor, speed detection,
    simulator `simulated_mstp`. The page shows the result of listening.
-3. **Join and search**: transport in the client, Who-Is, the device table with MACs, the log
-   entry, address refusal.
+3. **Join and search**: the address type for IP and MS/TP, the transport in the client, Who-Is,
+   the device table with MACs, the log entry, address refusal. The address type comes here, with
+   the first MS/TP device, not before.
 4. **Everything else on MS/TP**: points, writing, recording, exports and plugins checked one by
    one against the simulator.
 5. **Field test** with the maintainer's adapter, then fixes.
@@ -172,5 +173,6 @@ Each step leaves everything working and is its own pull request:
 3. **Own address proposed:** the highest free one up to the Max_Master heard while listening.
 4. **One connection at a time:** BACnet/IP or MS/TP, switched in *Search settings*. A trunk
    behind a router is already reached over IP.
-5. **The maintainer's adapter:** not known yet. bacnetio shows the adapter's name in the port
-   list, so the field test finds out.
+5. **The maintainer's adapter:** a QinHeng CH343 (USB `1a86:55d3`), on Linux `/dev/ttyACM0`
+   (driver `cdc_acm`). No MS/TP devices at hand: the adapter checks opening and naming the port,
+   a real trunk waits for the field test.

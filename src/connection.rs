@@ -8,9 +8,8 @@ use std::time::{Duration, Instant};
 use anyhow::{Context, bail};
 use bacnet_client::client::BACnetClient;
 use bacnet_encoding::primitives::decode_application_value;
-use bacnet_transport::bip::{
-    BipMode, BipTransport, ForeignDeviceConfig, ForeignRegistrationOutcome,
-};
+use bacnet_transport::any::AnyTransport;
+use bacnet_transport::bip::{BipMode, ForeignDeviceConfig, ForeignRegistrationOutcome};
 use bacnet_types::enums::{AbortReason, PropertyIdentifier};
 use bacnet_types::error::{Error, RemoteError};
 use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
@@ -23,7 +22,9 @@ const FOREIGN_DEVICE_TTL_S: u16 = 300;
 const REGISTRATION_WAIT: Duration = Duration::from_secs(5);
 const REGISTRATION_POLL: Duration = Duration::from_millis(100);
 
-pub type Client = BACnetClient<BipTransport>;
+/// Over any transport, so that a connection to an MS/TP trunk can take BACnet/IP's place
+/// (`docs/concept-mstp.md`).
+pub type Client = BACnetClient<AnyTransport>;
 
 pub struct Endpoint {
     pub interface: Ipv4Addr,
@@ -123,7 +124,7 @@ async fn start(endpoint: &Endpoint, port: u16) -> Result<Client, Error> {
         })),
         None => builder,
     };
-    builder.build().await
+    builder.build_any().await
 }
 
 /// Waits until the BBMD has accepted the registration, so the first Who-Is reaches its subnet.
