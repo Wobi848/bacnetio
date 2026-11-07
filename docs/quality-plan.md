@@ -175,11 +175,12 @@ as in `docs/concept-explorer.md` section 2b, "step C" and "step D".
 - [x] Values pushed by unconfirmed COV shown as live
 - [x] Several sites in the site memory, with export and import as a file
 
-Next, asked for by the maintainer: the same choice for recording, and MS/TP over an RS-485 adapter (only with a real adapter to test on).
+Asked for next by the maintainer, both built since: the same choice for recording, and MS/TP over an RS-485 adapter (concept-mstp.md; the field test on a real trunk is open).
 
-Marked "later" there and not part of this plan: comparing devices side
-by side, pcap export, own grouping patterns, mass operations, BBMD tables, print layout, client device
-ID, backup and restore. Excel files are not built either. Built beyond the list because a browser
+Marked "later" there and not part of this plan, built since (concept-toolbox.md and the changelog):
+comparing devices side by side, pcap export, own grouping patterns, mass operations, BBMD tables,
+print layout. Not needed: a client device ID (bacnetio has no device object on the network). Still
+open: backup and restore ("later or never"), Excel files. Built beyond the list because a browser
 needs them on site: device ID, device commands, acknowledging alarms, Who-Has, schedule and calendar
 views, writing any plain property.
 
