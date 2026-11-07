@@ -154,6 +154,9 @@ const actions = {
   "day-write": () => writeDay(),
   "all-rows": () => { state.allRows = true; render(); },
   "live-list": () => toggleLiveList(),
+  "print-open": () => openPrint(),
+  "print-now": () => window.print(),
+  "print-close": () => { state.printing = false; render(); },
   "more-menu": () => { state.menu = state.menu === "more" ? null : "more"; render(); },
   "types-menu": () => { state.menu = state.menu === "types" ? null : "types"; render(); },
   "groups-all": (element) => {
@@ -442,6 +445,13 @@ const MOVE_KEYS = { ArrowDown: 1, ArrowUp: -1, PageDown: PAGE_ROWS, PageUp: -PAG
 const typing = () => document.activeElement?.matches?.("input, select, textarea");
 
 /** Closes the menu, dialog, search or details on top; false when nothing was open. */
+/** The open device's points as a page to print, with the list's groups, filter and view. */
+function openPrint() {
+  state.printing = true;
+  state.menu = null;
+  render();
+}
+
 function closeTopmost() {
   if (state.menu) state.menu = null;
   else if (state.pluginRemoving || state.pluginReplacing) { state.pluginRemoving = null; state.pluginReplacing = null; }
@@ -454,6 +464,7 @@ function closeTopmost() {
   else if (state.confirm) state.confirm = null;
   else if (state.asking) state.asking = false;
   else if (state.detailOpen) state.detailOpen = false;
+  else if (state.printing) state.printing = false;
   else return false;
   return true;
 }
@@ -518,6 +529,13 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && typing()) {
     if (event.target.id.startsWith("locate-")) locate();
     else if (FIELDS[event.target.id]) find();
+    return;
+  }
+  // the browser would print the list with bacnetio around it: the print view is made for paper
+  if ((event.ctrlKey || event.metaKey) && event.key === "p" && state.area === "workspace" && state.device && state.points && !state.printing) {
+    event.preventDefault();
+    openPrint();
+    window.print();
     return;
   }
   if (typing() || event.ctrlKey || event.metaKey || event.altKey) return;

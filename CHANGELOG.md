@@ -8,6 +8,7 @@ All notable changes for users of bacnetio.
 
 - MS/TP directly over a USB RS-485 adapter (Windows and Linux): *Search settings* choose between *BACnet/IP* and *MS/TP (RS-485)*. With MS/TP, bacnetio lists the serial ports, USB adapters first with their own name. *Listen to the trunk* sends nothing and finds the trunk's speed, the stations on it and a free address for bacnetio, right above the highest station, where a master takes it into the token ring at once. *Join the trunk and search* then searches the trunk; its devices show as `MS/TP 5` and are read, written and recorded as on IP. An address that answered while listening is refused. *Leave the trunk* in the sidebar closes the port; while you hold values it asks first, as leaving bacnetio does. Joining and leaving are in the log.
 - A simulated MS/TP device on a pseudo-terminal (`cargo run --example simulated_mstp`, Linux).
+- *More → Print …* in a device's point list shows its points as a page to print or to save as PDF from the browser's print dialog: the site, the device, its address and maker, when the values were read, then the points in the list's groups with value, state in words and the priority now. The filter and view of the list stay, and the page says what is shown. Ctrl+P in the list opens it too.
 
 ### Fixed
 

@@ -120,6 +120,7 @@ function moreMenu(state) {
     <a class="quiet" href="/api/devices/${device}/points-priorities.csv" download title="${t("csv.prioritiesHint")}">${t("csv.priorities")}</a>
     <a class="quiet" href="/api/devices/${device}/points.ede.csv" download title="${t("ede.hint")}">EDE</a>
     <a class="quiet" href="/api/devices/${device}/points.ede-states.csv" download title="${t("ede.statesHint")}">${t("ede.states")}</a>
+    <button type="button" class="quiet" data-act="print-open" title="${t("print.openHint")}">${t("print.open")}</button>
     <hr>
     <button type="button" class="quiet" data-act="groups-all" data-open="true">${t("groups.open")}</button>
     <button type="button" class="quiet" data-act="groups-all" data-open="false">${t("groups.close")}</button>
@@ -207,18 +208,31 @@ function groupRow(state, group, open) {
     <span class="arrow">▶</span><span class="name">${h(title)}</span><span class="count">${marks}${group.items.length}</span></div>`;
 }
 
+/** The groups of all the device's points, so that a filter does not rename the plant parts, each
+ * holding only the points shown. */
+function groupsOf(points, shown) {
+  const passing = new Set(shown);
+  return groupPoints(points)
+    .map((group) => ({ ...group, items: group.items.filter(({ point }) => passing.has(point)) }))
+    .filter((group) => group.items.length);
+}
+
+/** A plant part chosen in the tree is one group; a type or a plant view node is already filtered
+ * out of the points shown. */
+function chosenGroups(state, groups) {
+  const byGroup = state.node && !state.node.startsWith("type:") && !isViewNode(state.node);
+  return byGroup ? groups.filter((group) => group.key === state.node) : groups;
+}
+
+/** The groups the list shows, with the points shown in them: for the print view. */
+export const shownGroups = (state, points, shown) => chosenGroups(state, groupsOf(points, shown));
+
 function listHtml(state, shown, points) {
   const empty = `<div class="empty"><p>${t(state.pointView === "changed" ? "ref.none" : "filter.none")}</p><p class="hint">${t("filter.hint")}</p></div>`;
   if (!shown.length) return empty;
   const narrowed = state.filter.trim() !== "" || state.pointView !== "all" || state.pointTypes.length > 0;
-  // grouped by all the device's points, so that a filter does not rename the plant parts
-  const passing = new Set(shown);
-  const groups = groupPoints(points)
-    .map((group) => ({ ...group, items: group.items.filter(({ point }) => passing.has(point)) }))
-    .filter((group) => group.items.length);
-  // a plant part is one group; a type or a plant view node is already filtered out of `shown`
-  const byGroup = state.node && !state.node.startsWith("type:") && !isViewNode(state.node);
-  const chosen = byGroup ? groups.filter((group) => group.key === state.node) : groups;
+  const groups = groupsOf(points, shown);
+  const chosen = chosenGroups(state, groups);
   if (!chosen.length) return empty;
   const openAll = narrowed || chosen.length === 1;
   let openRows = OPEN_ROWS;

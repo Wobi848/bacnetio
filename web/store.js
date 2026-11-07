@@ -180,6 +180,8 @@ export const state = {
   /** The colour of each recorded point, kept for as long as the page is open. */
   recColors: {},
   version: null,
+  /** The open device's points shown as a page to print (print.js). */
+  printing: false,
   /** What the last look for a new version found (update.js). */
   update: null,
   /** The technical text of a failed check for a new version, shown on request. */
@@ -229,6 +231,7 @@ export function render() {
   document.getElementById("side").innerHTML = sideHtml(state);
   document.getElementById("nextbar").innerHTML = nextbarHtml(view);
   document.getElementById("work").innerHTML = view.html;
+  document.body.classList.toggle("printing", Boolean(view.printing));
   document.getElementById("status").innerHTML = statusHtml(state);
   document.getElementById("dialog").innerHTML = searchDialog(state) + pluginDialogHtml(state);
   document.title = `${view.title} · bacnetio`;
@@ -241,6 +244,7 @@ export function render() {
 export function go(area) {
   state.area = area;
   state.menu = null;
+  state.printing = false;
   state.error = null;
   state.detailOpen = false;
   state.siteSearch = "";

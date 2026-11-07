@@ -5,6 +5,7 @@ import { viewDevices } from "./devices.js";
 import { t } from "./i18n.js";
 import { releaseLabel } from "./log.js";
 import { viewPoints } from "./points.js";
+import { viewPrint } from "./print.js";
 import { treeHtml } from "./tree.js";
 
 /** The one next step of the page head. */
@@ -34,6 +35,7 @@ function searchBeside(state) {
 }
 
 export function viewWorkspace(state) {
+  if (state.printing && state.device && state.points) return viewPrint(state);
   const also = searchBeside(state);
   const inner = state.device ? viewPoints(state, also) : viewDevices(state, also);
   return { ...inner, next: nextStep(state), also, html: `<div class="workspace">${treeHtml(state)}${inner.html}</div>` };
