@@ -1,4 +1,4 @@
-// The help's guides: the same in every language that has them, naming only buttons and guides that
+// The help's guides: the same in every language, naming only buttons and guides that
 // exist (docs/concept-help.md).
 
 import { test } from "node:test";
@@ -12,7 +12,8 @@ const { LANGUAGE_FILES, setLanguage } = await import("../../web/i18n.js");
 const english = HELP_FILES.en;
 const texts = (guide) => [guide.intro, ...(guide.steps ?? []), ...(guide.causes ?? [])];
 
-test("every language with guides has every guide, with as many steps and causes", () => {
+test("every language has every guide, with as many steps and causes", () => {
+  assert.deepEqual(Object.keys(HELP_FILES).sort(), Object.keys(LANGUAGE_FILES).sort());
   for (const [language, guides] of Object.entries(HELP_FILES)) {
     assert.deepEqual(Object.keys(guides).sort(), GUIDES.map((guide) => guide.id).sort(), language);
     for (const { id } of GUIDES) {
@@ -40,7 +41,6 @@ test("a guide shows the buttons by the words of the interface", () => {
   assert.equal(helpText("{btn:side.searchSettings} öffnen, siehe {guide:vpn}"),
     "<b>Sucheinstellungen</b> öffnen, siehe «Anlage hinter einem VPN erreichen»");
   setLanguage("fr");
-  // a language without guides of its own reads the English ones, with its own button names
-  assert.equal(helpText("{guide:vpn}: {btn:side.searchSettings}"), "«Reach a plant behind a VPN»: <b>Réglages de recherche</b>");
+  assert.equal(helpText("{guide:vpn}: {btn:side.searchSettings}"), "«Atteindre une installation derrière un VPN»: <b>Réglages de recherche</b>");
   setLanguage("en");
 });
