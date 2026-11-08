@@ -14,6 +14,7 @@ import android.provider.MediaStore
 import android.view.WindowInsets
 import android.window.OnBackInvokedDispatcher
 import android.view.WindowInsetsController
+import android.webkit.JavascriptInterface
 import android.webkit.URLUtil
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -30,6 +31,7 @@ import kotlin.concurrent.thread
 /** The bacnetio web UI in the whole window; bacnetio itself runs in BacnetioService. */
 class MainActivity : Activity() {
     private lateinit var web: WebView
+    private lateinit var frame: FrameLayout
     private val home get() = "http://127.0.0.1:${BacnetioService.webPort}/"
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -41,6 +43,7 @@ class MainActivity : Activity() {
         web = WebView(this)
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
+        web.addJavascriptInterface(SystemBars(), "bacnetioAndroid")
         web.webViewClient = object : WebViewClient() {
             // other links in the browser, bacnetio itself here
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
@@ -63,13 +66,12 @@ class MainActivity : Activity() {
     /**
      * Since Android 15 the app draws under the status bar, the camera cutout and the navigation
      * bar: the page keeps clear of them, and of the keyboard, so nothing hides behind them. The
-     * strips take the colour of the interface (web/css/tokens.css, --surface).
+     * strips take the colour of the system's theme until the page names its own (SystemBars).
      */
     private fun clearOfSystemBars(content: WebView): FrameLayout {
         val night = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
             Configuration.UI_MODE_NIGHT_YES
-        val frame = FrameLayout(this)
-        frame.setBackgroundColor(Color.parseColor(if (night) "#141c2b" else "#ffffff"))
+        frame = FrameLayout(this)
         frame.addView(content)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             frame.setOnApplyWindowInsetsListener { view, insets ->
@@ -78,11 +80,37 @@ class MainActivity : Activity() {
                 view.setPadding(bars.left, bars.top, bars.right, maxOf(bars.bottom, keyboard.bottom))
                 WindowInsets.CONSUMED
             }
-            val dark = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
-                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
-            frame.post { window.insetsController?.setSystemBarsAppearance(if (night) 0 else dark, dark) }
         }
+        // the three-button navigation otherwise lays a grey veil of its own over the strip
+        window.isNavigationBarContrastEnforced = false
+        window.isStatusBarContrastEnforced = false
+        // web/css/tokens.css, --surface of the light and the dark theme
+        paintSystemBars(Color.parseColor(if (night) "#141c2b" else "#ffffff"), night)
         return frame
+    }
+
+    /** The strips behind the system bars in `color`, with light symbols on a dark page. */
+    @Suppress("DEPRECATION")
+    private fun paintSystemBars(color: Int, dark: Boolean) {
+        frame.setBackgroundColor(color)
+        // before Android 15 the bars are not drawn by the app but coloured
+        window.statusBarColor = color
+        window.navigationBarColor = color
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val light = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
+                WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+            frame.post { window.insetsController?.setSystemBarsAppearance(if (dark) 0 else light, light) }
+        }
+    }
+
+    /** Called by the page (web/theme.js) whenever its theme or background changes. */
+    private inner class SystemBars {
+        @JavascriptInterface
+        fun systemBars(surface: String, dark: Boolean) {
+            // any page in the WebView may call this, so take nothing but a plain colour
+            if (!Regex("#[0-9a-fA-F]{6}").matches(surface)) return
+            runOnUiThread { paintSystemBars(Color.parseColor(surface), dark) }
+        }
     }
 
     private fun waitForBacnetio() = thread {

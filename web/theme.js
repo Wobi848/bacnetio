@@ -40,6 +40,9 @@ function applyTheme() {
   document.documentElement.dataset.theme = dark ? "dark" : "light";
   document.documentElement.dataset.accent = storedAccent();
   document.documentElement.dataset.background = storedBackground(dark ? "dark" : "light");
+  // the Android app paints its status and navigation bars like the page (android/…/MainActivity.kt)
+  const surface = getComputedStyle(document.documentElement).getPropertyValue("--surface").trim();
+  globalThis.bacnetioAndroid?.systemBars(surface, dark);
 }
 
 applyTheme();
