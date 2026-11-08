@@ -68,6 +68,7 @@ standard's wording where the trade uses it (object and property names, COV, BBMD
 | Adapter | Adapter | Adaptateur | Scheda di rete | Adaptador |
 | Subnet | Subnetz | Sous-réseau | Sottorete | Subred |
 | Recording | Aufzeichnung | Enregistrement | Registrazione | Registro |
+| Capture (Wireshark) | Mitschnitt | Capture | Cattura | Captura |
 | Reference | Referenz | Référence | Riferimento | Referencia |
 | Log | Protokoll | Journal | Registro | Registro |
 | Plant | Anlage | Installation | Impianto | Instalación |
