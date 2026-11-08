@@ -372,7 +372,9 @@ count; empty or `null` groups by itself again); a new search of the same network
 `GET /api/sites` lists it as `grouping`.
 `POST /api/sites/delete` `{ "name": "…" }` forgets one. `GET /api/site.json` downloads the remembered
 site as a file, `GET /api/site.json?name=…` a kept one, `POST /api/site.json` takes such a file
-back, keeps it and shows it; anything else gets `400`.
+back, keeps it and shows it; anything else gets `400`. Where another site of the same network is
+kept already, the file is kept beside it as `10.0.0.0/24 (2)` and never replaces it; the same file
+brought in again (same `saved_ms`) replaces itself.
 
 `GET /api/site/points` answers the points of every device read, by device ID:
 `{ "21": { "points": [ … ] } }`, read since the start or else as remembered, without asking a device.

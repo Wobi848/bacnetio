@@ -132,6 +132,23 @@ fn kept_site(dir: &Path, name: &str) -> Option<Site> {
         .filter(|site| site.name == name)
 }
 
+/// The name a site brought in is kept under: its own, unless another site of that network is kept
+/// already, which it then stands beside as "10.0.0.0/24 (2)" instead of replacing it. The same
+/// file brought in again replaces itself.
+fn name_beside(dir: &Path, site: &Site) -> String {
+    let same_or_free = |name: &str| {
+        let path = kept_path(dir, name);
+        !path.exists() || kept_site(dir, name).is_some_and(|kept| kept.saved_ms == site.saved_ms)
+    };
+    if same_or_free(&site.name) {
+        return site.name.clone();
+    }
+    (2..)
+        .map(|number| format!("{} ({number})", site.name))
+        .find(|name| same_or_free(name))
+        .expect("a free name")
+}
+
 /// Written beside and renamed, so a crash never leaves half a file.
 fn replace(path: &Path, json: &str) -> io::Result<()> {
     let temporary = path.with_extension("tmp");
@@ -456,6 +473,7 @@ pub async fn import(
         site.name = "imported".to_string();
     }
     if let Some(dir) = &state.data_dir {
+        site.name = name_beside(dir, &site);
         save(dir, &site).map_err(|error| ApiError::internal(error.to_string()))?;
     }
     show(&state, site);
@@ -521,6 +539,44 @@ mod tests {
         assert_eq!(loaded.saved_ms, 7);
         assert_eq!(loaded.scan, site.scan);
         assert_eq!(loaded.points, site.points);
+    }
+
+    #[test]
+    fn a_site_brought_in_stands_beside_the_own_site_of_its_network() {
+        let dir = std::env::temp_dir().join(format!("bacnetio-beside-{}", std::process::id()));
+        let own = Site {
+            name: "10.0.0.0/24".into(),
+            saved_ms: 1,
+            ..Site::default()
+        };
+        save(&dir, &own).unwrap();
+        let brought = Site {
+            saved_ms: 2,
+            ..own.clone()
+        };
+        assert_eq!(name_beside(&dir, &brought), "10.0.0.0/24 (2)");
+        save(
+            &dir,
+            &Site {
+                name: name_beside(&dir, &brought),
+                ..brought.clone()
+            },
+        )
+        .unwrap();
+        // the same file again replaces itself, another one stands beside both
+        assert_eq!(name_beside(&dir, &own), "10.0.0.0/24");
+        assert_eq!(
+            name_beside(
+                &dir,
+                &Site {
+                    saved_ms: 3,
+                    ..own.clone()
+                }
+            ),
+            "10.0.0.0/24 (3)"
+        );
+        assert_eq!(kept_site(&dir, "10.0.0.0/24").unwrap().saved_ms, 1);
+        fs::remove_dir_all(&dir).unwrap();
     }
 
     #[test]
