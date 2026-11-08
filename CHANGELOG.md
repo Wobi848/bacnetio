@@ -23,6 +23,7 @@ All notable changes for users of bacnetio.
 - A search on another network or trunk starts the site without the points read on the last one, as opening a remembered site does: *Whole site* exports and the search across the site had the other site's devices in them.
 - The menus of the toolbars (*More …*, *Object types*, *Export …*) fit in a low or narrow window: their lower entries were cut off at the status bar, and their left side when the button had wrapped to a line of its own. A menu now reaches down to the window's edge at most and scrolls inside.
 - A search over IP while on an MS/TP trunk leaves the trunk as *Leave the trunk* does: with values held it asks first, leaving is in the log, and the sidebar no longer shows the trunk. Before, the trunk was closed without a word and the sidebar and status bar still showed it.
+- The print view no longer shows an empty *Priority now* column before the priorities were read: it offers *Read priorities* instead, and the column follows with what they say.
 
 ## v0.2.0 (07.11.2026)
 

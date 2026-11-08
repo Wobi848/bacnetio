@@ -120,6 +120,7 @@ export async function readWinners() {
   try {
     const winners = await api.priorities(state.device.instance);
     state.winners = Object.fromEntries(winners.map((item) => [`${item.type}:${item.instance}`, item.winner]));
+    state.winnersRead = true;
   } catch (error) {
     toast(error.message, true);
   }

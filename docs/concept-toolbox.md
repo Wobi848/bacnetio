@@ -27,6 +27,8 @@ hand over.
 - The points are in the groups of the list, with these columns: type and number, name,
   description, value with its unit, state, and the priority now when known. Faults and overridden
   values are marked by a word, not by colour alone, so a black and white print shows them too.
+  The priority now is read on request: until then the page offers *Read priorities* in place of an
+  empty column.
 - The filter, view and object types of the list stay in force, so the technician can print only the
   faults, for example. The head says what is shown: "Faults only, 4 of 181 points".
 - *Print …* opens the browser's print dialog. There the technician can also choose

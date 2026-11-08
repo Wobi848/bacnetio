@@ -171,6 +171,7 @@ export async function openDevice(instance, fresh = false) {
     state.groupsDefault = null;
     state.node = null;
     state.winners = {};
+    state.winnersRead = false;
     state.groupsOpen = {};
     state.selectedPoint = null;
     state.object = null;

@@ -19,6 +19,11 @@ export default {
     assert.equal(await page.locator(".print-table tbody tr:not(.print-group)").count(), filtered, "the rows of the filtered list");
     assert.match(await page.textContent(".print-facts"), /"valve": \d+ of \d+ points/);
     assert.match(await page.textContent(".print-facts"), /AHU-01/);
+    // the priority now is read on request: no empty column before, the way to read it instead
+    assert.doesNotMatch(await page.textContent(".print-table thead"), /Priority now/);
+    await page.click(".print-acts [data-act=read-winners]");
+    await page.waitForFunction(() => /Priority now/.test(document.querySelector(".print-table thead").textContent), null, { timeout: 15000 });
+    assert.equal(await page.locator(".print-acts [data-act=read-winners]").count(), 0);
     // on paper only the page: the buttons stay on screen
     await page.emulateMedia({ media: "print" });
     assert.equal(await page.isVisible(".print-acts"), false);
