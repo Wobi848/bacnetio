@@ -21,6 +21,7 @@ All notable changes for users of bacnetio.
 - A search on another adapter, port or trunk no longer fails with "a request is still running" while a request is under way: the old connection waits up to 5 s for it before it closes.
 - A search on an MS/TP trunk after one over IP lists only the trunk's devices: the devices found over IP were listed too, and reading them failed with "MS/TP MAC must be 1 byte".
 - A search on another network or trunk starts the site without the points read on the last one, as opening a remembered site does: *Whole site* exports and the search across the site had the other site's devices in them.
+- The menus of the toolbars (*More …*, *Object types*, *Export …*) fit in a low or narrow window: their lower entries were cut off at the status bar, and their left side when the button had wrapped to a line of its own. A menu now reaches down to the window's edge at most and scrolls inside.
 
 ## v0.2.0 (07.11.2026)
 
