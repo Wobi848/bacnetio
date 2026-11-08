@@ -177,7 +177,12 @@ export const actions = {
     document.getElementById("help-guide")?.scrollIntoView({ block: "nearest" });
   },
   // a guide only opens the place of its first step, it never acts
-  "help-go": (element) => (element.dataset.target === "network" ? actions["site-new"]() : enter(element.dataset.target)),
+  "help-go": (element) => {
+    const target = element.dataset.target;
+    if (target === "network") actions["site-new"]();
+    else if (target === "sites") actions["sites-all"]();
+    else enter(target);
+  },
   "export-menu": () => { state.menu = state.menu === "export" ? null : "export"; render(); },
   "stop-running": () => stopRunning(),
   "read-all": () => readAllDevices().then((failed) => { if (failed) toast(t("ede.siteFailed", { n: failed }), true); }),

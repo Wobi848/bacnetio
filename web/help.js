@@ -11,13 +11,26 @@ export const HELP_FILES = { en, de };
 /** The guides in the order of the list, each with its group and the place its first step is. */
 export const GUIDES = [
   { id: "find", group: "start", target: "network" },
+  { id: "points", group: "start" },
   { id: "vpn", group: "site", target: "network" },
+  { id: "bbmd", group: "site", target: "network" },
+  { id: "mstp", group: "site", target: "network" },
   { id: "write", group: "values", target: "log" },
+  { id: "watch", group: "values", target: "watch" },
+  { id: "record", group: "values", target: "recording" },
+  { id: "reference", group: "values" },
+  { id: "exports", group: "exports" },
+  { id: "capture", group: "exports", target: "settings" },
+  { id: "sites", group: "more", target: "sites" },
+  { id: "plugins", group: "more", target: "settings" },
   { id: "keys", group: "more" },
 ];
 
 /** Where a guide's button leads, and its words. */
-export const TARGETS = { network: "help.goNetwork", log: "help.goLog" };
+export const TARGETS = {
+  network: "help.goNetwork", log: "help.goLog", watch: "help.goWatch", recording: "help.goRecording",
+  settings: "help.goSettings", sites: "help.goSites",
+};
 
 const words = () => HELP_FILES[currentLanguage()] ?? en;
 
