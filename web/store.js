@@ -107,6 +107,8 @@ export const state = {
   groupingEdit: null,
   /** The priority that wins on each object of the open device, once asked for. */
   winners: {},
+  /** Whether the priorities of the open device were read: a point without an entry then has none held. */
+  winnersRead: false,
   readingWinners: false,
   /** The property being changed in the technical details, and what is typed for it. */
   editProperty: null,

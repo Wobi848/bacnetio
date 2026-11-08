@@ -37,22 +37,25 @@ function factsHtml(state, points, shownCount, version) {
   return `<dl class="print-facts">${facts.map(([term, value]) => `<dt>${term}</dt><dd>${value}</dd>`).join("")}</dl>`;
 }
 
-function rowHtml(state, { point, name }) {
-  const wins = state.winners[pointKey(point)];
+function rowHtml(state, { point, name }, withPriority) {
+  const priority = withPriority ? `<td class="mono">${state.winners[pointKey(point)] ?? ""}</td>` : "";
   return `<tr><td class="mono">${typeShort(point.type)} ${point.instance}</td><td>${h(name || objectText(point))}</td>
     <td>${h(point.description ?? "")}</td><td class="mono">${valueHtml(point, point.state_texts)}</td>
-    <td>${chips(point, heldHere(state, point))}</td><td class="mono">${wins ?? ""}</td></tr>`;
+    <td>${chips(point, heldHere(state, point))}</td>${priority}</tr>`;
 }
+
 
 function groupTitle(group) {
   if (group.type !== undefined) return objectTypeName(group.type);
   return group.kind ? t(group.title) : group.title;
 }
 
+/** The table; the column of the priority now only once it was read, an empty one would look lost. */
 function tableHtml(state, groups) {
-  const head = `<thead><tr><th>${t("col.type")}</th><th>${t("col.name")}</th><th>${t("description")}</th><th>${t("col.value")}</th><th>${t("col.state")}</th><th>${t("print.priority")}</th></tr></thead>`;
-  const bodies = groups.map((group) => `<tbody><tr class="print-group"><th colspan="6">${h(groupTitle(group))} <span class="sub">${group.items.length}</span></th></tr>
-    ${group.items.map((item) => rowHtml(state, item)).join("")}</tbody>`).join("");
+  const withPriority = state.winnersRead;
+  const head = `<thead><tr><th>${t("col.type")}</th><th>${t("col.name")}</th><th>${t("description")}</th><th>${t("col.value")}</th><th>${t("col.state")}</th>${withPriority ? `<th>${t("print.priority")}</th>` : ""}</tr></thead>`;
+  const bodies = groups.map((group) => `<tbody><tr class="print-group"><th colspan="${withPriority ? 6 : 5}">${h(groupTitle(group))} <span class="sub">${group.items.length}</span></th></tr>
+    ${group.items.map((item) => rowHtml(state, item, withPriority)).join("")}</tbody>`).join("");
   return `<table class="print-table">${head}${bodies}</table>`;
 }
 
@@ -68,6 +71,7 @@ export function viewPrint(state) {
     html: `<article class="print-page">
       <div class="print-acts"><button type="button" data-act="print-now">${t("print.now")}</button>
         <button type="button" class="quiet" data-act="print-close">${t("print.back")}</button>
+        ${state.winnersRead ? "" : `<button type="button" class="quiet" data-act="read-winners" title="${t("winners.hint")}"${state.reading || state.readingWinners ? " disabled" : ""}>${t(state.readingWinners ? "winners.reading" : "winners.read")}</button>`}
         <span class="sub">${t("print.hint")}</span></div>
       <h1>${h(deviceName(state.device))}</h1>
       ${factsHtml(state, points, shownCount, version)}
