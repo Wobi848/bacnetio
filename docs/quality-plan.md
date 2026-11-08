@@ -245,7 +245,8 @@ Open, in the maintainer's words where it helps. The larger ones are planned in
 - [ ] Read errors on `S_01.01/h` and `S_01.02/h`: waiting for a screenshot of the details.
 - [ ] Field visit 3 November: 7 drives on MS/TP with device IDs over 9,000,000 (BACnet allows up
       to 4,194,302). Reachable only behind a BACnet router; changing an ID behind a router and the
-      wildcard retry are untested on real devices. Direct MS/TP over RS-485 is not supported.
+      wildcard retry are untested on real devices. (Direct MS/TP over RS-485 came later, 7 November:
+      `docs/concept-mstp.md`.)
       The drives all answered as 4194303; giving them new IDs one by one worked, but a search did
       not replace the address the client had kept for 4194303, so the next change went to a drive
       already changed (*unknown-object*) until bacnetio was restarted.
