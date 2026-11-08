@@ -191,7 +191,7 @@ pub async fn leave(State(state): State<Shared>) -> Result<StatusCode, ApiError> 
 }
 
 /// Joining a trunk takes part in its timing, so it is logged like a command, under no device.
-fn log_trunk(state: &Shared, trunk: &Trunk, done: &str) {
+pub(super) fn log_trunk(state: &Shared, trunk: &Trunk, done: &str) {
     let trunk_itself = ObjectIdentifier::new(ObjectType::DEVICE, WILDCARD_INSTANCE)
         .expect("wildcard instance is valid");
     let text = format!(

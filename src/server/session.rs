@@ -228,6 +228,11 @@ impl AppState {
         }
         if let Some(old) = current.take() {
             old.connection.close_when_idle(REQUESTS_END_WAIT).await?;
+            // a search over IP leaves the trunk as the button does, and the log says so
+            #[cfg(not(target_os = "android"))]
+            if let Key::Mstp(trunk) = &old.key {
+                super::serial::log_trunk(self, trunk, "Left");
+            }
         }
         let connection = open().await?;
         self.capture.follow(&connection.client);
