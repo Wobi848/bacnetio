@@ -169,6 +169,15 @@ export const actions = {
   "site-rename-cancel": () => { state.renamingSite = null; render(); },
   // a new site starts with a search; the network form says where
   "site-new": () => { enter("workspace"); actions.network(); },
+  // on a phone the guide stands below the list: it comes into view when chosen
+  "help-guide": (element) => {
+    state.helpGuide = element.dataset.guide;
+    if (state.area === "help") render();
+    else enter("help");
+    document.getElementById("help-guide")?.scrollIntoView({ block: "nearest" });
+  },
+  // a guide only opens the place of its first step, it never acts
+  "help-go": (element) => (element.dataset.target === "network" ? actions["site-new"]() : enter(element.dataset.target)),
   "export-menu": () => { state.menu = state.menu === "export" ? null : "export"; render(); },
   "stop-running": () => stopRunning(),
   "read-all": () => readAllDevices().then((failed) => { if (failed) toast(t("ede.siteFailed", { n: failed }), true); }),

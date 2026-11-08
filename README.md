@@ -18,7 +18,7 @@ browser (`--web-port`, `--no-browser`, `--data-dir` for the write log, recording
 references). The interface follows mbusio's: a sidebar with the adapter, the search settings and
 the areas and a search across the site, a page head with the one next step, a tree, table and
 details side by side, a status bar,
-light and dark theme, the system's language (English or German), keys `1`–`6`, `/`, arrows.
+light and dark theme, the system's language (English or German), keys `1`–`6`, `/`, `?` (help), arrows.
 
 - **Workspace**: the tree of the site beside the table of what is chosen in it, and its details. With
   the site chosen, the table is the device list: Who-Is plus every address asked directly; plant subnet (VPN), BBMD, port and a
@@ -50,6 +50,8 @@ light and dark theme, the system's language (English or German), keys `1`–`6`,
   list's filter.
 - **Sites**: each site searched is kept, named by you, opened again, saved to and read from a file;
   its points grouped by the paths in their names or by your own pattern.
+- **Help**: guides for the usual tasks in the program, under *Settings* in the sidebar or with the
+  key `?`; each names the buttons as the interface shows them and leads to the first step.
 - **Extensions**: plugins installed from one file each under *Settings → Extensions*; each gets a
   page in the sidebar and can mark devices and points in the lists. A plugin reads only, it can
   never write to the plant. Writing a plugin: [docs/plugins.md](docs/plugins.md).

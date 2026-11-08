@@ -2,6 +2,7 @@
 // { title, lead, next, html }; the shell draws the sidebar, page head and status bar around it.
 
 import { api } from "./api.js";
+import { viewHelp } from "./help.js";
 import { viewLog } from "./log.js";
 import { syncFrames } from "./plugin-frames.js";
 import { isPluginArea, pluginDialogHtml, viewPlugin } from "./plugins.js";
@@ -16,8 +17,9 @@ import { measureCharts } from "./chart.js";
 import { placeMenus } from "./menus.js";
 import { nextbarHtml, searchDialog, sideHtml, statusHtml } from "./shell.js";
 
-/** The areas in the order of their keys 1 to 6; the sites are reached from the top of the sidebar. */
-export const AREAS = ["workspace", "problems", "watch", "recording", "log", "settings", "sites"];
+/** The areas in the order of their keys 1 to 6; the sites are reached from the top of the sidebar,
+ * the help from its foot and with the key ?. */
+export const AREAS = ["workspace", "problems", "watch", "recording", "log", "settings", "sites", "help"];
 /** Addresses of the pages the workspace replaced, so that old links and bookmarks still lead there. */
 const FORMER_AREAS = ["overview", "devices", "points"];
 
@@ -209,10 +211,12 @@ export const state = {
   priorityNames: {},
   pluginReplacing: null,
   pluginRemoving: null,
+  /** The guide open in the help (help.js). */
+  helpGuide: "find",
   error: null,
 };
 
-const VIEWS = { workspace: viewWorkspace, problems: viewProblems, watch: viewWatch, recording: viewRecording, log: viewLog, settings: viewSettings, sites: viewSites };
+const VIEWS = { workspace: viewWorkspace, problems: viewProblems, watch: viewWatch, recording: viewRecording, log: viewLog, settings: viewSettings, sites: viewSites, help: viewHelp };
 
 /** Scroll positions and the focused field survive a redraw: the working context stays. */
 function remember() {
