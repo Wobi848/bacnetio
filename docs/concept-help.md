@@ -113,7 +113,8 @@ program, with guides for the usual tasks."
 
 1. [x] Help page, navigation, `?` key, the key overview and the first three guides (find devices,
    VPN, write and release) in English and German, with the tests
-2. [ ] The other guides
+2. [x] The other guides: read points, BBMD, MS/TP, watch list, recording, reference and comparison,
+   files, capture, sites, extensions
 3. [ ] French, Italian and Spanish: until they have help texts of their own, they show the English
    guides; their interface words around the guides are drafts like the rest
 4. [x] README (Usage) points to the help

@@ -33,6 +33,18 @@ export default {
     assert.equal(await page.textContent("#help-guide-title"), "Tasten");
     assert.equal(await page.evaluate(() => location.hash), "#/help");
 
+    // every guide opens, and each button leads to its place
+    const guides = await page.$$eval("button[data-act=help-guide]", (buttons) => buttons.map((button) => button.dataset.guide));
+    assert.equal(guides.length, 14);
+    for (const [guide, hash] of [["watch", "#/watch"], ["record", "#/recording"], ["capture", "#/settings"], ["sites", "#/sites"]]) {
+      await page.goto(`${base}/#/help`);
+      await page.click(`button[data-guide=${guide}]`);
+      await page.waitForSelector(".help-steps li");
+      await page.click("button[data-act=help-go]");
+      await page.waitForFunction((want) => location.hash === want, hash);
+    }
+    await page.goto(`${base}/#/help`);
+
     // the guide that writes leads to the values held, without writing anything
     await page.click("button[data-guide=write]");
     await page.click("button[data-act=help-go]");

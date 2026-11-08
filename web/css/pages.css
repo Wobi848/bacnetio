@@ -146,7 +146,7 @@ label.button:hover { background: var(--accent-soft); border-color: var(--accent)
 .help-list { gap: 6px; }
 .help-list .cap { margin: 8px 0 0; color: var(--muted); font-size: 11.5px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; }
 .help-list .cap:first-child { margin-top: 0; }
-.help-list button { justify-content: flex-start; height: auto; min-height: 36px; padding: 6px 12px; text-align: left; white-space: normal; }
+.help-list button { align-self: stretch; justify-content: flex-start; height: auto; min-height: 36px; padding: 6px 12px; text-align: left; white-space: normal; }
 .help-guide { line-height: 1.5; }
 .help-guide h2, .help-guide h3, .help-guide p { margin: 0; }
 .help-steps, .help-causes { display: grid; gap: 6px; margin: 0; padding-left: 1.4em; }
