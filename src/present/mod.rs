@@ -257,7 +257,7 @@ pub(super) fn sentence_case(constant: &str) -> String {
     }
 }
 
-fn is_binary(object_type: ObjectType) -> bool {
+pub(crate) fn is_binary(object_type: ObjectType) -> bool {
     [
         ObjectType::BINARY_INPUT,
         ObjectType::BINARY_OUTPUT,

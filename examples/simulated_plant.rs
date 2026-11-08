@@ -35,7 +35,19 @@ fn objects() -> Vec<Box<dyn BACnetObject>> {
     let filter = BinaryInputObject::new(1, "Filter alarm").unwrap();
     let mut valve = AnalogOutputObject::new(1, "Heating valve", EngineeringUnits::PERCENT).unwrap();
     valve.set_relinquish_default(35.0).unwrap();
-    let fan = BinaryOutputObject::new(1, "Supply fan enable").unwrap();
+    let mut fan = BinaryOutputObject::new(1, "Supply fan enable").unwrap();
+    for (property, text) in [
+        (PropertyIdentifier::INACTIVE_TEXT, "Off"),
+        (PropertyIdentifier::ACTIVE_TEXT, "On"),
+    ] {
+        fan.write_property(
+            property,
+            None,
+            PropertyValue::CharacterString(text.into()),
+            None,
+        )
+        .unwrap();
+    }
     let mut setpoint = AnalogValueObject::new(1, "Supply air setpoint", celsius).unwrap();
     setpoint.set_relinquish_default(20.0).unwrap();
     let mut mode = MultiStateValueObject::new(1, "Operating mode", 4).unwrap();

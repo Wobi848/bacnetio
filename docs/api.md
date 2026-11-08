@@ -209,6 +209,9 @@ simply waits.
 
 - `state_texts`: texts of a multi-state object's states, from state 1 on; `value` already shows
   the text. Values from other calls still say `"state 2"`, so the UI looks the text up here.
+- `binary_texts`: a binary object's inactive and active text, in this order; empty when it has none
+- `notification_class`: the notification class of an object that reports alarms by itself (analog,
+  binary, multi-state and loop objects are asked), or `null`
 - `type`: BACnet object type number (0 analog input, 1 analog output, 2 analog value, 3 binary
   input, 4 binary output, 5 binary value, 13/14/19 multi-state input/output/value, ...)
 - `status`: set status flags in words (`alarm`, `fault`, `overridden`, `out of service`); empty
@@ -245,12 +248,15 @@ it again, with empty `notes`. After a restart it answers the points remembered i
 `null` if the device was not read since the last search. The UI uses it after a reload.
 
 `GET /api/devices/{instance}/points.ede.csv` downloads the last reading as EDE file (Engineering
-Data Exchange, B.I.G.-EU layout 2.2, semicolon, UTF-8) for management systems. `409` if the
-points were not read yet.
+Data Exchange, B.I.G.-EU layout 2.3, semicolon, UTF-8) for management systems
+(docs/concept-ede.md). `409` if the points were not read yet.
 
-`?project=` gives the file's project name (default: the device's name). `settable` says what the
+`?project=` gives the file's project name (default: the device's name); the files are named after
+it, `<project>_EDE.csv` and `<project>_StateTexts.csv`, as the layout asks. `settable` says what the
 object type allows (`Y` for outputs and values, `N` otherwise). `state-text-reference` points into
-`GET /api/devices/{instance}/points.ede-states.csv`, the state text file that goes with it.
+`GET /api/devices/{instance}/points.ede-states.csv` (same `?project=`), the state text file that
+goes with it: multi-state texts and binary inactive and active texts, never in the same row.
+`notification-class` is the object's Notification_Class, empty for one that does not report alarms.
 `supports COV` and the limits stay empty, because reading them would take many more requests.
 
 `POST /api/devices/{instance}/instance` `{ "instance": 1234 }` gives the device a new device ID, logged
@@ -370,7 +376,8 @@ A finished search on another network or trunk, like opening another site, starts
 points read before.
 
 `GET /api/site.ede.csv` and `GET /api/site.ede-states.csv` download the same for all devices read
-since bacnetio started, sorted by device. `409` if none was read. The interface reads the devices not read yet before it asks for it.
+since bacnetio started, sorted by device; without `?project=` the files are `site_EDE.csv` and
+`site_StateTexts.csv`. `409` if none was read. The interface reads the devices not read yet before it asks for it.
 
 `GET /api/devices/{instance}/points-priorities.csv` downloads the point list CSV with two more
 columns: `Winning priority` and `Set priorities` (`8=21.5 °C | 16=0`). It reads the priority array of
