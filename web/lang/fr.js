@@ -255,6 +255,7 @@ export default {
   /** Known server errors by key (patterns in i18n.js); others stay English. */
   errors: {
     scheduleKind: "Impossible de savoir quel type de valeur ce programme horaire accepte : ni sa valeur par défaut ni sa semaine n'en donnent.",
+    choosePriority: "Cet objet a un tableau de priorités : choisissez une priorité.",
     patternTooLong: "Un modèle de regroupement a au plus $1 caractères.",
     xlsxHeads: "Les en-têtes doivent être un objet JSON de textes.",
     xlsxHeadsLong: "Au plus $1 en-têtes d'au plus $2 caractères.",

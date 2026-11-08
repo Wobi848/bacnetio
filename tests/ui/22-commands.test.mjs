@@ -53,6 +53,11 @@ export default {
     assert.ok((await api("held")).some((entry) => entry.type === 0 && entry.instance === 2));
     await api("devices/1001/objects/0/2/property", "POST", { property_id: 81, data_type: "boolean", value: "false" });
     assert.equal((await api("held")).length, 0);
+    // a value without priority on an object with a priority array would stay in the plant unheld
+    const unheld = await page.request.post(`${base}/api/devices/1001/objects/1/1/write`, { data: { value: "40" } });
+    assert.equal(unheld.status(), 400);
+    assert.match(await unheld.text(), /choose a priority/);
+    assert.equal((await api("held")).length, 0);
     // a bad kind is refused
     const bad = await page.request.post(`${base}/api/devices/1001/restart`, { data: { kind: "hot" } });
     assert.equal(bad.status(), 400);

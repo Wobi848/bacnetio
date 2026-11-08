@@ -248,6 +248,7 @@ export default {
   /** Known server errors by key (patterns in i18n.js) where English says it better than the server. */
   errors: {
     scheduleKind: "Which kind of value this schedule takes cannot be told: its default value and its week give none.",
+    choosePriority: "This object has a priority array: choose a priority.",
     mstpPermission: "No permission to open $1: add yourself to the group dialout (sudo usermod -aG dialout $USER) and log in again.",
     refusedWriteAccess: "The device does not allow this to be changed (write-access-denied).",
     refusedPassword: "The device refused: wrong or missing password (password-failure).",

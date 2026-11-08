@@ -490,8 +490,10 @@ read again after the write.
 - `value` as typed: a number for analog objects (`,` or `.`), `active`/`inactive` (or `on`/`off`,
   `1`/`0`) for binary objects, a state number from 1 for multi-state objects. Other object types
   are refused for now.
-- `priority`: 1 to 16. Leave it out only for objects that are not commandable. 8 (manual operator)
-  is the usual choice for a technician.
+- `priority`: 1 to 16. Leave it out only for objects that are not commandable: without it, the
+  device is asked whether the object has a priority array, and if it has, the write is refused with
+  `400` (`this object has a priority array: choose a priority`), as the device would take 16 and
+  the value would not be held. 8 (manual operator) is the usual choice for a technician.
 
 `POST /api/devices/{instance}/objects/{type}/{instance}/release`
 

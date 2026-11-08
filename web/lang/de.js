@@ -267,6 +267,7 @@ export default {
   /** Known server errors by key (patterns in i18n.js); others stay English. */
   errors: {
     scheduleKind: "Welche Art von Wert dieser Zeitplan nimmt, lässt sich nicht erkennen: Weder sein Standardwert noch seine Woche nennen einen.",
+    choosePriority: "Dieses Objekt hat eine Prioritätenliste: Wähle eine Priorität.",
     patternTooLong: "Ein Gruppierungsmuster hat höchstens $1 Zeichen.",
     xlsxHeads: "Die Spaltenüberschriften müssen ein JSON-Objekt aus Texten sein.",
     xlsxHeadsLong: "Höchstens $1 Überschriften mit höchstens $2 Zeichen.",
