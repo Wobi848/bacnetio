@@ -366,6 +366,8 @@ back, keeps it and shows it; anything else gets `400`.
 
 `GET /api/site/points` answers the points of every device read, by device ID:
 `{ "21": { "points": [ … ] } }`, read since the start or else as remembered, without asking a device.
+A finished search on another network or trunk, like opening another site, starts without the
+points read before.
 
 `GET /api/site.ede.csv` and `GET /api/site.ede-states.csv` download the same for all devices read
 since bacnetio started, sorted by device. `409` if none was read. The interface reads the devices not read yet before it asks for it.

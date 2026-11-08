@@ -242,6 +242,7 @@ impl AppState {
         tokio::spawn(keep_devices_known(
             Arc::clone(self),
             Arc::downgrade(&connection.client),
+            matches!(key, Key::Mstp(_)),
         ));
         let found = (
             Arc::clone(&connection.client),
@@ -355,7 +356,9 @@ async fn follow_notifications(
 /// and then every request to it fails. Before that, ask each known device again, or for one that
 /// only answers at its address, note it again; a device that no longer answers is forgotten.
 /// Holds the client only weakly between rounds, so a search on another adapter can close it.
-async fn keep_devices_known(state: Shared, client: Weak<Client>) {
+/// Only devices of the client's own link: a device found over IP is not on the trunk, and its
+/// address means nothing there.
+async fn keep_devices_known(state: Shared, client: Weak<Client>, on_trunk: bool) {
     let mut ticks = tokio::time::interval(KEEP_KNOWN_EVERY);
     ticks.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
     loop {
@@ -374,6 +377,7 @@ async fn keep_devices_known(state: Shared, client: Weak<Client>) {
             .lock()
             .expect("devices lock")
             .iter()
+            .filter(|device| matches!(device.address, Address::Mstp(_)) == on_trunk)
             .map(|device| {
                 let by_address = !device.answered_who_is && device.remote.is_none();
                 (device.instance, by_address.then_some(device.address))
