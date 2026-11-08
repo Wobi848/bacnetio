@@ -140,7 +140,7 @@ export function updateNoteHtml(state) {
 }
 
 export function sideHtml(state) {
-  // the keys 1 to 6 choose the areas in this order, settings last (app.js)
+  // the keys 1 to 6 choose the areas in this order, settings last (keys.js)
   const listed = ["workspace", "problems", "watch", "recording", "log"];
   const areas = listed.map((area, index) => tab(state, area, index + 1)).join("");
   const settingsCurrent = state.area === "settings" ? ' aria-current="page"' : "";
