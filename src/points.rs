@@ -6,7 +6,9 @@ use std::fmt;
 use std::time::{Duration, Instant};
 
 use bacnet_types::constructed::{PropertyReference, ReadAccessSpecification};
-use bacnet_types::enums::{EngineeringUnits, ErrorClass, ErrorCode, PropertyIdentifier};
+use bacnet_types::enums::{
+    EngineeringUnits, ErrorClass, ErrorCode, ObjectType, PropertyIdentifier,
+};
 use bacnet_types::error::{Error, RemoteError};
 use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
 use serde::Serialize;
@@ -25,6 +27,20 @@ const PROPERTIES: [PropertyIdentifier; 5] = [
     PropertyIdentifier::UNITS,
     PropertyIdentifier::STATUS_FLAGS,
     PropertyIdentifier::DESCRIPTION,
+];
+/// The objects a plant alarms on, whose notification class the EDE file names. Asked of these only:
+/// on a device without ReadPropertyMultiple every property costs a request of its own.
+const REPORTING: [ObjectType; 10] = [
+    ObjectType::ANALOG_INPUT,
+    ObjectType::ANALOG_OUTPUT,
+    ObjectType::ANALOG_VALUE,
+    ObjectType::BINARY_INPUT,
+    ObjectType::BINARY_OUTPUT,
+    ObjectType::BINARY_VALUE,
+    ObjectType::LOOP,
+    ObjectType::MULTI_STATE_INPUT,
+    ObjectType::MULTI_STATE_OUTPUT,
+    ObjectType::MULTI_STATE_VALUE,
 ];
 /// Objects without any answer in a row before the device counts as gone.
 const GIVE_UP_AFTER_SILENT_OBJECTS: usize = 3;
@@ -49,6 +65,10 @@ pub struct Point {
     pub status: Option<StatusFlags>,
     /// Texts of a multi-state object's states, from state 1 on.
     pub state_texts: Vec<String>,
+    /// A binary object's Inactive_Text and Active_Text, in this order; empty when it has none.
+    pub binary_texts: Vec<String>,
+    /// The Notification_Class of an object that reports alarms by itself.
+    pub notification_class: Option<u32>,
     /// The first thing that went wrong reading this object.
     pub error: Option<String>,
 }
@@ -325,15 +345,28 @@ impl Point {
             units: None,
             status: None,
             state_texts: Vec::new(),
+            binary_texts: Vec::new(),
+            notification_class: None,
             error: None,
         }
     }
 
-    /// What is read of this object: multi-state objects also name their states.
+    /// What is read of this object: multi-state and binary objects also name their states, and
+    /// objects that alarm their notification class.
     fn properties(&self) -> Vec<PropertyIdentifier> {
+        let kind = self.object.object_type();
         let mut properties = PROPERTIES.to_vec();
-        if present::is_multistate(self.object.object_type()) {
+        if present::is_multistate(kind) {
             properties.push(PropertyIdentifier::STATE_TEXT);
+        }
+        if present::is_binary(kind) {
+            properties.extend([
+                PropertyIdentifier::INACTIVE_TEXT,
+                PropertyIdentifier::ACTIVE_TEXT,
+            ]);
+        }
+        if REPORTING.contains(&kind) {
+            properties.push(PropertyIdentifier::NOTIFICATION_CLASS);
         }
         properties
     }
@@ -368,6 +401,15 @@ impl Point {
             (PropertyIdentifier::STATUS_FLAGS, PropertyValue::BitString { data, .. }) => {
                 self.status = Some(StatusFlags::from_bits(&data))
             }
+            (PropertyIdentifier::INACTIVE_TEXT, PropertyValue::CharacterString(text)) => {
+                self.binary_text(0, text)
+            }
+            (PropertyIdentifier::ACTIVE_TEXT, PropertyValue::CharacterString(text)) => {
+                self.binary_text(1, text)
+            }
+            (PropertyIdentifier::NOTIFICATION_CLASS, PropertyValue::Unsigned(class)) => {
+                self.notification_class = u32::try_from(class).ok()
+            }
             (property, other) => self.fail(
                 property,
                 &format!(
@@ -376,6 +418,12 @@ impl Point {
                 ),
             ),
         }
+    }
+
+    /// Inactive (0) or active (1) text; the other keeps its place, empty until it comes.
+    fn binary_text(&mut self, index: usize, text: String) {
+        self.binary_texts.resize(2, String::new());
+        self.binary_texts[index] = text;
     }
 
     /// The device answered with an error. A property the object does not have is normal.

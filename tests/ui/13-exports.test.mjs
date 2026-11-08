@@ -24,13 +24,17 @@ export default {
     assert.equal(points.name, "device-1001.csv");
     assert.match(points.text, /Heating valve/);
     const ede = await download(page, ".toolbar a[href$='points.ede.csv']");
-    assert.equal(ede.name, "device-1001-ede.csv");
+    assert.equal(ede.name, "AHU-01_EDE.csv");
     assert.match(ede.text, /^#Engineering-Data-Exchange/);
     assert.match(ede.text, /1001_Heating valve;1001;Heating valve;1;1;/);
     const states = await download(page, ".toolbar a[href$='points.ede-states.csv']");
-    assert.equal(states.name, "device-1001-ede-states.csv");
+    assert.equal(states.name, "AHU-01_StateTexts.csv");
     assert.match(states.text, /^#Reference Number;/);
     assert.match(ede.text, /Operating mode;19;\d+;[^\r\n]*;Y;;;;\d+;/);
+    // layout 2.3; a binary object refers to its inactive and active text, in a row of their own
+    assert.match(ede.text, /VERSION_OF_LAYOUT;2\.3/);
+    const fanText = ede.text.match(/Supply fan enable;4;1;[^\r\n]*?;Y;;;;(\d+);/)[1];
+    assert.match(states.text, new RegExp(`\\n${fanText};Off;On\\r?\\n`));
     // the priority that wins now and every set slot, read from the device
     await api("devices/1001/objects/1/1/write", "POST", { value: "40", priority: 8 });
     const held = await download(page, ".toolbar a[href$='points-priorities.csv']");
@@ -49,7 +53,7 @@ export default {
     // the whole site: the device not read yet is read first
     await showSite(page);
     const site = await download(page, "button[data-act=site-ede]");
-    assert.equal(site.name, "site-ede.csv");
+    assert.equal(site.name, "127.0.0.0-29_EDE.csv");
     assert.match(site.text, /\r?\n1001_Heating valve;1001;/);
     assert.match(site.text, /\r?\n21_[^;]*;21;/);
   },

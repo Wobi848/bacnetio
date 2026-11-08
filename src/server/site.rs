@@ -407,6 +407,10 @@ struct CheckedPoint {
     _units: Option<String>,
     #[serde(default, rename = "state_texts")]
     _state_texts: Vec<String>,
+    #[serde(default, rename = "binary_texts")]
+    _binary_texts: Vec<String>,
+    #[serde(default, rename = "notification_class")]
+    _notification_class: Option<u32>,
 }
 
 #[derive(Deserialize)]

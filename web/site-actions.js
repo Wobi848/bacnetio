@@ -4,6 +4,7 @@ import { api } from "./api.js";
 import { excelHref } from "./excel.js";
 import { saveMemory } from "./memory.js";
 import { searchScope } from "./shell.js";
+import { openSiteOf, siteName } from "./sites.js";
 import { go, render, state, toast } from "./store.js";
 import { t } from "./i18n.js";
 
@@ -149,13 +150,16 @@ export async function exportSiteEde() {
   try {
     const failed = await readAllDevices();
     if (state.stopping) return;
+    // the project an EDE file names: the site's own name, else where it was searched
+    const site = openSiteOf(state);
+    const project = encodeURIComponent((site && siteName(site)) || searchScope(state));
     const link = document.createElement("a");
-    link.href = `/api/site.ede.csv?project=${encodeURIComponent(searchScope(state))}`;
+    link.href = `/api/site.ede.csv?project=${project}`;
     link.download = "";
     link.click();
     // browsers keep a second download from starting at the same moment
     await pause(300);
-    link.href = "/api/site.ede-states.csv";
+    link.href = `/api/site.ede-states.csv?project=${project}`;
     link.click();
     if (failed) toast(t("ede.siteFailed", { n: failed }), true);
   } catch (error) {

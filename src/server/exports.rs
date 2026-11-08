@@ -50,6 +50,31 @@ pub struct EdeQuery {
     project: Option<String>,
 }
 
+/// A download under this file name. The name may hold any letter: it goes as `filename*` in UTF-8,
+/// with a plain fallback for the rest.
+fn attachment(name: &str) -> String {
+    let plain: String = name
+        .chars()
+        .map(|c| {
+            if c.is_ascii_graphic() && c != '"' && c != '\\' || c == ' ' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect();
+    let encoded: String = name
+        .bytes()
+        .map(|byte| match byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'.' | b'_' => {
+                (byte as char).to_string()
+            }
+            _ => format!("%{byte:02X}"),
+        })
+        .collect();
+    format!("attachment; filename=\"{plain}\"; filename*=UTF-8''{encoded}")
+}
+
 fn device_project(state: &Shared, device: u32, query: EdeQuery) -> String {
     query.project.unwrap_or_else(|| {
         state
@@ -74,7 +99,11 @@ pub async fn points_ede(
     let points = readings
         .get(&device)
         .ok_or_else(|| ApiError::conflict("read the device's points first"))?;
-    let disposition = format!("attachment; filename=\"device-{device}-ede.csv\"");
+    let disposition = attachment(&ede::file_name(
+        &project,
+        &format!("device-{device}"),
+        "EDE",
+    ));
     Ok((
         [
             (header::CONTENT_TYPE, "text/csv; charset=utf-8".to_string()),
@@ -98,19 +127,16 @@ pub async fn site_ede(
         .map(|(device, points)| (*device, points.as_slice()))
         .collect();
     devices.sort_by_key(|(device, _)| *device);
+    let project = query.project.unwrap_or_default();
     Ok((
         [
             (header::CONTENT_TYPE, "text/csv; charset=utf-8".to_string()),
             (
                 header::CONTENT_DISPOSITION,
-                "attachment; filename=\"site-ede.csv\"".to_string(),
+                attachment(&ede::file_name(&project, "site", "EDE")),
             ),
         ],
-        ede::ede_csv(
-            query.project.as_deref().unwrap_or_default(),
-            &devices,
-            std::time::SystemTime::now(),
-        ),
+        ede::ede_csv(&project, &devices, std::time::SystemTime::now()),
     ))
 }
 
@@ -118,12 +144,18 @@ pub async fn site_ede(
 pub async fn points_ede_states(
     State(state): State<Shared>,
     Path(device): Path<u32>,
+    Query(query): Query<EdeQuery>,
 ) -> Result<impl IntoResponse, ApiError> {
+    let project = device_project(&state, device, query);
     let readings = state.readings.lock().expect("readings lock");
     let points = readings
         .get(&device)
         .ok_or_else(|| ApiError::conflict("read the device's points first"))?;
-    let disposition = format!("attachment; filename=\"device-{device}-ede-states.csv\"");
+    let disposition = attachment(&ede::file_name(
+        &project,
+        &format!("device-{device}"),
+        "StateTexts",
+    ));
     Ok((
         [
             (header::CONTENT_TYPE, "text/csv; charset=utf-8".to_string()),
@@ -134,7 +166,10 @@ pub async fn points_ede_states(
 }
 
 /// The state texts that belong to the site's EDE file.
-pub async fn site_ede_states(State(state): State<Shared>) -> Result<impl IntoResponse, ApiError> {
+pub async fn site_ede_states(
+    State(state): State<Shared>,
+    Query(query): Query<EdeQuery>,
+) -> Result<impl IntoResponse, ApiError> {
     let readings = state.readings.lock().expect("readings lock");
     if readings.is_empty() {
         return Err(ApiError::conflict("read the devices' points first"));
@@ -149,7 +184,11 @@ pub async fn site_ede_states(State(state): State<Shared>) -> Result<impl IntoRes
             (header::CONTENT_TYPE, "text/csv; charset=utf-8".to_string()),
             (
                 header::CONTENT_DISPOSITION,
-                "attachment; filename=\"site-ede-states.csv\"".to_string(),
+                attachment(&ede::file_name(
+                    query.project.as_deref().unwrap_or_default(),
+                    "site",
+                    "StateTexts",
+                )),
             ),
         ],
         ede::state_texts_csv(&devices),

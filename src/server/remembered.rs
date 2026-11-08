@@ -36,6 +36,10 @@ struct RememberedPoint {
     #[serde(default)]
     state_texts: Vec<String>,
     #[serde(default)]
+    binary_texts: Vec<String>,
+    #[serde(default)]
+    notification_class: Option<u32>,
+    #[serde(default)]
     error: Option<String>,
 }
 
@@ -106,6 +110,8 @@ fn point(remembered: RememberedPoint) -> Option<Point> {
         name: remembered.name,
         description: remembered.description,
         state_texts: remembered.state_texts,
+        binary_texts: remembered.binary_texts,
+        notification_class: remembered.notification_class,
         error: remembered.error,
     })
 }

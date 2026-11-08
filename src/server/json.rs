@@ -163,6 +163,10 @@ pub struct PointView {
     pub status: String,
     /// Texts of a multi-state object's states, from state 1 on; `value` already uses them.
     pub state_texts: Vec<String>,
+    /// A binary object's inactive and active text, in this order; empty when it has none.
+    pub binary_texts: Vec<String>,
+    /// The notification class of an object that reports alarms by itself.
+    pub notification_class: Option<u32>,
     pub error: Option<String>,
 }
 
@@ -176,6 +180,8 @@ impl PointView {
             units: point.units.map(present::unit_text),
             status: present::status_text(point.status),
             state_texts: point.state_texts.clone(),
+            binary_texts: point.binary_texts.clone(),
+            notification_class: point.notification_class,
             error: point.error.clone(),
         }
     }
