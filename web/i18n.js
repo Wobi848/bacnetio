@@ -69,6 +69,7 @@ const ERROR_PATTERNS = [
   [/^a device behind a router needs its device ID$/, "routedNeedsId"],
   [/^a stop lasts at least one minute$/, "stopMinute"],
   [/^give a name to ask for$/, "noName"],
+  [/^cannot tell which kind of value this schedule takes$/, "scheduleKind"],
   [/^this is not a bacnetio site file$/, "notSiteFile"],
   [/^read the devices' points first$/, "readAllFirst"],
   [/^bacnetio has no data folder to save to$/, "noDataFolder"],
