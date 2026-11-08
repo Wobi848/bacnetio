@@ -165,7 +165,10 @@ mod tests {
         assert!(second.ends_with(" (2)") && second.chars().count() <= 31);
         assert_eq!(sheet_name("DDC4000/#21", &[]), "DDC4000_#21");
         assert_eq!(sheet_name("", &[]), "Sheet");
-        assert_eq!(sheet_name("LÜFTUNG", &["Lüftung".to_string()]), "LÜFTUNG (2)");
+        assert_eq!(
+            sheet_name("LÜFTUNG", &["Lüftung".to_string()]),
+            "LÜFTUNG (2)"
+        );
     }
 
     /// A part of the file, as XML text.
