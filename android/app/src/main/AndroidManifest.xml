@@ -19,7 +19,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="bacnetio"
         android:usesCleartextTraffic="true"
-        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+        android:theme="@style/Bacnetio">
 
         <activity
             android:name=".MainActivity"
