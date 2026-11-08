@@ -247,6 +247,8 @@ pub struct EntryView {
     pub error: Option<String>,
     /// Where the device was reached, for people: `10.0.0.20`, `MS/TP 5`; `None` behind a router.
     pub address: Option<String>,
+    /// The entry stopped the device's communication without end: held until it talks again.
+    pub stops_communication: bool,
 }
 
 impl EntryView {
@@ -264,6 +266,7 @@ impl EntryView {
             value,
             error: entry.error.clone(),
             address: entry.address.map(|address| address.shown()),
+            stops_communication: entry.is_communication_stop(),
         }
     }
 }

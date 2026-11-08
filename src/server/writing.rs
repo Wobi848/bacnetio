@@ -274,7 +274,11 @@ pub(super) async fn journaled(
     action: Action,
 ) -> Result<(), ApiError> {
     let address = held_address(state, device);
-    let client = state.client_for(device, address).await?;
+    let client = if action.lets_talk_again() {
+        state.client_for_silent(device, address).await?
+    } else {
+        state.client_for(device, address).await?
+    };
     // the device whose details the interface shows: the first in the list with this ID
     let listed = state
         .devices

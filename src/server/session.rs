@@ -139,28 +139,58 @@ impl AppState {
         device: u32,
         address: Option<Address>,
     ) -> Result<Arc<Client>, ApiError> {
-        // a value held over a trunk is released over that trunk: bacnetio joins one only after
-        // listening, never by itself (docs/concept-mstp.md)
-        let on_trunk = self.trunk().await.is_some();
-        if let Some(reason) = other_link(device, address, on_trunk) {
-            return Err(ApiError::conflict(reason));
-        }
-        let client = match self.client().await {
-            Ok(client) => client,
-            Err(_) => {
-                let (_, endpoint) = NetworkRequest::default().endpoint(self.loopback)?;
-                self.connect(&endpoint)
-                    .await
-                    .map_err(|error| ApiError::device(format!("{error:#}")))?
-                    .0
-            }
-        };
+        let client = self.reachable_client(device, address).await?;
         if client.get_device(device).await.is_none() {
             scan::locate(&client, Some(device), address, scan::DEFAULT_WHO_IS_WAIT)
                 .await
                 .map_err(|error| ApiError::device(format!("{error:#}")))?;
         }
         Ok(client)
+    }
+
+    /// As `client_for`, for a device whose communication bacnetio stopped: it answers nothing but
+    /// the command to talk again, so it is taken as being at `address` without asking.
+    pub async fn client_for_silent(
+        self: &Arc<Self>,
+        device: u32,
+        address: Option<Address>,
+    ) -> Result<Arc<Client>, ApiError> {
+        let Some(address) = address else {
+            return self.client_for(device, None).await;
+        };
+        let client = self.reachable_client(device, Some(address)).await?;
+        if client.get_device(device).await.is_none() {
+            client
+                .add_device(device, &address.mac())
+                .await
+                .map_err(|error| ApiError::device(format!("{error:#}")))?;
+        }
+        Ok(client)
+    }
+
+    /// The open client, or one on the default adapter, on the link the device was reached over.
+    async fn reachable_client(
+        self: &Arc<Self>,
+        device: u32,
+        address: Option<Address>,
+    ) -> Result<Arc<Client>, ApiError> {
+        // a value held over a trunk is released over that trunk: bacnetio joins one only after
+        // listening, never by itself (docs/concept-mstp.md)
+        let on_trunk = self.trunk().await.is_some();
+        if let Some(reason) = other_link(device, address, on_trunk) {
+            return Err(ApiError::conflict(reason));
+        }
+        match self.client().await {
+            Ok(client) => Ok(client),
+            Err(_) => {
+                let (_, endpoint) = NetworkRequest::default().endpoint(self.loopback)?;
+                Ok(self
+                    .connect(&endpoint)
+                    .await
+                    .map_err(|error| ApiError::device(format!("{error:#}")))?
+                    .0)
+            }
+        }
     }
 
     /// Reuses the open connection if it has the same endpoint, else replaces it.

@@ -39,6 +39,19 @@ pub enum Action {
     },
 }
 
+impl Action {
+    /// Lets a device talk again: it does not answer before, so it is not asked where it is.
+    pub fn lets_talk_again(&self) -> bool {
+        matches!(
+            self,
+            Action::Command {
+                kind: Command::Communication { enable: true, .. },
+                ..
+            }
+        )
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Command {
     Restart(Restart),
@@ -76,6 +89,23 @@ impl Entry {
         }
     }
 
+    /// Whether this entry stopped the device's communication for good (`Some(true)`) or let it
+    /// talk again (`Some(false)`); a stop for some minutes ends by itself and holds nothing.
+    fn stops_communication(&self) -> Option<bool> {
+        match &self.action {
+            Action::Command {
+                kind: Command::Communication { enable, minutes },
+                ..
+            } => Some(!enable && minutes.is_none()),
+            _ => None,
+        }
+    }
+
+    /// The device's communication stopped for good by this entry and not let on since.
+    pub fn is_communication_stop(&self) -> bool {
+        self.stops_communication() == Some(true)
+    }
+
     fn same_slot(&self, other: &Entry) -> bool {
         self.device == other.device
             && self.object == other.object
@@ -103,8 +133,8 @@ impl Journal {
         &self.entries
     }
 
-    /// Successful writes at a priority not released since, and objects put out of service and not
-    /// taken back.
+    /// Successful writes at a priority not released since, objects put out of service and not
+    /// taken back, and devices whose communication was stopped for good and not let on again.
     pub fn held(&self) -> Vec<&Entry> {
         self.held_positions()
             .into_iter()
@@ -168,6 +198,19 @@ impl Journal {
                             earlier.out_of_service().is_none() || !earlier.same_slot(entry)
                         });
                         if on {
+                            held.push(position);
+                        }
+                    }
+                }
+                Action::Command { .. } => {
+                    // a stop without end stays in the plant like a value held
+                    if let Some(stops) = entry.stops_communication() {
+                        held.retain(|&earlier| {
+                            let earlier = &entries[earlier];
+                            earlier.stops_communication().is_none()
+                                || earlier.device != entry.device
+                        });
+                        if stops {
                             held.push(position);
                         }
                     }
@@ -501,5 +544,39 @@ mod tests {
         assert_eq!((time.hour, time.minute, time.second), (9, 30, 5));
         assert!(parse_clock("2026-13-01", "09:30:05", 7).is_err());
         assert!(parse_clock("2026-11-01", "9:30", 7).is_err());
+    }
+
+    fn communication(enable: bool, minutes: Option<u16>) -> Action {
+        Action::Command {
+            text: String::new(),
+            password: None,
+            kind: Command::Communication { enable, minutes },
+        }
+    }
+
+    #[test]
+    fn a_communication_stop_without_end_is_held_until_the_device_talks_again() {
+        let mut journal = Journal::default();
+        // a stop for some minutes ends by itself
+        journal.record(entry(None, communication(false, Some(30)), None));
+        assert!(journal.held().is_empty());
+        // a refused stop holds nothing
+        journal.record(entry(
+            None,
+            communication(false, None),
+            Some("password-failure"),
+        ));
+        assert!(journal.held().is_empty());
+        journal.record(entry(None, communication(false, None), None));
+        assert_eq!(journal.held().len(), 1);
+        assert!(journal.held()[0].is_communication_stop());
+        // another device's start does not count
+        journal.record(Entry {
+            device: 2,
+            ..entry(None, communication(true, None), None)
+        });
+        assert_eq!(journal.held().len(), 1);
+        journal.record(entry(None, communication(true, None), None));
+        assert!(journal.held().is_empty());
     }
 }

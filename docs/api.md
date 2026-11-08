@@ -504,8 +504,11 @@ denied`. Every attempt, refused or not, lands in the log.
 
 ## Held values and log
 
-`GET /api/held`: values bacnetio wrote at a priority and has not released yet. Show these before
-the user leaves, with a way to release each.
+`GET /api/held`: what bacnetio left in the plant: values written at a priority and not released,
+objects put out of service and not taken back, and devices whose communication was stopped without
+end and not resumed. Show these before the user leaves, with a way to release each: a stop is
+taken back with `POST .../communication` and `"enable": true`, which reaches the silent device at
+the address it was stopped at without asking it first.
 
 `GET /api/log`: every write and release, oldest first, including earlier sessions. The log is
 appended to `writes.jsonl` in the data folder (`--data-dir`, default `%LOCALAPPDATA%\bacnetio` on
@@ -520,12 +523,14 @@ Both return the same entries:
 [
   {
     "time": 1793534400, "device": 3001, "type": 1, "instance": 1, "object": "Analog output 1",
-    "priority": 8, "action": "write", "value": "42.5", "error": null, "address": "10.0.0.20"
+    "priority": 8, "action": "write", "value": "42.5", "error": null, "address": "10.0.0.20",
+    "stops_communication": false
   }
 ]
 ```
 
-`time` is seconds since 1970 (UTC). `value` is `null` for a release. `address` is where the device
+`time` is seconds since 1970 (UTC). `value` is `null` for a release. `stops_communication` is
+`true` for a stop of the device's communication without end, which stays held until it is resumed. `address` is where the device
 was reached (`10.0.0.20`, `MS/TP 5`), `null` behind a router. A device on an MS/TP trunk is written
 and released only while bacnetio is on a trunk, one on BACnet/IP only while it is not: `409` says
 which, as bacnetio never joins a trunk by itself. `action` is one of five:

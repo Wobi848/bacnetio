@@ -11,7 +11,7 @@ use bacnet_types::enums::{ObjectType, PropertyIdentifier};
 use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
 use serde::{Deserialize, Serialize};
 
-use crate::write::{Action, Entry, parse_clock};
+use crate::write::{Action, Command, Entry, parse_clock};
 
 pub const JOURNAL_FILE: &str = "writes.jsonl";
 
@@ -43,6 +43,10 @@ enum StoredAction {
     /// What a command did, in words; never its password.
     Command {
         text: String,
+        /// A stop or start of the device's communication, so a stop without end is still held
+        /// after a restart. Missing in logs written before, and for other commands.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        communication: Option<StoredCommunication>,
     },
     /// "2026-11-01", "09:30:05", weekday 1 = Monday.
     SetClock {
@@ -50,6 +54,12 @@ enum StoredAction {
         time: String,
         weekday: u8,
     },
+}
+
+#[derive(Serialize, Deserialize)]
+struct StoredCommunication {
+    enable: bool,
+    minutes: Option<u16>,
 }
 
 /// The value types bacnetio writes.
@@ -157,9 +167,20 @@ fn stored(entry: &Entry) -> Option<StoredEntry> {
             property: property.to_raw(),
             value: stored_value(value)?,
         },
-        Action::Command { text, .. } | Action::Noted(text) => {
-            StoredAction::Command { text: text.clone() }
-        }
+        Action::Command { text, kind, .. } => StoredAction::Command {
+            text: text.clone(),
+            communication: match kind {
+                Command::Communication { enable, minutes } => Some(StoredCommunication {
+                    enable: *enable,
+                    minutes: *minutes,
+                }),
+                _ => None,
+            },
+        },
+        Action::Noted(text) => StoredAction::Command {
+            text: text.clone(),
+            communication: None,
+        },
         Action::SetClock { date, time } => StoredAction::SetClock {
             date: format!(
                 "{}-{:02}-{:02}",
@@ -194,7 +215,15 @@ fn entry(stored: StoredEntry) -> Option<Entry> {
             property: PropertyIdentifier::from_raw(property),
             value: property_value(value)?,
         },
-        StoredAction::Command { text } => Action::Noted(text),
+        StoredAction::Command {
+            text,
+            communication: Some(StoredCommunication { enable, minutes }),
+        } => Action::Command {
+            text,
+            password: None,
+            kind: Command::Communication { enable, minutes },
+        },
+        StoredAction::Command { text, .. } => Action::Noted(text),
         StoredAction::SetClock {
             date,
             time,
@@ -278,6 +307,53 @@ mod tests {
         let mut journal = Journal::default();
         entries.into_iter().for_each(|entry| journal.record(entry));
         assert!(journal.held().is_empty());
+    }
+
+    #[test]
+    fn a_communication_stop_without_end_is_still_held_after_a_restart() {
+        let path = temporary("communication");
+        let stop = Entry {
+            object: ObjectIdentifier::new(ObjectType::DEVICE, 3001).unwrap(),
+            priority: None,
+            action: Action::Command {
+                text: "communication off".to_string(),
+                password: Some("secret-word".to_string()),
+                kind: Command::Communication {
+                    enable: false,
+                    minutes: None,
+                },
+            },
+            ..write(8, PropertyValue::Null)
+        };
+        append(&path, &stop).unwrap();
+        let text = fs::read_to_string(&path).unwrap();
+        assert!(
+            !text.contains("secret-word"),
+            "the password stays out of the file"
+        );
+        let (entries, unreadable) = load(&path).unwrap();
+        fs::remove_file(&path).unwrap();
+        assert_eq!(unreadable, 0);
+        let mut journal = Journal::default();
+        entries.into_iter().for_each(|entry| journal.record(entry));
+        assert!(journal.held()[0].is_communication_stop());
+    }
+
+    #[test]
+    fn commands_of_logs_written_before_load_as_words() {
+        let path = temporary("old-command");
+        fs::write(
+            &path,
+            r#"{"time_ms":1,"device":7,"object_type":8,"instance":7,"priority":null,"action":{"kind":"command","text":"communication off"},"error":null}"#,
+        )
+        .unwrap();
+        let (entries, unreadable) = load(&path).unwrap();
+        fs::remove_file(&path).unwrap();
+        assert_eq!(unreadable, 0);
+        assert_eq!(
+            entries[0].action,
+            Action::Noted("communication off".to_string())
+        );
     }
 
     #[test]

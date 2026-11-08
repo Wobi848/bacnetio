@@ -578,3 +578,14 @@ test("an adapter read again keeps its place, also with a new address", () => {
   assert.equal(chooseAdapter([cable], vpn), cable);
   assert.equal(chooseAdapter([], vpn), null);
 });
+
+test("a device told to stay silent is held, with the way to let it talk again", async () => {
+  const { viewLog } = await import("../../web/log.js");
+  setLanguage("en");
+  const silent = { time: 1, device: 1001, type: 8, instance: 1001, object: "device,1001", priority: null, action: "command", value: "communication off", error: null, address: "10.0.0.20", stops_communication: true };
+  const state = { ...baseState(), held: [silent], log: [silent], leaving: true, scan: { state: "done", devices: [] }, objectUnits: {} };
+  const html = viewLog(state).html;
+  assert.match(html, /<span class="chip warn">Communication off<\/span>/);
+  assert.match(html, /data-act="release-held" data-index="0">Resume communication</);
+  assert.match(html, /<li>Device 1001 · Communication off<\/li>/);
+});
