@@ -124,6 +124,16 @@ where
         if matches!(status, ScanStatus::Done(_)) {
             let scan = serde_json::to_value(scan_view(&status)).expect("scan state is JSON");
             let choices = state.kept_choices(&scope);
+            // another site starts without the points read on the last one, as opening one does
+            let other_site = state
+                .site
+                .lock()
+                .expect("site lock")
+                .as_ref()
+                .is_some_and(|site| site.name != scope);
+            if other_site {
+                state.readings.lock().expect("readings lock").clear();
+            }
             state.remember(|site| {
                 choices.apply(site);
                 site.name = scope;
