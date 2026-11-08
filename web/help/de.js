@@ -153,16 +153,16 @@ export default {
     ],
   },
   capture: {
-    title: "Aufzeichnung für Wireshark",
-    intro: "bacnetio zeichnet seinen eigenen BACnet-Verkehr als Datei auf, die Wireshark öffnet, ohne Installation und ohne Administratorrechte. Am MS/TP ist jedes Telegramm auf dem Strang darin.",
+    title: "Mitschnitt für Wireshark",
+    intro: "bacnetio schneidet seinen eigenen BACnet-Verkehr als Datei mit, die Wireshark öffnet, ohne Installation und ohne Administratorrechte. Am MS/TP ist jedes Telegramm auf dem Strang darin.",
     steps: [
       "{btn:tab.settings} öffnen und in {btn:capture.title} {btn:capture.start} drücken.",
       "Tun, was du ansehen willst, zum Beispiel ein Gerät lesen.",
       "{btn:capture.stop} drücken, dann {btn:capture.save}, und die Datei in Wireshark öffnen.",
     ],
     causes: [
-      "Verkehr anderer Programme fehlt: Die Aufzeichnung enthält nur, was bacnetio sendet und empfängt.",
-      "Die Aufzeichnung war voll: Höchstens 100 000 Pakete werden behalten, die ältesten fallen weg.",
+      "Verkehr anderer Programme fehlt: Der Mitschnitt enthält nur, was bacnetio sendet und empfängt.",
+      "Der Mitschnitt war voll: Höchstens 100 000 Pakete werden behalten, die ältesten fallen weg.",
     ],
   },
   sites: {

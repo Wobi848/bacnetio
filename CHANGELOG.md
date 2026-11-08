@@ -18,6 +18,7 @@ All notable changes for users of bacnetio.
 
 ### Changed
 
+- In German, the capture for Wireshark is called *Mitschnitt* (*Mitschnitt starten*), so it is no longer confused with the recording of values (*Aufzeichnung starten*).
 - EDE files follow layout 2.3 of the B.I.G.-EU: a 17th column *notification-class* with the object's notification class, binary objects refer to their inactive and active text in the state text file (before: no texts), and binary and multi-state texts never share a row. The files are named after the project as the layout asks (`Schulhaus Nord_EDE.csv`, `Schulhaus Nord_StateTexts.csv`; before: `device-1001-ede.csv`, `site-ede.csv`), and *EDE (all devices)* names the project after the site's own name when it has one, not after the network searched. Reading a device asks binary objects for their texts and alarming objects for their notification class too.
 
 ### Fixed
