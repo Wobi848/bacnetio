@@ -83,6 +83,7 @@ document.addEventListener("keydown", (event) => {
   if (typing() || event.ctrlKey || event.metaKey || event.altKey) return;
   // 1 to 6 lie side by side on the keyboard, 0 sits apart
   if (/^[1-6]$/.test(event.key)) { enter(AREAS[Number(event.key) - 1]); return; }
+  if (event.key === "?") { enter("help"); return; }
   if (event.key === "/") {
     event.preventDefault();
     document.getElementById("site-search")?.focus();

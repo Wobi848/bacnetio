@@ -3,7 +3,7 @@
 /* ---------------------------------------------------------------- Narrow windows and phone */
 
 @media (max-width: 999px) {
-  .side { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px 8px; padding: 8px 12px 0; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .side { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 6px 8px; padding: 8px 12px 0; background: var(--surface); border-bottom: 1px solid var(--line); }
   .side .brand-name { display: none; }
   .side .head-toggle { display: flex; min-width: 0; justify-content: flex-start; gap: 8px; padding: 0 10px; }
   .side .head-toggle .cut { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 650; }
@@ -20,6 +20,7 @@
   .side .tabs a[aria-current="page"] { border-bottom-color: var(--brand); background: none; }
   .side .tabs .n { margin-left: 0; }
   .side .settings-link { grid-row: 1; grid-column: 3; }
+  .side .settings-link.help-link { grid-column: 4; }
   .side .settings-link .side-label { display: none; }
   .nav-i { display: none; }
   .side .update-note { grid-column: 1 / -1; }

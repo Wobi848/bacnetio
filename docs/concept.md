@@ -155,7 +155,8 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Warning before closing while values are held; *Leave the site* offers to release them | browser, *Held by you* | `ui/15-leaving`, `ui/20-site` |
 | The site at a glance: tree with marks, next step | workspace | `ui/12-workspace` |
 | Language and theme, following the system | settings | `ui/07-settings` |
-| Keys `1`–`6`, `/`, arrows, Enter, Escape | everywhere | `ui/11-keys` |
+| Keys `1`–`6`, `/`, `?`, arrows, Enter, Escape | everywhere; the overview in *Help → Keys*, reached from *Settings* too | `ui/11-keys`, `ui/49-help` |
+| Help: guides for the usual tasks with the interface's button names, each leading to its first step | sidebar under *Settings*, key `?` (concept-help.md) | `web/help.test.js`, `ui/49-help` |
 | A reload keeps area, devices, open device, settings | browser | `ui/04-reload` |
 | Last search and points read stay after a restart, marked as remembered | devices, data points | `ui/17-site-memory`, `site.rs` (test) |
 | Only pages of this bacnetio may use the API | server | `api.rs` (`foreign_pages_are_refused`) |

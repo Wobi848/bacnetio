@@ -139,3 +139,16 @@ label.button:hover { background: var(--accent-soft); border-color: var(--accent)
 /* a plugin may say whether what it found is fine or not */
 .chip.mark.ok { background: var(--ok-soft); color: var(--ok); }
 .chip.mark.bad { background: var(--err-soft); color: var(--err); }
+
+/* The help: the guides beside the chosen one, on a phone above it (concept-help.md) */
+.help { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 16px; max-width: 1100px; }
+@media (min-width: 720px) { .help { grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); } }
+.help-list { gap: 6px; }
+.help-list .cap { margin: 8px 0 0; color: var(--muted); font-size: 11.5px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; }
+.help-list .cap:first-child { margin-top: 0; }
+.help-list button { justify-content: flex-start; height: auto; min-height: 36px; padding: 6px 12px; text-align: left; white-space: normal; }
+.help-guide { line-height: 1.5; }
+.help-guide h2, .help-guide h3, .help-guide p { margin: 0; }
+.help-steps, .help-causes { display: grid; gap: 6px; margin: 0; padding-left: 1.4em; }
+.help-guide .acts { margin: 4px 0; }
+.help-list button[aria-pressed="true"], .help-list button[aria-pressed="true"]:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); font-weight: 700; }

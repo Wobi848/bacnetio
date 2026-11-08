@@ -117,8 +117,6 @@ export function viewSettings(state) {
     `<button type="button" data-act="theme" data-theme="${theme}" aria-pressed="${themeChoice() === theme}">${t(`set.${theme}`)}</button>`).join("");
   const accents = ACCENTS.map((accent) =>
     `<button type="button" data-act="accent" data-accent="${accent}" aria-pressed="${accentChoice() === accent}"><span class="swatch accent-${accent}"></span>${t(`set.accent.${accent}`)}</button>`).join("");
-  const keys = [["1 – 5", t("keys.areas")], ["6", t("tab.settings")], ["/", t("keys.search")], ["f", t("keys.filter")], ["↑ ↓", t("keys.move")], ["Home End ⇞ ⇟", t("keys.jump")], ["Enter", t("keys.open")], ["Esc", t("keys.close")]]
-    .map(([key, what]) => `<dt><kbd>${key}</kbd></dt><dd>${what}</dd>`).join("");
   return {
     title: t("tab.settings"),
     lead: t("set.lead"),
@@ -133,7 +131,8 @@ export function viewSettings(state) {
       ${updateCardHtml(state)}
       ${pluginsCardHtml(state)}
       ${captureCardHtml(state)}
-      <section class="card"><h2>${t("set.keys")}</h2><dl class="facts">${keys}</dl></section>
+      <section class="card"><h2>${t("set.keys")}</h2><p class="hint">${t("help.keysMoved")}</p>
+        <div class="acts"><button type="button" class="quiet" data-act="help-guide" data-guide="keys">${t("help.showKeys")}</button></div></section>
     </div></div>`,
   };
 }

@@ -19,6 +19,8 @@ export const AREA_ICONS = {
 };
 const SETTINGS_ICON = ICON('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>');
 
+const HELP_ICON = ICON('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17.5v.5"/>');
+
 function badge(state, area) {
   if (area === "workspace") return `<span class="n">${state.scan.devices?.length || ""}</span>`;
   // a count that means a problem in the warning colour, as the held values (SidebarNav)
@@ -144,6 +146,7 @@ export function sideHtml(state) {
   const listed = ["workspace", "problems", "watch", "recording", "log"];
   const areas = listed.map((area, index) => tab(state, area, index + 1)).join("");
   const settingsCurrent = state.area === "settings" ? ' aria-current="page"' : "";
+  const helpCurrent = state.area === "help" ? ' aria-current="page"' : "";
   const open = headOpen(state);
   return `<a class="brand" href="#/workspace"><img src="icon.svg" alt=""><span class="brand-name">bacnetio</span></a>
     ${headToggle(state, open)}
@@ -154,6 +157,7 @@ export function sideHtml(state) {
     </div>
     <nav class="tabs" aria-label="${t("areas")}">${areas}${pluginTabsHtml(state)}</nav>
     <a class="quiet settings-link" href="#/settings" data-area="settings"${settingsCurrent} title="${t("tab.settings")} (${listed.length + 1})">${SETTINGS_ICON}<span class="side-label">${t("tab.settings")}</span></a>
+    <a class="quiet settings-link help-link" href="#/help" data-area="help"${helpCurrent} title="${t("help.title")} (?)">${HELP_ICON}<span class="side-label">${t("help.title")}</span></a>
     ${resizeHandle("side")}`;
 }
 
