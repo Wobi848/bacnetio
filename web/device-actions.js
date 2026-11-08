@@ -27,14 +27,40 @@ export function networkSettings() {
   return settings;
 }
 
+/**
+ * A search over IP leaves the trunk bacnetio is on. With values held it asks first, as leaving the
+ * trunk does: false then, and the search waits for the answer.
+ */
+function mayLeaveTrunk() {
+  if (!state.mstp?.trunk || !state.held.length) return true;
+  state.mstp.leaving = true;
+  state.menu = null;
+  render();
+  return false;
+}
+
+/** Whether the server left the trunk for the connection over IP: the sidebar and the log say so. */
+async function checkTrunk() {
+  if (!state.mstp?.trunk) return;
+  try {
+    state.mstp.trunk = await api.mstpTrunk();
+    if (!state.mstp.trunk) state.log = await api.log();
+  } catch (error) {
+    toast(error.message, true);
+  }
+  render();
+}
+
 export async function find() {
-  if (!state.adapter) return;
+  if (!state.adapter || !mayLeaveTrunk()) return;
   const settings = { ...networkSettings(), sweep: true };
   if (state.settings.subnet.trim()) settings.subnet = state.settings.subnet.trim();
   if (state.settings.idFrom.trim()) settings.id_from = Number(state.settings.idFrom);
   if (state.settings.idTo.trim()) settings.id_to = Number(state.settings.idTo);
   saveMemory(state);
-  return runSearch(() => api.startScan(settings));
+  const started = await runSearch(() => api.startScan(settings));
+  await checkTrunk();
+  return started;
 }
 
 /** A new search: the old devices go, the workspace shows the new ones as they come. */
@@ -70,6 +96,7 @@ export async function pollScan() {
 }
 
 export async function locate() {
+  if (!mayLeaveTrunk()) return;
   try {
     const request = { ...networkSettings(), address: state.settings.locate.trim() };
     if (state.settings.locateNetwork.trim()) {
@@ -85,6 +112,7 @@ export async function locate() {
   } catch (error) {
     toast(error.message, true);
   }
+  await checkTrunk();
 }
 
 export async function selectDevice(instance) {
