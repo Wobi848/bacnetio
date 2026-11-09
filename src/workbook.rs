@@ -121,7 +121,11 @@ fn sheet_name(name: &str, used: &[String]) -> String {
         .chars()
         .take(LONGEST_SHEET_NAME)
         .collect();
-    let taken = |candidate: &str| used.iter().any(|name| name.eq_ignore_ascii_case(candidate));
+    // Excel takes "Lüftung" and "LÜFTUNG" for the same sheet, not only ASCII letters
+    let taken = |candidate: &str| {
+        let candidate = candidate.to_lowercase();
+        used.iter().any(|name| name.to_lowercase() == candidate)
+    };
     if !taken(&base) {
         return base;
     }
@@ -161,6 +165,10 @@ mod tests {
         assert!(second.ends_with(" (2)") && second.chars().count() <= 31);
         assert_eq!(sheet_name("DDC4000/#21", &[]), "DDC4000_#21");
         assert_eq!(sheet_name("", &[]), "Sheet");
+        assert_eq!(
+            sheet_name("LÜFTUNG", &["Lüftung".to_string()]),
+            "LÜFTUNG (2)"
+        );
     }
 
     /// A part of the file, as XML text.
