@@ -168,7 +168,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Stop a running search or reading | status bar | `ui/26-stop` |
 | Watch list: points across devices with live values | *Watch list* | `ui/20-site` |
 | Change a device's ID, after the unlock, logged, with the search following | device details | `ui/21-tools`, the field checklist for a device that allows it |
-| Warm and cold start, stop and resume communication, with password, logged | device details, *Device commands* | `ui/22-commands`, the field checklist |
+| Warm and cold start, stop communication or only its sending, resume it, with password, logged | device details, *Device commands* | `ui/22-commands`, the field checklist |
 | Acknowledge an alarm | device details, *Active alarms* | the field checklist (the simulators report no alarms) |
 | Schedule and calendar in words; a day of the week changed after the unlock, logged | point details of such an object | `ui/22-commands`, `tests/schedule.rs`, `schedule.rs`, the field checklist |
 | Ask the network who has an object of a name (Who-Has) | search, *Ask the network …* | `ui/22-commands` |

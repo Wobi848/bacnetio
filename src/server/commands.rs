@@ -52,9 +52,17 @@ pub async fn restart(
     Ok(StatusCode::NO_CONTENT)
 }
 
+/// Why a device refuses a stop of all its communication, and what works instead.
+const WITHDRAWN_STOP: &str =
+    "the device no longer takes this stop (withdrawn in ASHRAE 135-2020): stop its sending instead";
+
 #[derive(Deserialize)]
 pub struct CommunicationRequest {
     enable: bool,
+    /// A stop of only what the device sends by itself; it still answers. Without it, a stop of all
+    /// of it, which devices after ASHRAE 135-2020 refuse.
+    #[serde(default)]
+    sending_only: bool,
     /// How long it stays stopped; none is until told otherwise.
     minutes: Option<u16>,
     password: Option<String>,
@@ -69,20 +77,35 @@ pub async fn communication(
         return Err(ApiError::bad_request("a stop lasts at least one minute"));
     }
     let object = object_id(ObjectType::DEVICE.to_raw(), device)?;
+    let stopped = if request.sending_only {
+        "sending off"
+    } else {
+        "communication off"
+    };
     let text = match (request.enable, request.minutes) {
         (true, _) => "communication on".to_string(),
-        (false, Some(minutes)) => format!("communication off for {minutes} min"),
-        (false, None) => "communication off".to_string(),
+        (false, Some(minutes)) => format!("{stopped} for {minutes} min"),
+        (false, None) => stopped.to_string(),
     };
+    let stops_all = !request.enable && !request.sending_only;
     let action = Action::Command {
         text,
         password: password(request.password),
         kind: crate::write::Command::Communication {
             enable: request.enable,
+            sending_only: request.sending_only,
             minutes: request.minutes,
         },
     };
-    journaled(&state, device, object, None, action).await?;
+    journaled(&state, device, object, None, action)
+        .await
+        .map_err(|error| {
+            if stops_all && error.message.contains("service-request-denied") {
+                ApiError::device(WITHDRAWN_STOP)
+            } else {
+                error
+            }
+        })?;
     Ok(StatusCode::NO_CONTENT)
 }
 

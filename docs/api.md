@@ -337,8 +337,12 @@ is `writable` this way; the device decides whether it takes it. The present valu
 identity are not written this way.
 
 `POST /api/devices/{instance}/restart` `{ "kind": "warm", "password": "…" }` (`warm`, `cold`) and
-`POST /api/devices/{instance}/communication` `{ "enable": false, "minutes": 10, "password": "…" }` send
-those commands, logged; the password is never stored. `POST /api/devices/{instance}/alarms/acknowledge`
+`POST /api/devices/{instance}/communication` `{ "enable": false, "sending_only": true, "minutes": 10,
+"password": "…" }` send those commands, logged; the password is never stored. `sending_only` stops
+only what the device sends by itself (DISABLE_INITIATION: I-Am, COV, alarms); it still answers, and
+every device takes it. Without it, the stop is of all communication (DISABLE), which ASHRAE 135-2020
+withdrew: a device that refuses it with `service-request-denied` gets `502` "the device no longer
+takes this stop (withdrawn in ASHRAE 135-2020): stop its sending instead". `POST /api/devices/{instance}/alarms/acknowledge`
 `{ "type": 0, "instance": 3 }` acknowledges what the device reports for the object now.
 
 `GET .../objects/{type}/{instance}/schedule` answers `{ "week": [[{ "time", "value", "exact" }], …], "exceptions":
@@ -532,13 +536,14 @@ Both return the same entries:
   {
     "time": 1793534400, "device": 3001, "type": 1, "instance": 1, "object": "Analog output 1",
     "priority": 8, "action": "write", "value": "42.5", "error": null, "address": "10.0.0.20",
-    "stops_communication": false
+    "stops_communication": false, "sending_only": false
   }
 ]
 ```
 
 `time` is seconds since 1970 (UTC). `value` is `null` for a release. `stops_communication` is
-`true` for a stop of the device's communication without end, which stays held until it is resumed. `address` is where the device
+`true` for a stop of the device's communication without end, which stays held until it is resumed;
+`sending_only` is `true` when that stop is of its sending only. `address` is where the device
 was reached (`10.0.0.20`, `MS/TP 5`), `null` behind a router. A device on an MS/TP trunk is written
 and released only while bacnetio is on a trunk, one on BACnet/IP only while it is not: `409` says
 which, as bacnetio never joins a trunk by itself. `action` is one of five:

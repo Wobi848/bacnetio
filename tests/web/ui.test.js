@@ -588,4 +588,9 @@ test("a device told to stay silent is held, with the way to let it talk again", 
   assert.match(html, /<span class="chip warn">Communication off<\/span>/);
   assert.match(html, /data-act="release-held" data-index="0">Resume communication</);
   assert.match(html, /<li>Device 1001 · Communication off<\/li>/);
+  // a stop of only its sending says so: the device still answers
+  const sending = { ...silent, value: "sending off", sending_only: true };
+  const sendingHtml = viewLog({ ...state, held: [sending], log: [sending] }).html;
+  assert.match(sendingHtml, /<span class="chip warn">Sending off<\/span>/);
+  assert.match(sendingHtml, /<li>Device 1001 · Sending off<\/li>/);
 });

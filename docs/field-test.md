@@ -141,7 +141,8 @@ maintainer's adapter: WCH CH343 (`/dev/ttyACM0` on Linux, a COM port on Windows)
 | Check | Expected | Result |
 | --- | --- | --- |
 | Warm start, cold start, with the device's password | The device restarts; a wrong password shows the refusal | |
-| Stop communication for 2 minutes, resume | The device goes silent and comes back | |
+| Stop communication for 2 minutes, resume | The device goes silent and comes back; a device after ASHRAE 135-2020 refuses and says to stop its sending instead | |
+| *Stop its sending* for 2 minutes, resume | The device still answers reads; no COV or alarms come from it until resumed | |
 | Acknowledge an alarm | It no longer says not acknowledged, in the K&P browser too | |
 | A device with this computer in a notification class | Its alarm messages show in *Site problems* | |
 | A schedule and a calendar | Week, exceptions and dates as in the K&P browser | |

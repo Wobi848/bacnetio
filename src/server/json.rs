@@ -249,6 +249,8 @@ pub struct EntryView {
     pub address: Option<String>,
     /// The entry stopped the device's communication without end: held until it talks again.
     pub stops_communication: bool,
+    /// The stop covers only what the device sends by itself; it still answers.
+    pub sending_only: bool,
 }
 
 impl EntryView {
@@ -267,6 +269,7 @@ impl EntryView {
             error: entry.error.clone(),
             address: entry.address.map(|address| address.shown()),
             stops_communication: entry.is_communication_stop(),
+            sending_only: entry.stops_sending_only(),
         }
     }
 }

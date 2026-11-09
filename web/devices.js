@@ -1,6 +1,7 @@
 // The device list: the search in place with its progress, the devices found, and the details of
 // the chosen one beside the list.
 
+import { STOP_COMMANDS } from "./device-commands.js";
 import { excelLink } from "./excel.js";
 import { bbmdHtml } from "./bbmd.js";
 import { deviceCount, deviceMaker, deviceName, errorStrip, noteStrip, ownObjects } from "./format.js";
@@ -96,7 +97,7 @@ function emptyHtml(state) {
 }
 
 /** Restarting and stopping a device stops what it controls, so each says so and takes the unlock. */
-const COMMANDS = [["warm", "cmd.warm"], ["cold", "cmd.cold"], ["stop", "cmd.stop"], ["resume", "cmd.resume"]];
+const COMMANDS = [["warm", "cmd.warm"], ["cold", "cmd.cold"], ["silence", "cmd.silence"], ["stop", "cmd.stop"], ["resume", "cmd.resume"]];
 
 function commandsHtml(state) {
   const asking = COMMANDS.find(([kind]) => state.asking === `cmd:${kind}`);
@@ -107,7 +108,7 @@ function commandsHtml(state) {
     return `<div class="ask"><b>${t("unlock.title")}</b><span>${t(`cmd.${kind}Why`)}</span>
       <div class="actions"><button type="button" data-act="unlock-command">${t("unlock.allow")}</button><button type="button" class="quiet" data-act="cancel-write">${t("cancel")}</button></div></div>`;
   }
-  const minutes = kind === "stop" ? `<label class="form-field">${t("cmd.minutes")}<input id="cmd-minutes" class="mono" inputmode="numeric" value="${h(state.commandMinutes)}"></label>` : "";
+  const minutes = STOP_COMMANDS.includes(kind) ? `<label class="form-field">${t("cmd.minutes")}<input id="cmd-minutes" class="mono" inputmode="numeric" value="${h(state.commandMinutes)}"></label>` : "";
   return `<div class="ask"><b>${t(label)}?</b><span>${t(`cmd.${kind}Why`)}</span>${minutes}
     <label class="form-field">${t("cmd.password")}<input id="cmd-password" type="password" autocomplete="off" value="${h(state.commandPassword)}"></label>
     <div class="actions"><button type="button" data-act="run-command" data-command="${kind}">${t(label)}</button><button type="button" class="quiet" data-act="cancel-write">${t("cancel")}</button></div></div>`;

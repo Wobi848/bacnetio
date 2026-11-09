@@ -60,7 +60,7 @@ export const api = {
   importSite: (site) => call("POST", "/api/site.json", site),
   changeInstance: (device, instance) => call("POST", `/api/devices/${device}/instance`, { instance }),
   restart: (device, kind, password) => call("POST", `/api/devices/${device}/restart`, { kind, password }),
-  communication: (device, enable, minutes, password) => call("POST", `/api/devices/${device}/communication`, { enable, minutes, password }),
+  communication: (device, enable, minutes, password, sendingOnly = false) => call("POST", `/api/devices/${device}/communication`, { enable, sending_only: sendingOnly, minutes, password }),
   acknowledge: (device, request) => call("POST", `/api/devices/${device}/alarms/acknowledge`, request),
   schedule: (device, type, instance) => call("GET", `${objectPath(device, type, instance)}/schedule`),
   writeDay: (device, type, instance, day, changes) => call("POST", `${objectPath(device, type, instance)}/schedule`, { day, changes }),
