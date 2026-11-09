@@ -1,6 +1,7 @@
 # More of what devices keep: multi-point logs, event logs, files, stopping communication
 
-Status: proposal, 08.11.2026, branch `concept-more-services`.
+Status: approved on 09.11.2026 as recommended; built on 09.11.2026 in the branches
+`communication-kinds`, `trend-log-multiple`, `event-log` and `file-objects`, one pull request each.
 
 ## Why
 
@@ -33,30 +34,36 @@ The BACnet library bacnetio uses already has every service needed (`read_range`,
 
 ### 1. Trend Log Multiple
 
-Chosen like a Trend Log: the details show its records as a chart and a table, one line per logged
-point, with *Save as CSV* and Excel. The points' names come from its Log_Device_Object_Property
-list, read once. Records are read with ReadRange page by page, as for a Trend Log, with the same
-limit of 20 000 records.
+Chosen like a Trend Log: the details show a chart per logged point, each on its own axis since
+their units differ, with lowest, highest and mean value, and *Export trend log (CSV)* with a column
+per point. The points' names come from its Log_DeviceObjectProperty list, named as the point list
+read them. Records are read with ReadRange page by page, as for a Trend Log, with the same limit of
+20 000 records. Built: no Excel file, as a Trend Log has none either.
 
 ### 2. Event Log
 
 Chosen in the point list, the details show its records newest first: time, object, from and to which
-state, and the message text where the device gives one. *Save as CSV* and Excel. Nothing is
-acknowledged from here; that stays with the alarms of the device.
+state or that it was acknowledged, and the message text where the device gives one; the newest 100,
+and all in *Export event log (CSV)*. Nothing is acknowledged from here; that stays with the alarms of
+the device. Built: no Excel file, as for the trend logs.
 
 ### 3. File objects
 
-Chosen in the point list, the details show size, modified date and whether it is read-only, and a
-button *Save file* that reads the whole file with AtomicReadFile (stream or records, as the object
+Chosen in the point list, the details have a button *Save file* that reads the whole file with AtomicReadFile (stream or records, as the object
 says) and saves it under the object's name. Reading only: writing a file back to a device changes
-its programming and is left to the vendor's tool.
+its programming and is left to the vendor's tool. Built: size, modified date and read-only stay
+under *Properties*, where every object shows them; a record file's records each end with a line
+break; at most 16 MB.
 
 ### 4. Stopping communication
 
-The confirmation in the device commands offers two ways, each with what it does:
+The device commands offer two buttons, each asking with what it does:
 
-- *Stop answering* (DISABLE): devices before ASHRAE 135-2020 only.
-- *Stop sending by itself* (DISABLE_INITIATION): every device. It still answers bacnetio.
+- *Stop communication* (DISABLE): devices before ASHRAE 135-2020 only; its question says so.
+- *Stop its sending* (DISABLE_INITIATION): every device. It still answers bacnetio.
+
+Built as two buttons rather than a choice inside one question: each names its task, as the other
+commands do.
 
 A device that refuses DISABLE gets the reason in words: "the device no longer takes this stop
 (withdrawn in ASHRAE 135-2020): stop its sending instead". A stop of either kind without a time is
@@ -72,10 +79,10 @@ naming the kind of stop, logged with its kind and whether it has an end, and hel
 | Function | Today | Then | Test |
 |---|---|---|---|
 | Trend Log records | details of a Trend Log | unchanged | `tests/trend.rs` |
-| Trend Log Multiple records | properties only | details: chart, table, CSV, Excel | new, simulator with a TLM |
-| Event Log | properties only | details: list, CSV, Excel | new, simulator with an Event Log |
-| File object | properties only | details: facts and *Save file* | new, simulator with a file |
-| Stop communication | one kind (DISABLE) | two kinds, the refusal in words | `tests/ui/22-commands` |
+| Trend Log Multiple records | properties only | details: a chart per point, CSV | `tests/trend.rs`, `ui/08-trend` |
+| Event Log | properties only | details: list, CSV | `tests/event_log.rs`, `ui/08-trend` |
+| File object | properties only | details: *Save file* | `tests/file_object.rs`, `ui/08-trend` |
+| Stop communication | one kind (DISABLE) | two kinds, the refusal in words | `ui/22-commands`, `write.rs`, `storage.rs` |
 
 Nothing moves; `docs/concept.md` section 3.3 gets the three new rows.
 
@@ -92,11 +99,12 @@ each point when it is built.
 3. Event Log.
 4. File objects.
 
-Each step with its simulator, test, texts in all languages, `docs/api.md` and help text.
+Each step with its simulator, test, texts in all languages and `docs/api.md`. The simulated plant
+(`examples/simulated_plant.rs`) keeps a Trend Log Multiple, an Event Log and a parameter file, and
+takes a stop of its sending.
 
-## Open for the decision
+## Decided on 09.11.2026
 
-1. Build all four, in this order? Recommendation: yes; 1 first, as it fails on new devices today.
-2. File objects: reading only, never writing back? Recommendation: reading only.
-3. WritePropertyMultiple and COV per property: leave out for now? Recommendation: yes, until a plant
-   needs them.
+1. All four, in this order.
+2. File objects: reading only, never writing back.
+3. WritePropertyMultiple and COV per property: left out until a plant needs them.
