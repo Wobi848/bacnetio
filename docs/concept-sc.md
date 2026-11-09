@@ -1,6 +1,6 @@
 # Concept: BACnet/SC (Secure Connect)
 
-Status: proposal, 09.11.2026, branch `concept-sc`. Nothing is built. The maintainer asked for the
+Status: approved on 09.11.2026, decisions below; nothing is built yet. Branch `concept-sc`. The maintainer asked for the
 concept in full and whether it works with bacnetio's interface to BACnet ("bitte nichts bauen zu SC
 aber Konzept voll ausbauen und ob es geht mit unserer Schnittstelle").
 
@@ -105,10 +105,18 @@ how much.
 ```
 
 - **Hub:** the address the integrator gives, `wss://` only. The failover hub is optional.
-- **Certificates:** three files in PEM, as integrators hand them out. Each is checked when chosen,
-  and the line says what was found in words: valid until, not yet valid, expired, not signed by
-  this CA, key does not match the certificate. A certificate that runs out within 30 days says so
-  in orange.
+- **Certificates:** in whatever form integrators and vendor tools hand them out: PEM or DER files
+  (`.pem`, `.crt`, `.cer`, `.der`, `.key`), a PEM file holding certificate and key together, or one
+  PKCS#12 file (`.p12`, `.pfx`) with certificate, key and CA, which then fills all three lines at
+  once. Each is checked when chosen, and the line says what was found in words: valid until, not
+  yet valid, expired, not signed by this CA, key does not match the certificate, not a certificate
+  at all. A certificate that runs out within 30 days says so in orange.
+- **Password:** an encrypted key (PKCS#8) or a PKCS#12 file asks for its password in the page. The
+  password opens the key and is then forgotten; it is never stored or logged. See *Keys and
+  certificates* for what is kept.
+- **Make a key here** (in its own step): bacnetio makes a key pair and a certificate request (CSR)
+  for this site, saves the request as a file for the integrator, and takes the signed certificate
+  back with *Choose file …*. The key never leaves the computer.
 
 ### Connect and search
 
@@ -145,8 +153,12 @@ uses the system's file picker. Built and checked on a phone in its own step.
 The private key is the one secret in this concept. It lets whoever holds it into the plant's
 network.
 
-- It stays in bacnetio's data folder (`sc/` below `--data-dir`), readable only for the user
-  (file mode 0600 on Linux and Android; the user's profile folder on Windows). It is never in a
+- Kept by default only while bacnetio runs: a key that came with a password is asked for again at
+  the next start. *Remember the key on this computer* (off by default) keeps it in bacnetio's data
+  folder (`sc/` below `--data-dir`) without the password, readable only for the user: file mode
+  0600 on Linux and Android, and on Windows a file in the user's profile, encrypted for that user
+  with the system's data protection (DPAPI). A key that came without a password is kept the same
+  way, as the file it came from was not protected either. It is never in a
   site file, an export, the Excel files, the log, the capture, the plugin API, the web API's
   answers or the console.
 - The certificates themselves are not secret. A site file may carry the CA certificate and
@@ -160,14 +172,10 @@ network.
 ## What stays out
 
 - **bacnetio as a hub:** a site has its hub; bacnetio connects to it.
-- **Direct connections** (node to node): optional in the standard, rarely set up. Later, if a plant
-  needs them.
 - **The capture for Wireshark on SC:** the capture records BACnet/IP and MS/TP frames today. On SC
   the frames travel inside TLS. bacnetio could write the BACnet messages it sends and receives
   without TLS, but Wireshark reads BACnet/SC only from WebSocket traffic. *Capture* stays
   unavailable on SC and says why; a later step can look for a format Wireshark reads.
-- **Making a key and a certificate request (CSR)** in bacnetio for the integrator to sign: useful
-  where the site's process works that way. See *Open for the decision*.
 
 ## Writing to plants
 
@@ -215,18 +223,28 @@ for the demo and the browser tests. No key or certificate enters the repository.
 3. **Status, leaving, sites:** status bar, *Leave the SC network*, a site remembers its hub and
    certificates, held values only on SC.
 4. **Android:** the file picker, checked on a phone.
-5. **If decided:** key and CSR made in bacnetio.
+5. **Key and CSR made in bacnetio**, the signed certificate taken back.
+6. **Direct connections** (Annex AB.4, node to node without the hub), where the hub announces them:
+   used when the device offers one, the hub stays the way back. A setting turns them off.
 
 Each step leaves everything else working; the field test on a real SC plant follows when a user
 has one.
 
-## Open for the decision
+## Decided on 09.11.2026
 
-1. **Certificates only from files, or also a key and request (CSR) made in bacnetio?**
-   Recommendation: files first (step 2); the CSR as step 5 once a user's site works that way.
-2. **A private key protected by a password:** some integrators hand out encrypted keys.
-   Recommendation: accept unencrypted PKCS#8 keys first and say so in words when a key is
-   encrypted; add the password when a user needs it.
-3. **SC in every build, or a separate build:** Recommendation: in every build, Windows, Linux and
-   Android, unless step 0 shows the program grows too much.
-4. **Direct connections:** Recommendation: leave out until a plant uses them.
+The maintainer left the choice to bacnetio's side, with two wishes: secure on every platform, and
+as flexible as possible ("sc sicher auf allen plattformen ... es soll möglichst flexibel sein").
+
+1. **Certificates:** every usual form (PEM, DER, PKCS#12) in step 2, and a key with CSR made in
+   bacnetio in step 5. Flexible for every way a site hands out certificates.
+2. **Keys with a password:** accepted (encrypted PKCS#8, PKCS#12). The password is never kept; the
+   key is kept only when the user asks for it, protected as described under *Keys and
+   certificates*.
+3. **Every build:** Windows, Linux and Android, with the same TLS stack (TLS 1.3, certificates
+   checked against the site's CA only, no system certificate store, no way to switch the check off).
+   Step 0 proves the build on all three before anything else.
+4. **Direct connections:** built as step 6, after the hub connection works on a real plant.
+
+Reading PKCS#12 and encrypted keys needs a library beside the TLS stack (pure Rust, so it builds
+the same on every platform); which one is chosen in step 2, after a look at what the TLS stack
+brings already.
