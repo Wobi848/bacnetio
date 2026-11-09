@@ -255,6 +255,7 @@ export default {
   /** Known server errors by key (patterns in i18n.js); others stay English. */
   errors: {
     scheduleKind: "No se puede saber qué tipo de valor acepta este horario: ni su valor por defecto ni su semana indican uno.",
+    choosePriority: "Este objeto tiene una matriz de prioridades: elija una prioridad.",
     patternTooLong: "Un patrón de agrupación tiene como máximo $1 caracteres.",
     xlsxHeads: "Los encabezados deben ser un objeto JSON de textos.",
     xlsxHeadsLong: "Como máximo $1 encabezados de como máximo $2 caracteres.",

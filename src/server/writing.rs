@@ -17,6 +17,7 @@ use super::json::{EntryView, ObjectView};
 use super::recording::CsvQuery;
 use super::session::Shared;
 use crate::address::Address;
+use crate::connection;
 use crate::export;
 use crate::object::PRIORITIES;
 use crate::property_text;
@@ -69,7 +70,35 @@ pub async fn write_value(
     let value =
         write::parse_value(object.object_type(), &request.value).map_err(ApiError::bad_request)?;
     let priority = request.priority.map(checked_priority).transpose()?;
+    if priority.is_none() && has_priority_array(&state, device, object).await? {
+        // the device would take 16, and the value would stay in the plant without being held
+        return Err(ApiError::bad_request(
+            "this object has a priority array: choose a priority",
+        ));
+    }
     perform(&state, device, object, priority, Action::Write(value)).await
+}
+
+/// Whether the object is commanded through a priority array: asked of the device, as the page may
+/// not have been able to read it.
+async fn has_priority_array(
+    state: &Shared,
+    device: u32,
+    object: ObjectIdentifier,
+) -> Result<bool, ApiError> {
+    let client = state
+        .client_for(device, held_address(state, device))
+        .await?;
+    // index 0 is the array's length: one small answer whatever the slots hold
+    Ok(connection::read_value(
+        &client,
+        device,
+        object,
+        PropertyIdentifier::PRIORITY_ARRAY,
+        Some(0),
+    )
+    .await
+    .is_ok())
 }
 
 #[derive(Deserialize)]

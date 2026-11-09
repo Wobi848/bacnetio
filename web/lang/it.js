@@ -255,6 +255,7 @@ export default {
   /** Known server errors by key (patterns in i18n.js); others stay English. */
   errors: {
     scheduleKind: "Non si capisce quale tipo di valore accetti questo programma orario: né il valore predefinito né la settimana ne indicano uno.",
+    choosePriority: "Questo oggetto ha una matrice delle priorità: scegliete una priorità.",
     patternTooLong: "Uno schema di raggruppamento ha al massimo $1 caratteri.",
     xlsxHeads: "Le intestazioni devono essere un oggetto JSON di testi.",
     xlsxHeadsLong: "Al massimo $1 intestazioni di al massimo $2 caratteri.",

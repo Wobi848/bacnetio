@@ -62,6 +62,7 @@ const ERROR_PATTERNS = [
   [/^a device ID goes from 0 to (\d+)$/, "idRange"],
   [/^at most (\d+) objects at a time$/, "liveMost"],
   [/^priority (\d+) is not between 1 and (\d+)$/, "priorityRange"],
+  [/^this object has a priority array: choose a priority$/, "choosePriority"],
   [/^the interval must be at least (\d+) s$/, "intervalMin"],
   [/^another device already has the ID (\d+)$/, "idTaken"],
   [/^(\d+) is already the ID of this device$/, "idOwn"],
