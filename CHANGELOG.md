@@ -24,6 +24,7 @@ All notable changes for users of bacnetio.
 
 ### Fixed
 
+- A device whose communication you stopped without a time is listed under *Held by you* and before leaving, also after a restart, with *Resume communication* beside it; before, *Leave the site* said nothing was held while the device stayed silent. Resuming reaches the device at the address it was stopped at, as it answers nothing else.
 - A value held from an earlier session is released from *Held by you* again: the check that the slot is still yours read the device before bacnetio had found it again, and said "search for devices first". A held value on an MS/TP trunk says so (`MS/TP 5`) and asks you to listen to the trunk and join it first, as bacnetio never joins a trunk by itself.
 - A search on another adapter, port or trunk no longer fails with "a request is still running" while a request is under way: the old connection waits up to 5 s for it before it closes.
 - A search on an MS/TP trunk after one over IP lists only the trunk's devices: the devices found over IP were listed too, and reading them failed with "MS/TP MAC must be 1 byte".

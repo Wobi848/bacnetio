@@ -62,16 +62,22 @@ function heldValue(state, entry) {
   return `${h(value)}${unit ? `<span class="unit">${h(unit)}</span>` : ""}`;
 }
 
+/** What holds it in the plant: a priority, out of service, or a device told to stay silent. */
+function heldKind(entry) {
+  if (entry.priority) return `${t("priority")} ${entry.priority}`;
+  return entry.stops_communication ? t("held.silent") : t("chip.outOfService");
+}
+
 function heldRows(state) {
   if (!state.held.length) return `<div class="empty"><h2>${t("held.noneTitle")}</h2><span>${t("held.noneText")}</span></div>`;
   return state.held.map((entry, index) => {
     // a value on an MS/TP trunk is released only from that trunk: the line says so (docs/concept-mstp.md)
     const trunk = /^MS\/TP \d+$/.test(entry.address ?? "") ? entry.address : "";
     const place = [pointPlace(state, entry), trunk, t("held.since", { time: heldSince(entry) })].filter(Boolean).join(" · ");
-    const chip = entry.priority ? `${t("priority")} ${entry.priority}` : t("chip.outOfService");
+    const release = entry.stops_communication ? t("cmd.resume") : t("release");
     return `<div class="row held"><span class="name">${h(pointName(state, entry))}<span class="desc">${h(place)}</span></span>
-      <span class="val">${heldValue(state, entry)}</span><span class="chips"><span class="chip warn">${h(chip)}</span></span>
-      <span class="act"><button type="button" class="quiet" data-act="release-held" data-index="${index}">${t("release")}</button></span></div>`;
+      <span class="val">${heldValue(state, entry)}</span><span class="chips"><span class="chip warn">${h(heldKind(entry))}</span></span>
+      <span class="act"><button type="button" class="quiet" data-act="release-held" data-index="${index}">${release}</button></span></div>`;
   }).join("");
 }
 
@@ -97,7 +103,7 @@ function logRows(state) {
 /** Values held stay in the plant after you have gone, so leaving asks first. */
 function leaveHtml(state) {
   if (!state.leaving) return "";
-  const list = state.held.map((entry) => `<li>${h(entryLabel(state, entry))}${entry.priority ? ` = ${h(valueWord(entry.value))} · ${t("priority")} ${entry.priority}` : ` · ${t("chip.outOfService")}`}</li>`).join("");
+  const list = state.held.map((entry) => `<li>${h(entryLabel(state, entry))}${entry.priority ? ` = ${h(valueWord(entry.value))}` : ""} · ${h(heldKind(entry))}</li>`).join("");
   return `<div class="modal" role="dialog" aria-modal="true"><div class="modal-box"><h2>${state.held.length === 1 ? t("leave.titleOne") : t("leave.title", { n: state.held.length })}</h2>
     <ul>${list}</ul><p>${t("leave.text")}</p>
     <div class="actions"><button type="button" data-act="leave-release">${t("leave.releaseAll")}</button><button type="button" class="quiet" data-act="leave-stay">${t("leave.stay")}</button></div></div></div>`;

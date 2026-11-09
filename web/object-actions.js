@@ -211,7 +211,9 @@ export async function releaseHeld(entries) {
   let released = 0;
   for (const entry of entries) {
     try {
-      if (entry.action === "property") await api.writeProperty(entry.device, entry.type, entry.instance, { property_id: OUT_OF_SERVICE_PROPERTY, data_type: "boolean", value: "false" });
+      // the device answers nothing but this, so the server does not ask where it is first
+      if (entry.stops_communication) await api.communication(entry.device, true, null, null);
+      else if (entry.action === "property") await api.writeProperty(entry.device, entry.type, entry.instance, { property_id: OUT_OF_SERVICE_PROPERTY, data_type: "boolean", value: "false" });
       // days may have passed: the server releases only while the slot still holds our value
       else await api.release(entry.device, entry.type, entry.instance, entry.priority, true);
       released += 1;
