@@ -12,6 +12,7 @@ pub mod diagnosis;
 pub mod ede;
 pub mod event_log;
 pub mod export;
+pub mod file_object;
 pub mod interfaces;
 pub mod limits;
 pub mod log_buffer;

@@ -52,7 +52,7 @@ pub struct EdeQuery {
 
 /// A download under this file name. The name may hold any letter: it goes as `filename*` in UTF-8,
 /// with a plain fallback for the rest.
-fn attachment(name: &str) -> String {
+pub(super) fn attachment(name: &str) -> String {
     let plain: String = name
         .chars()
         .map(|c| {

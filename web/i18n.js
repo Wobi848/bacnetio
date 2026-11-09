@@ -101,6 +101,8 @@ const ERROR_PATTERNS = [
   [/^this object does not hold trend log records$/, "notTrend"],
   [/^reading event logs of devices behind a router is not supported yet$/, "eventRouter"],
   [/^this object does not hold event log records$/, "notEventLog"],
+  [/^reading files of devices behind a router is not supported yet$/, "fileRouter"],
+  [/^the file is larger than (\d+) MB$/, "fileTooLarge"],
   [/^(.*) is neither warm nor cold$/, "notRestart"],
   [/^(.*) is not an IP address or IP:PORT$/, "notAddress"],
   [/^(.*) is not a subnet like 192\.168\.10\.0\/24$/, "notSubnet"],

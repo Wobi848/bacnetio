@@ -1,9 +1,11 @@
+import { readFile } from "node:fs/promises";
 import { assert, open, openDevice, searchInUi } from "./helpers.mjs";
 
 // A trend log of the device shows as chart with its record count and a CSV export; a log of several
-// points shows a chart per point, named as the point list read it; an event log lists past alarms.
+// points shows a chart per point, named as the point list read it; an event log lists past alarms;
+// a file is saved whole.
 export default {
-  name: "Trend log, trend log multiple and event log: chart, list and export",
+  name: "The device's own logs and files: chart, list, export, save",
   async run({ page, base }) {
     await open(page, base);
     await searchInUi(page);
@@ -32,5 +34,13 @@ export default {
     const events = await (await page.request.get(`${base}/api/devices/1001/objects/25/1/events.csv`)).text();
     assert.match(events, /Supply air too warm/);
     assert.equal(events.trim().split("\n").length, 5);
+    // a file the device keeps is saved whole under its name, read only
+    await page.click(".row[data-point]:has-text('Parameters.csv')");
+    await page.waitForSelector("button[data-act=save-file]");
+    assert.match(await page.textContent(".detail"), /Nothing is written to the device/);
+    const [download] = await Promise.all([page.waitForEvent("download"), page.click("button[data-act=save-file]")]);
+    assert.equal(download.suggestedFilename(), "Parameters.csv");
+    const saved = await readFile(await download.path(), "utf8");
+    assert.equal(saved, "name;value;unit\nsupply air setpoint;20.0;degC\nheating valve limit;100;%\nfan start;06:00;\nfan stop;22:00;\n");
   },
 };

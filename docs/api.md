@@ -494,6 +494,11 @@ list read, else the object. An acknowledgement is its own record with `acknowled
 changes of the log and clock changes are left out; at most 20 000 records, as for a trend log.
 `.../events.csv` downloads the same as CSV. Nothing is acknowledged from here.
 
+`GET /api/devices/{instance}/objects/10/{instance}/file`: the whole file a File object holds, read
+with AtomicReadFile in pieces that fit one answer, as a download under the object's name. A record
+file's records each end with a line break. At most 16 MB; `502` when the device refuses or the file
+is larger. Files are only read: nothing is ever written to a device's files.
+
 ## Write and release
 
 Writing changes a running plant. The concept (section 6) asks the UI to unlock writing per

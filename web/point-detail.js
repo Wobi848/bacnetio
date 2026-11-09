@@ -3,7 +3,7 @@
 
 import { figures } from "./analysis.js";
 import { chartHtml, numberText } from "./chart.js";
-import { MULTISTATE, EVENT_LOG_TYPE, RECORDABLE, TREND_TYPES, chips, errorStrip, has, isBinary, split, stateWord, valueHtml } from "./format.js";
+import { MULTISTATE, EVENT_LOG_TYPE, FILE_TYPE, RECORDABLE, TREND_TYPES, chips, errorStrip, has, isBinary, split, stateWord, valueHtml } from "./format.js";
 import { h } from "./html.js";
 import { currentLocale, eventStateText, objectText, statusText, t, valueWord } from "./i18n.js";
 import { priorityLabel } from "./plugins.js";
@@ -139,6 +139,12 @@ function eventLogHtml(state, object) {
   return `<p class="sub">${t("evlog.records", { n: log.records.length })}</p><div class="alarms">${rows}</div>${notes}${csv}`;
 }
 
+/** A File object: saved whole from the device on this computer; nothing goes back to it. */
+function fileHtml(state) {
+  const label = state.savingFile ? t("file.saving") : t("file.save");
+  return `<p class="hint">${t("file.hint")}</p><div class="actions"><button type="button" data-act="save-file"${state.savingFile ? " disabled" : ""}>${label}</button></div>`;
+}
+
 function changesHtml(changes) {
   return changes.map((change) => `<span class="time-change"><b class="mono">${h(change.time)}</b> ${h(valueWord(change.value))}</span>`).join("") || `<span class="sub">–</span>`;
 }
@@ -195,7 +201,8 @@ export function detailHtml(state) {
   const isTrend = TREND_TYPES.includes(object.type);
   const isEventLog = object.type === EVENT_LOG_TYPE;
   // a log keeps records, not a value of its own: nothing to show live
-  const isLog = isTrend || isEventLog;
+  const isFile = object.type === FILE_TYPE;
+  const isLog = isTrend || isEventLog || isFile;
   const held = state.held.some((entry) => entry.device === state.device.instance && entry.type === object.type && entry.instance === object.instance);
   const live = state.liveSource === "cov" ? `<span class="chip ok" title="${h(t("chip.liveHint"))}">${t("chip.live")}</span>` : "";
   const mode = state.liveModes[`${state.device.instance}:${object.type}:${object.instance}`] ?? "auto";
@@ -219,6 +226,7 @@ export function detailHtml(state) {
     ${errorStrip(state.error)}
     ${isTrend ? `<h3>${t("trend.title")}</h3>${trendHtml(state, object)}` : ""}
     ${isEventLog ? `<h3>${t("evlog.title")}</h3>${eventLogHtml(state, object)}` : ""}
+    ${isFile ? `<h3>${t("file.title")}</h3>${fileHtml(state)}` : ""}
     ${TIME_TYPES.includes(object.type) ? timesHtml(state) : ""}
     ${who}${direct}${writable ? writeHtml(state, object, stateTexts) : ""}
     <h3>${t("details")}</h3>

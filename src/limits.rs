@@ -19,6 +19,8 @@ const BYTES_PER_LIST_ENTRY: usize = 12;
 const BYTES_PER_IDENTIFIER: usize = 5;
 /// One trend log record with date, time, value and status.
 const BYTES_PER_RECORD: usize = 24;
+/// Header of an AtomicReadFile answer around the file's octets, with room to spare.
+const FILE_ANSWER_OVERHEAD: usize = 24;
 /// Upper bounds, also for devices that segment: small requests keep the first values coming fast.
 const MOST_POINTS: usize = 16;
 const MOST_LIST_ENTRIES: usize = 100;
@@ -60,6 +62,11 @@ impl Limits {
     /// Whether an object list of `count` entries comes in one answer.
     pub fn whole_list_fits(&self, count: u32) -> bool {
         self.segments || ANSWER_OVERHEAD + count as usize * BYTES_PER_IDENTIFIER <= self.max_apdu
+    }
+
+    /// Octets of a file per AtomicReadFile: what fits in one answer, so no device has to segment.
+    pub fn file_octets_per_request(&self) -> u32 {
+        self.max_apdu.saturating_sub(FILE_ANSWER_OVERHEAD).max(1) as u32
     }
 
     /// Trend log records per ReadRange.

@@ -178,6 +178,8 @@ export const state = {
   trend: null,
   /** The chosen Event Log's records, or `{ error }`. */
   eventLog: null,
+  /** A File object is being read to save it. */
+  savingFile: false,
   /** A schedule's week or a calendar's dates: null while read, or { error }. */
   times: null,
   /** The day of the schedule being changed, 0 is Monday, and what is typed for it. */
