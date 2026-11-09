@@ -2,7 +2,7 @@
 
 All notable changes for users of bacnetio.
 
-## Unreleased
+## v0.3.0 (09.11.2026)
 
 ### Added
 
