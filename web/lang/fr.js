@@ -215,7 +215,7 @@ export default {
     "rec.notStarted": "L’enregistrement ne tourne pas : appuyez sur « Démarrer l’enregistrement » en haut, il mesure alors toutes les {interval} s.", "rec.notStartedShort": "Pas encore démarré.", "rec.poll": "Interroger", "rec.cov": "COV", "rec.covRefused": "COV refusé, interrogé", "rec.covRefusedHint": "L’appareil ne signale pas ce point de lui-même ; il est lu à l’intervalle à la place.", "rec.waiting": "En attente de la première valeur …", "rec.noValues": "Pas encore de valeur : l’appareil ne répond pas ou la valeur n’est pas un nombre.",
     "rec.noAnswer": "pas de réponse",
     "trend.title": "Enregistré dans l’appareil",
-    "trend.reading": "Lecture du journal de tendance …", "trend.records": "{n} entrées", "trend.empty": "Le journal de tendance ne contient aucune valeur.",
+    "trend.reading": "Lecture du journal de tendance …", "trend.records": "{n} entrées", "trend.recordsOf": "{n} entrées de {points} points", "trend.empty": "Le journal de tendance ne contient aucune valeur.",
     "trend.gaps": "L’appareil a perdu quelques entrées ; la courbe a des trous à ces endroits.", "trend.truncated": "Seules les 20 000 premières entrées sont affichées.",
     "trend.export": "Exporter le journal de tendance (CSV)",
     "site.remembered": "Mémorisé le {when}. Rechercher à nouveau pour travailler en direct avec les appareils.",

@@ -215,7 +215,7 @@ export default {
     "rec.notStarted": "La registrazione non è in corso: premete «Avviare la registrazione» in alto, poi misura ogni {interval} s.", "rec.notStartedShort": "Non ancora avviata.", "rec.poll": "Interroga", "rec.cov": "COV", "rec.covRefused": "COV rifiutato, interrogato", "rec.covRefusedHint": "Il dispositivo non segnala questo punto da solo; viene letto all’intervallo al suo posto.", "rec.waiting": "In attesa del primo valore …", "rec.noValues": "Ancora nessun valore: il dispositivo non risponde o il valore non è un numero.",
     "rec.noAnswer": "nessuna risposta",
     "trend.title": "Registrato nel dispositivo",
-    "trend.reading": "Lettura del registro di tendenza …", "trend.records": "{n} voci", "trend.empty": "Il registro di tendenza non contiene valori.",
+    "trend.reading": "Lettura del registro di tendenza …", "trend.records": "{n} voci", "trend.recordsOf": "{n} voci di {points} punti", "trend.empty": "Il registro di tendenza non contiene valori.",
     "trend.gaps": "Il dispositivo ha perso alcune voci; lì la curva ha dei vuoti.", "trend.truncated": "Sono mostrate solo le prime 20 000 voci.",
     "trend.export": "Esportare il registro di tendenza (CSV)",
     "site.remembered": "Memorizzato il {when}. Cercare di nuovo per lavorare in diretta con i dispositivi.",

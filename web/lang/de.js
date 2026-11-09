@@ -227,7 +227,7 @@ export default {
     "rec.notStarted": "Die Aufzeichnung läuft nicht: Drücke oben „Aufzeichnung starten“, dann misst sie alle {interval} s.", "rec.notStartedShort": "Noch nicht gestartet.", "rec.poll": "Abfragen", "rec.cov": "COV", "rec.covRefused": "COV abgelehnt, wird abgefragt", "rec.covRefusedHint": "Das Gerät meldet diesen Punkt nicht von selbst; er wird stattdessen im Intervall gelesen.", "rec.waiting": "Warte auf den ersten Wert …", "rec.noValues": "Noch kein Wert: Das Gerät antwortet nicht, oder der Wert ist keine Zahl.",
     "rec.noAnswer": "keine Antwort",
     "trend.title": "Im Gerät aufgezeichnet",
-    "trend.reading": "Die Trendaufzeichnung wird gelesen …", "trend.records": "{n} Einträge", "trend.empty": "Die Trendaufzeichnung enthält keine Werte.",
+    "trend.reading": "Die Trendaufzeichnung wird gelesen …", "trend.records": "{n} Einträge", "trend.recordsOf": "{n} Einträge von {points} Punkten", "trend.empty": "Die Trendaufzeichnung enthält keine Werte.",
     "trend.gaps": "Das Gerät hat einige Einträge verworfen; dort hat die Linie Lücken.", "trend.truncated": "Nur die ersten 20 000 Einträge werden gezeigt.",
     "trend.export": "Trendaufzeichnung exportieren (CSV)",
     "site.remembered": "Gespeichert vom {when}. Erneut suchen, um live mit den Geräten zu arbeiten.",

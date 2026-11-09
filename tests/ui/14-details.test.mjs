@@ -40,7 +40,7 @@ export default {
     await page.click("button[data-act=reload]");
     await page.waitForFunction(() => !document.querySelector("button[data-act=reload]")?.disabled);
     // 19 data points and the three Structured View objects of the simulator's plant view
-    assert.equal(await page.$$eval(".row[data-point]", (rows) => rows.length), 22);
+    assert.equal(await page.$$eval(".row[data-point]", (rows) => rows.length), 23);
     assert.ok(await page.$(".row[data-point].active"), "the chosen point stays chosen");
   },
 };

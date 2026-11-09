@@ -479,6 +479,12 @@ page by page with ReadRange: `{ "records": [["2026-11-01T09:30:00", 21.4]], "gap
 failures. At most 20 000 records (`truncated` then true); `gaps` means the device dropped records.
 Devices behind a router are not supported yet. `.../trend.csv` downloads the same as CSV.
 
+The same route reads a Trend Log Multiple (`objects/27/{instance}/trend`): each record holds one
+value per point it logs, `["2026-11-01T09:30:00", 21.4, 35, 1]`, and `columns` names them in that
+order, `[{ "name": "Supply air temp", "units": "°C" }, …]`, from its Log_DeviceObjectProperty: the
+name the point list read, else the object; the property when it is not the present value, and the
+device when it is another one. The CSV has a column per point.
+
 ## Write and release
 
 Writing changes a running plant. The concept (section 6) asks the UI to unlock writing per

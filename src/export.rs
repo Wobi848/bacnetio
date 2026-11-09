@@ -175,14 +175,21 @@ pub fn device_list_csv(devices: &[Device]) -> String {
 }
 
 /// A trend log read from a device: its local time and the value.
-pub fn trend_csv(title: &str, records: &[TrendRecord]) -> String {
+/// One row per record, one column per logged point: `titles` names them.
+pub fn trend_csv(titles: &[String], records: &[TrendRecord]) -> String {
     let mut out = String::from("\u{FEFF}");
-    out.push_str(&row(&["Time (device)", title]));
+    let mut header = vec!["Time (device)".to_string()];
+    header.extend(titles.iter().cloned());
+    out.push_str(&row(&header));
     for record in records {
-        out.push_str(&row(&[
-            device_time_text(&record.date, &record.time),
-            record.value.map(|v| v.to_string()).unwrap_or_default(),
-        ]));
+        let mut cells = vec![device_time_text(&record.date, &record.time)];
+        cells.extend(
+            record
+                .values
+                .iter()
+                .map(|value| value.map(|v| v.to_string()).unwrap_or_default()),
+        );
+        out.push_str(&row(&cells));
     }
     out
 }

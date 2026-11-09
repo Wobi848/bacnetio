@@ -3,7 +3,7 @@
 
 import { figures } from "./analysis.js";
 import { chartHtml, numberText } from "./chart.js";
-import { MULTISTATE, RECORDABLE, TREND_LOG_TYPE, chips, errorStrip, has, isBinary, split, stateWord, valueHtml } from "./format.js";
+import { MULTISTATE, RECORDABLE, TREND_TYPES, chips, errorStrip, has, isBinary, split, stateWord, valueHtml } from "./format.js";
 import { h } from "./html.js";
 import { currentLocale, objectText, statusText, t, valueWord } from "./i18n.js";
 import { priorityLabel } from "./plugins.js";
@@ -85,16 +85,31 @@ function writeHtml(state, object, stateTexts) {
     <div class="actions"><button type="button" data-act="write">${t("writeValue")}</button>${release}${releaseOther}</div>`;
 }
 
+/** One logged point: its chart and its lowest, highest and mean value. */
+function trendSeriesHtml(id, series) {
+  const found = figures(series.samples);
+  const summary = found.low === null ? "" : `<dl class="facts"><dt>${t("rec.low")}</dt><dd class="mono">${h(numberText(found.low))}</dd><dt>${t("rec.high")}</dt><dd class="mono">${h(numberText(found.high))}</dd><dt>${t("rec.mean")}</dt><dd class="mono">${h(numberText(found.mean))}</dd></dl>`;
+  return `${chartHtml(id, series, t("trend.empty"))}${summary}`;
+}
+
+/**
+ * A Trend Log's records as one chart; a Trend Log Multiple's as one chart per point it logs, each
+ * on its own axis, as their units differ.
+ */
 function trendHtml(state, object) {
   const trend = state.trend;
   if (!trend) return `<p class="hint">${t("trend.reading")}</p>`;
   if (trend.error) return errorStrip(trend.error);
-  const series = { samples: trend.records.map(([time, value]) => [Date.parse(time), value]), units: "", label: object.name || objectText(object) };
+  const columns = trend.columns ?? [{ name: object.name || objectText(object), units: "" }];
+  const charts = columns.map((column, index) => {
+    const series = { samples: trend.records.map((record) => [Date.parse(record[0]), record[index + 1] ?? null]), units: column.units ?? "", label: column.name };
+    const heading = trend.columns ? `<h4>${h(column.name)}${column.units ? ` <span class="unit">${h(column.units)}</span>` : ""}</h4>` : "";
+    return heading + trendSeriesHtml(`trend-${object.instance}-${index}`, series);
+  }).join("");
   const notes = [trend.gaps ? t("trend.gaps") : "", trend.truncated ? t("trend.truncated") : ""].filter(Boolean).map((text) => `<p class="hint">${h(text)}</p>`).join("");
   const csv = trend.records.length ? `<div class="actions"><a class="quiet" href="/api/devices/${state.device.instance}/objects/${object.type}/${object.instance}/trend.csv" download>${t("trend.export")}</a></div>` : "";
-  const found = figures(series.samples);
-  const summary = found.low === null ? "" : `<dl class="facts"><dt>${t("rec.low")}</dt><dd class="mono">${h(numberText(found.low))}</dd><dt>${t("rec.high")}</dt><dd class="mono">${h(numberText(found.high))}</dd><dt>${t("rec.mean")}</dt><dd class="mono">${h(numberText(found.mean))}</dd></dl>`;
-  return `<p class="sub">${t("trend.records", { n: trend.records.length })}</p>${chartHtml(`trend-${object.instance}`, series, t("trend.empty"))}${summary}${notes}${csv}`;
+  const counted = trend.columns ? t("trend.recordsOf", { n: trend.records.length, points: trend.columns.length }) : t("trend.records", { n: trend.records.length });
+  return `<p class="sub">${counted}</p>${charts}${notes}${csv}`;
 }
 
 function changesHtml(changes) {
@@ -150,7 +165,7 @@ export function detailHtml(state) {
   if (!object) return `<aside class="detail${open}">${back}${errorStrip(state.objectError) || `<p class="hint">${t("pts.reading")}</p>`}</aside>`;
   const point = listed(state, object);
   const stateTexts = point?.state_texts;
-  const isTrend = object.type === TREND_LOG_TYPE;
+  const isTrend = TREND_TYPES.includes(object.type);
   const held = state.held.some((entry) => entry.device === state.device.instance && entry.type === object.type && entry.instance === object.instance);
   const live = state.liveSource === "cov" ? `<span class="chip ok" title="${h(t("chip.liveHint"))}">${t("chip.live")}</span>` : "";
   const mode = state.liveModes[`${state.device.instance}:${object.type}:${object.instance}`] ?? "auto";
