@@ -12,7 +12,7 @@ export default {
     await page.reload();
     await page.waitForSelector(".row[data-point]", { timeout: 15000 });
     assert.equal(await page.textContent(".pagehead h1"), "AHU-01");
-    assert.equal(await page.$$eval(".row[data-point]", (rows) => rows.length), 24);
+    assert.equal(await page.$$eval(".row[data-point]", (rows) => rows.length), 25);
     // what is on the screen can be handed over, without reading anything again
     const name = await page.textContent(".row[data-point] .name");
     const instance = await page.evaluate(() => window.location.hash.match(/\d+/)?.[0] ?? "1001");

@@ -9,6 +9,7 @@ import { setLanguage, t } from "./i18n.js";
 import { toggleLiveList } from "./live-list.js";
 import { savePropertyNames, saveTreeView } from "./memory.js";
 import { editDay, editProperty, releaseHeld, releaseHere, releaseOther, setClock, showTechnical, writeDay, writeProperty, writeValue } from "./object-actions.js";
+import { saveFile } from "./file-actions.js";
 import { installPlugin, removePlugin, switchPlugin } from "./plugin-actions.js";
 import { recordHere, recordingRequest, recordPoint, removeRecorded, setRecordMode } from "./recording-actions.js";
 import { chooseLink, leaveTrunk, listenToTrunk, loadSerialPorts, searchOnTrunk, searchTrunkAgain } from "./mstp-actions.js";
@@ -267,6 +268,7 @@ export const actions = {
   write: () => writeValue(),
   release: (element) => releaseHere(Number(element.dataset.priority)),
   "release-other": (element) => releaseOther(Number(element.dataset.priority)),
+  "save-file": () => saveFile(),
   "release-held": (element) => releaseHeld([state.held[Number(element.dataset.index)]]),
   "release-all": () => releaseHeld([...state.held]),
   technical: () => showTechnical(),

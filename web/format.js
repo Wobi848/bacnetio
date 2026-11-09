@@ -11,6 +11,8 @@ export const DEVICE_TYPE = 8;
 export const TREND_TYPES = [20, 27];
 /** Event Log: its details list the alarms and events the device logged. */
 export const EVENT_LOG_TYPE = 25;
+/** File: its details save it from the device. */
+export const FILE_TYPE = 10;
 const NAMED_PRIORITIES = [1, 2, 5, 6, 8, 16];
 
 /** Vendor and model, without the brand twice: many models already start with it ("Kieback&Peter DDC4000"). */

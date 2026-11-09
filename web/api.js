@@ -22,12 +22,33 @@ async function call(method, path, body, contentType = "application/json") {
     // not an answer of this bacnetio's API: a proxy, or a program older than this page
     throw new Error(t("badAnswer", { path }));
   }
-  if (!response.ok) {
-    const error = new Error(data?.error ? errorText(data.error) : `${response.status} ${response.statusText}`);
-    error.status = response.status;
-    throw error;
-  }
+  if (!response.ok) throw answerError(response, data);
   return data;
+}
+
+/** A refusal with the server's text in the reader's language. */
+function answerError(response, data) {
+  const error = new Error(data?.error ? errorText(data.error) : `${response.status} ${response.statusText}`);
+  error.status = response.status;
+  return error;
+}
+
+/** A file to save: the answer's bytes, or an Error with the server's text. */
+async function fetchFile(path) {
+  let response;
+  try {
+    response = await fetch(path);
+  } catch {
+    throw new Error(t("notRunning"));
+  }
+  if (response.ok) return response.blob();
+  let data = null;
+  try {
+    data = await response.json();
+  } catch {
+    // no JSON: the status says enough
+  }
+  throw answerError(response, data);
 }
 
 const objectPath = (device, type, instance) => `/api/devices/${device}/objects/${type}/${instance}`;
@@ -84,6 +105,7 @@ export const api = {
   object: (device, type, instance) => call("GET", objectPath(device, type, instance)),
   trend: (device, type, instance) => call("GET", `${objectPath(device, type, instance)}/trend`),
   eventLog: (device, type, instance) => call("GET", `${objectPath(device, type, instance)}/events`),
+  file: (device, type, instance) => fetchFile(`${objectPath(device, type, instance)}/file`),
   value: (device, type, instance, mode) => call("GET", `${objectPath(device, type, instance)}/value${mode === "read" ? "?mode=read" : ""}`),
   properties: (device, type, instance) => call("GET", `${objectPath(device, type, instance)}/properties`),
   write: (device, type, instance, value, priority) =>

@@ -12,6 +12,7 @@ use bacnet_objects::analog::{AnalogInputObject, AnalogOutputObject, AnalogValueO
 use bacnet_objects::binary::{BinaryInputObject, BinaryOutputObject};
 use bacnet_objects::device_identity::{DeviceIdentity, build_database_with_extra};
 use bacnet_objects::event_log::EventLogObject;
+use bacnet_objects::file::FileObject;
 use bacnet_objects::group::StructuredViewObject;
 use bacnet_objects::multistate::MultiStateValueObject;
 use bacnet_objects::schedule::ScheduleObject;
@@ -24,8 +25,8 @@ use bacnet_types::constructed::{
     LogValue,
 };
 use bacnet_types::enums::{
-    EngineeringUnits, EventState, EventType, NotifyType, ObjectType, PropertyIdentifier,
-    Segmentation,
+    EngineeringUnits, EventState, EventType, FileAccessMethod, NotifyType, ObjectType,
+    PropertyIdentifier, Segmentation,
 };
 use bacnet_types::primitives::{BACnetTimeStamp, Date, ObjectIdentifier, PropertyValue, Time};
 
@@ -115,6 +116,7 @@ fn objects() -> Vec<Box<dyn BACnetObject>> {
     objects.push(Box::new(supply_air_log()));
     objects.push(Box::new(air_handling_log()));
     objects.push(Box::new(alarm_history()));
+    objects.push(Box::new(parameters()));
     objects.extend(plant_view());
     objects
 }
@@ -307,6 +309,25 @@ fn alarm_history() -> EventLogObject {
         .unwrap();
     }
     log
+}
+
+/// The controller's parameter set as a file of records, one line each, as some controllers keep it.
+fn parameters() -> FileObject {
+    let mut file = FileObject::new(1, "Parameters.csv", "parameters").unwrap();
+    file.set_file_access_method(FileAccessMethod::RECORD_ACCESS.to_raw());
+    file.set_records(
+        [
+            "name;value;unit",
+            "supply air setpoint;20.0;degC",
+            "heating valve limit;100;%",
+            "fan start;06:00;",
+            "fan stop;22:00;",
+        ]
+        .iter()
+        .map(|line| line.as_bytes().to_vec())
+        .collect(),
+    );
+    file
 }
 
 /// The temperatures at `minutes` after the start, by Analog Input instance: the supply air swings

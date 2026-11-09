@@ -24,6 +24,9 @@ All notable changes for users of bacnetio.
 - An Event Log, the device's own list of past alarms and events, shows them in its details newest first: when (the
   device's time), which point by its name, into which state or that it was acknowledged, and the device's text, with
   *Export event log (CSV)*. Before, only its properties were shown.
+- A File object, where a device keeps programs and parameter sets, has *Save file* in its details: bacnetio reads the
+  whole file from the device and saves it on this computer under the object's name, as a copy before a change. Nothing
+  is written to the device.
 
 ### Changed
 
