@@ -113,17 +113,24 @@ fn any_date(date: &Date) -> String {
 
 /// The week from the bytes of Weekly_Schedule: seven daily schedules in a row.
 pub fn decode_week(object: ObjectIdentifier, bytes: &[u8]) -> anyhow::Result<Vec<Vec<Change>>> {
+    Ok(decode_days(bytes)?
+        .iter()
+        .map(|values| {
+            values
+                .iter()
+                .map(|item| change(object, &item.time, &item.value))
+                .collect()
+        })
+        .collect())
+}
+
+fn decode_days(bytes: &[u8]) -> anyhow::Result<Vec<Vec<BACnetTimeValue>>> {
     let mut week = Vec::new();
     let mut offset = 0;
     while offset < bytes.len() {
         let (values, next) =
             decode_daily_schedule(bytes, offset).map_err(|error| anyhow!("{error}"))?;
-        week.push(
-            values
-                .iter()
-                .map(|item| change(object, &item.time, &item.value))
-                .collect(),
-        );
+        week.push(values);
         offset = next;
     }
     Ok(week)
@@ -196,6 +203,10 @@ pub async fn read_calendar(
 /// A value for a schedule, of the same kind as its default value.
 fn parse_value(kind: &PropertyValue, text: &str) -> Result<PropertyValue, String> {
     let invalid = || format!("\"{text}\" is no value for this schedule");
+    // from then on the schedule writes nothing and lets go of its priority on what it controls
+    if text.eq_ignore_ascii_case("null") {
+        return Ok(PropertyValue::Null);
+    }
     match kind {
         PropertyValue::Real(_) => text
             .replace(',', ".")
@@ -277,15 +288,42 @@ pub fn parse_day(kind: &PropertyValue, text: &str) -> Result<Vec<BACnetTimeValue
     Ok(day)
 }
 
-/// Writes one day of the week (0 is Monday), leaving the other days as they are.
+/// The kind of value a schedule takes: that of its default value, or, where the default is NULL or
+/// cannot be read, that of the first value in its week.
+fn schedule_kind(
+    default: Option<PropertyValue>,
+    week: &[Vec<BACnetTimeValue>],
+) -> Option<PropertyValue> {
+    default
+        .into_iter()
+        .chain(week.iter().flatten().map(|item| item.value.clone()))
+        .find(|value| *value != PropertyValue::Null)
+}
+
+/// One day as it is typed to change it: "06:00 21.5; 18:00 null".
+fn day_text(object: ObjectIdentifier, values: &[BACnetTimeValue]) -> String {
+    values
+        .iter()
+        .map(|item| change(object, &item.time, &item.value).exact)
+        .collect::<Vec<_>>()
+        .join("; ")
+}
+
+/// Writes one day of the week (0 is Monday), leaving the other days as they are. Returns the day
+/// as it was before, for the log, when the week could be read.
 pub async fn write_day(
     client: &Client,
     device: u32,
     object: ObjectIdentifier,
     day: u32,
     text: &str,
-) -> anyhow::Result<()> {
-    let kind = read_value(
+) -> anyhow::Result<Option<String>> {
+    let week = read_raw(client, device, object, PropertyIdentifier::WEEKLY_SCHEDULE)
+        .await
+        .ok()
+        .and_then(|bytes| decode_days(&bytes).ok())
+        .unwrap_or_default();
+    let default = read_value(
         client,
         device,
         object,
@@ -293,7 +331,12 @@ pub async fn write_day(
         None,
     )
     .await
-    .map_err(|error| anyhow!("cannot read the schedule's default value: {error}"))?;
+    .ok();
+    let kind = schedule_kind(default, &week)
+        .ok_or_else(|| anyhow!("cannot tell which kind of value this schedule takes"))?;
+    let before = week
+        .get(day as usize)
+        .map(|values| day_text(object, values));
     let values = parse_day(&kind, text).map_err(|reason| anyhow!(reason))?;
     let mut encoded = BytesMut::new();
     encode_daily_schedule(&mut encoded, &values).map_err(|error| anyhow!("{error}"))?;
@@ -307,7 +350,8 @@ pub async fn write_day(
             None,
         )
         .await
-        .map_err(|error| anyhow!("the device refused: {error}"))
+        .map_err(|error| anyhow!("the device refused: {error}"))?;
+    Ok(before)
 }
 
 #[cfg(test)]
@@ -351,5 +395,41 @@ mod tests {
         assert_eq!(binary[0].value, PropertyValue::Enumerated(1));
         let states = parse_day(&PropertyValue::Unsigned(1), "06:00 state 2").unwrap();
         assert_eq!(states[0].value, PropertyValue::Unsigned(2));
+    }
+
+    #[test]
+    fn null_lets_go_at_a_time_and_is_shown_as_typed() {
+        let day = parse_day(&PropertyValue::Real(0.0), "06:00 21; 18:00 null").unwrap();
+        assert_eq!(day[1].value, PropertyValue::Null);
+        let object = ObjectIdentifier::new(bacnet_types::enums::ObjectType::SCHEDULE, 1).unwrap();
+        assert_eq!(day_text(object, &day), "06:00 21; 18:00 null");
+        assert_eq!(
+            parse_day(&PropertyValue::Enumerated(0), "07:00 NULL").unwrap()[0].value,
+            PropertyValue::Null
+        );
+    }
+
+    #[test]
+    fn a_schedule_without_default_takes_the_kind_of_its_week() {
+        let time = Time {
+            hour: 6,
+            minute: 0,
+            second: 0,
+            hundredths: 0,
+        };
+        let value = |value| BACnetTimeValue { time, value };
+        let week = vec![
+            vec![value(PropertyValue::Null)],
+            vec![value(PropertyValue::Enumerated(1))],
+        ];
+        assert_eq!(
+            schedule_kind(Some(PropertyValue::Null), &week),
+            Some(PropertyValue::Enumerated(1))
+        );
+        assert_eq!(
+            schedule_kind(Some(PropertyValue::Real(20.0)), &week),
+            Some(PropertyValue::Real(20.0))
+        );
+        assert_eq!(schedule_kind(None, &[]), None);
     }
 }

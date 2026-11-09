@@ -341,8 +341,9 @@ identity are not written this way.
 those commands, logged; the password is never stored. `POST /api/devices/{instance}/alarms/acknowledge`
 `{ "type": 0, "instance": 3 }` acknowledges what the device reports for the object now.
 
-`GET .../objects/{type}/{instance}/schedule` answers `{ "week": [[{ "time", "value" }], …], "exceptions":
-[{ "when", "priority", "changes" }] }`, `GET .../calendar` the dates in words.
+`GET .../objects/{type}/{instance}/schedule` answers `{ "week": [[{ "time", "value", "exact" }], …], "exceptions":
+[{ "when", "priority", "changes" }] }`, `GET .../calendar` the dates in words. `exact` is the change
+as it is typed to write the day again, nothing rounded: `06:30:30 21.456`, `18:00 null`.
 
 `GET /api/events` answers the alarm messages devices sent to this computer since the start, the last
 500: `[{ "time", "device", "type", "instance", "object", "from", "to", "text" }]`. A device sends them
@@ -352,7 +353,10 @@ only to computers listed in its notification classes.
 says whether the device told what an acknowledgement has to refer to.
 
 `POST .../objects/{type}/{instance}/schedule` `{ "day": 0, "changes": "06:00 21.5; 18:00 17" }` writes
-one day of the week (0 is Monday), logged; the values take the kind of the schedule's default value.
+one day of the week (0 is Monday). The values take the kind of the schedule's default value, or of
+the first value in its week where the default is NULL; `null` at a time lets go. The log keeps the
+day as it was: `day 1 of the week: 06:00 21.5; 18:00 17 (before: 06:00 21; 18:00 null)`. `400` when
+the day is typed wrong, `409` when the kind cannot be told, `502` when the device refuses.
 
 `POST /api/who-has` `{ "name": "…" }` asks the whole network for 3 s and answers `[{ "device", "type",
 "instance", "name" }]`.

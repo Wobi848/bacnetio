@@ -136,6 +136,8 @@ pub async fn acknowledge(
 pub struct ChangeView {
     time: String,
     value: String,
+    /// As typed to change the day, nothing rounded: "06:30:30 21.456".
+    exact: String,
 }
 
 #[derive(Serialize)]
@@ -157,6 +159,7 @@ fn change_views(changes: Vec<schedule::Change>) -> Vec<ChangeView> {
         .map(|change| ChangeView {
             time: change.time,
             value: change.value,
+            exact: change.exact,
         })
         .collect()
 }
@@ -204,15 +207,34 @@ pub async fn write_day(
     let object = object_id(object_type, instance)?;
     let client = state.client().await?;
     let result = schedule::write_day(&client, device, object, request.day, &request.changes).await;
+    // the day as it was, so the log tells how to put it back
+    let before = match &result {
+        Ok(Some(before)) if before.is_empty() => " (before: no changes)".to_string(),
+        Ok(Some(before)) => format!(" (before: {before})"),
+        _ => String::new(),
+    };
     super::writing::record_command(
         &state,
         device,
         object,
-        format!("day {} of the week: {}", request.day + 1, request.changes),
+        format!(
+            "day {} of the week: {}{before}",
+            request.day + 1,
+            request.changes
+        ),
         result.as_ref().err().map(|error| format!("{error:#}")),
     );
-    result.map_err(|error| ApiError::bad_request(format!("{error:#}")))?;
-    Ok(StatusCode::NO_CONTENT)
+    match result {
+        Ok(_) => Ok(StatusCode::NO_CONTENT),
+        // the device's refusal is the device's; anything else was typed wrong
+        Err(error) if format!("{error:#}").starts_with("the device refused") => {
+            Err(ApiError::device(format!("{error:#}")))
+        }
+        Err(error) if format!("{error:#}").starts_with("cannot tell") => {
+            Err(ApiError::conflict(format!("{error:#}")))
+        }
+        Err(error) => Err(ApiError::bad_request(format!("{error:#}"))),
+    }
 }
 
 pub async fn calendar(

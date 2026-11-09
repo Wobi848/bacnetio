@@ -71,6 +71,18 @@ export default {
     await page.click("button[data-act=day-write]");
     await page.waitForFunction(() => /08:00[\s\S]*19\.5/.test(document.querySelector(".detail .times")?.textContent ?? ""));
     assert.ok((await api("log")).some((item) => /day 6 of the week: 08:00 19.5/.test(item.value ?? "") && !item.error));
+    // the log keeps the day as it was, to put it back
+    assert.ok((await api("log")).some((item) => /^day 6 of the week: 08:00 19\.5; 12:00 18 \(before: /.test(item.value ?? "")), JSON.stringify(await api("log")));
+    // null lets go at a time; the field says so
+    await page.click("button[data-act=day-edit][data-day='5']");
+    assert.match(await page.textContent(".detail .times .hint"), /null/);
+    assert.equal(await page.inputValue("#day-changes"), "08:00 19.5; 12:00 18");
+    await page.fill("#day-changes", "07:00 20; 19:00 null");
+    await page.click("button[data-act=day-write]");
+    await page.waitForFunction(() => /19:00[\s\S]*null/.test(document.querySelector(".detail .times")?.textContent ?? ""));
+    await page.click("button[data-act=day-edit][data-day='5']");
+    assert.equal(await page.inputValue("#day-changes"), "07:00 20; 19:00 null");
+    await page.click("button[data-act=day-cancel]");
     await page.click("button[data-act=day-edit][data-day='5']");
     await page.fill("#day-changes", "no time");
     await page.click("button[data-act=day-write]");

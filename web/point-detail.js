@@ -107,7 +107,7 @@ function scheduleHtml(state, times) {
   const week = times.week.map((changes, index) => {
     if (state.editDay === index) {
       return `<dt>${h(day(index))}</dt><dd><div class="property-edit"><input id="day-changes" class="mono" value="${h(state.editDayText)}" placeholder="06:00 21.5; 18:00 17">
-        <button type="button" data-act="day-write">${t("writeValue")}</button><button type="button" class="quiet" data-act="day-cancel">${t("cancel")}</button></div></dd>`;
+        <button type="button" data-act="day-write">${t("writeValue")}</button><button type="button" class="quiet" data-act="day-cancel">${t("cancel")}</button></div><p class="hint">${t("sched.nullHint")}</p></dd>`;
     }
     const edit = state.writeUnlocked ? ` <button type="button" class="quiet" data-act="day-edit" data-day="${index}">${t("change")}</button>` : "";
     return `<dt>${h(day(index))}</dt><dd>${changesHtml(changes)}${edit}</dd>`;
