@@ -1,9 +1,9 @@
 import { assert, open, openDevice, searchInUi } from "./helpers.mjs";
 
 // A trend log of the device shows as chart with its record count and a CSV export; a log of several
-// points shows a chart per point, named as the point list read it.
+// points shows a chart per point, named as the point list read it; an event log lists past alarms.
 export default {
-  name: "Trend log and trend log multiple: chart and export",
+  name: "Trend log, trend log multiple and event log: chart, list and export",
   async run({ page, base }) {
     await open(page, base);
     await searchInUi(page);
@@ -20,5 +20,17 @@ export default {
     const csv = await (await page.request.get(`${base}/api/devices/1001/objects/27/1/trend.csv`)).text();
     assert.match(csv.split("\n")[0], /Time \(device\).*Supply air temp.*Heating valve.*Supply fan enable/);
     assert.equal(csv.trim().split("\n").length, 97);
+    // the device's own list of past alarms, newest first, with the points' names and texts
+    await page.click(".row[data-point]:has-text('Alarm history')");
+    await page.waitForSelector(".detail .alarm.logged", { timeout: 15000 });
+    const logged = await page.$$eval(".detail .alarm.logged", (rows) => rows.map((row) => row.textContent.replace(/\s+/g, " ").trim()));
+    assert.equal(logged.length, 4, logged.join(" | "));
+    assert.match(logged[0], /Supply air temp.*Acknowledged/);
+    assert.match(logged[1], /Supply air temp.*Supply air normal.*Normal/i);
+    assert.match(logged[3], /Filter alarm.*Filter dirty/);
+    assert.match(await page.textContent(".detail"), /4 entries, newest first/);
+    const events = await (await page.request.get(`${base}/api/devices/1001/objects/25/1/events.csv`)).text();
+    assert.match(events, /Supply air too warm/);
+    assert.equal(events.trim().split("\n").length, 5);
   },
 };

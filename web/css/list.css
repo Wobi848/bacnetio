@@ -224,6 +224,8 @@ mark { border-radius: 2px; background: var(--warn-soft); color: inherit; border-
 .alarm > .cut { flex: 1 1 140px; min-width: 0; }
 .alarm .chips { display: flex; flex-wrap: wrap; flex: 0 1 auto; min-width: 0; gap: 4px; align-items: center; }
 .alarm .chips button { height: 26px; padding: 0 8px; font-size: 12.5px; }
+.alarm.logged .when { display: block; color: var(--muted); font-size: 12.5px; }
+.alarm.logged .desc { display: block; color: var(--muted); font-size: 12.5px; }
 .detail h3 .n { margin-left: 4px; color: var(--muted); }
 .ask { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 14px; border: 1px solid var(--warn); border-radius: 10px; background: var(--warn-soft); }
 /* a long answer breaks into lines in a narrow column instead of pushing the box out of it */

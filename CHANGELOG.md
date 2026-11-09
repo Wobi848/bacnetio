@@ -21,6 +21,9 @@ All notable changes for users of bacnetio.
 - A Trend Log Multiple, the log of several points in one object that many controllers keep, shows its records in its
   details: a chart per point with lowest, highest and mean value, named as the point list read them, and *Export trend
   log (CSV)* with a column per point. Before, only its properties were shown.
+- An Event Log, the device's own list of past alarms and events, shows them in its details newest first: when (the
+  device's time), which point by its name, into which state or that it was acknowledged, and the device's text, with
+  *Export event log (CSV)*. Before, only its properties were shown.
 
 ### Changed
 

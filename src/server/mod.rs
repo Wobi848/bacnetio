@@ -173,6 +173,8 @@ pub fn router(state: Shared) -> Router {
         .route(&format!("{object}/value"), get(devices::value))
         .route(&format!("{object}/trend"), get(logs::trend))
         .route(&format!("{object}/trend.csv"), get(logs::trend_csv))
+        .route(&format!("{object}/events"), get(logs::events))
+        .route(&format!("{object}/events.csv"), get(logs::events_csv))
         .route(&format!("{object}/write"), post(writing::write_value))
         .route(&format!("{object}/property"), post(writing::write_property))
         .route(&format!("{object}/release"), post(writing::release))

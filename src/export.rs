@@ -4,8 +4,10 @@
 use std::collections::BTreeMap;
 use std::time::SystemTime;
 
-use bacnet_types::primitives::PropertyValue;
+use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
 
+use crate::alarms;
+use crate::event_log::LoggedEvent;
 use crate::points::Point;
 use crate::present::{
     address_text, date_time_text as device_time_text, entry_action, hex, object_text,
@@ -174,8 +176,7 @@ pub fn device_list_csv(devices: &[Device]) -> String {
     device_list(devices).csv()
 }
 
-/// A trend log read from a device: its local time and the value.
-/// One row per record, one column per logged point: `titles` names them.
+/// A trend log read from a device: one row per record, one column per logged point: `titles` names them.
 pub fn trend_csv(titles: &[String], records: &[TrendRecord]) -> String {
     let mut out = String::from("\u{FEFF}");
     let mut header = vec!["Time (device)".to_string()];
@@ -190,6 +191,30 @@ pub fn trend_csv(titles: &[String], records: &[TrendRecord]) -> String {
                 .map(|value| value.map(|v| v.to_string()).unwrap_or_default()),
         );
         out.push_str(&row(&cells));
+    }
+    out
+}
+
+/// An event log read from a device, oldest first: `name` names each object as the point list read it.
+pub fn event_log_csv(events: &[LoggedEvent], name: impl Fn(ObjectIdentifier) -> String) -> String {
+    let mut out = String::from("\u{FEFF}");
+    out.push_str(&row(&[
+        "Time (device)",
+        "Object",
+        "From",
+        "To",
+        "Acknowledged",
+        "Message",
+    ]));
+    for event in events {
+        out.push_str(&row(&[
+            device_time_text(&event.date, &event.time),
+            name(event.object),
+            alarms::state_text(event.from),
+            alarms::state_text(event.to),
+            if event.acknowledged { "yes" } else { "" }.to_string(),
+            event.text.clone().unwrap_or_default(),
+        ]));
     }
     out
 }

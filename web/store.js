@@ -176,6 +176,8 @@ export const state = {
   propertiesOther: false,
   liveSource: null,
   trend: null,
+  /** The chosen Event Log's records, or `{ error }`. */
+  eventLog: null,
   /** A schedule's week or a calendar's dates: null while read, or { error }. */
   times: null,
   /** The day of the schedule being changed, 0 is Monday, and what is typed for it. */

@@ -99,6 +99,8 @@ const ERROR_PATTERNS = [
   [/^"(.*)" is not a station address \(such as 12 or 00:1a\)$/, "badStation"],
   [/^reading trend logs of devices behind a router is not supported yet$/, "trendRouter"],
   [/^this object does not hold trend log records$/, "notTrend"],
+  [/^reading event logs of devices behind a router is not supported yet$/, "eventRouter"],
+  [/^this object does not hold event log records$/, "notEventLog"],
   [/^(.*) is neither warm nor cold$/, "notRestart"],
   [/^(.*) is not an IP address or IP:PORT$/, "notAddress"],
   [/^(.*) is not a subnet like 192\.168\.10\.0\/24$/, "notSubnet"],

@@ -33,7 +33,7 @@ export default {
     assert.equal(await page.textContent("#next"), "Release the held value");
     assert.equal(await page.textContent(".nextbar button[data-act=find]"), "Search again");
     // the head says what to do, with the count; only the next step is filled, a chosen view is not
-    assert.equal(await page.textContent(".pagehead p"), "23 data points, 1 of them held by you. Choose one to see its details.");
+    assert.equal(await page.textContent(".pagehead p"), "24 data points, 1 of them held by you. Choose one to see its details.");
     const filled = (selector) => page.locator(selector).evaluate((element) => getComputedStyle(element).backgroundColor);
     assert.notEqual(await filled(".toolbar .seg button[aria-pressed=true]"), await filled("#next"));
     // on a phone the head keeps the next step; the search moves into the toolbar, nothing is lost

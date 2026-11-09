@@ -11,6 +11,7 @@ use std::time::{Duration, Instant};
 use bacnet_objects::analog::{AnalogInputObject, AnalogOutputObject, AnalogValueObject};
 use bacnet_objects::binary::{BinaryInputObject, BinaryOutputObject};
 use bacnet_objects::device_identity::{DeviceIdentity, build_database_with_extra};
+use bacnet_objects::event_log::EventLogObject;
 use bacnet_objects::group::StructuredViewObject;
 use bacnet_objects::multistate::MultiStateValueObject;
 use bacnet_objects::schedule::ScheduleObject;
@@ -18,11 +19,15 @@ use bacnet_objects::traits::BACnetObject;
 use bacnet_objects::trend::{TrendLogMultipleObject, TrendLogObject};
 use bacnet_server::server::{BACnetServer, DccPolicy};
 use bacnet_types::constructed::{
-    BACnetDeviceObjectPropertyReference, BACnetLogMultipleRecord, BACnetLogRecord, BACnetTimeValue,
-    LogData, LogDatum, LogValue,
+    BACnetDeviceObjectPropertyReference, BACnetEventLogRecord, BACnetLogMultipleRecord,
+    BACnetLogRecord, BACnetTimeValue, EventLogDatum, EventNotificationRequest, LogData, LogDatum,
+    LogValue,
 };
-use bacnet_types::enums::{EngineeringUnits, ObjectType, PropertyIdentifier, Segmentation};
-use bacnet_types::primitives::{Date, ObjectIdentifier, PropertyValue, Time};
+use bacnet_types::enums::{
+    EngineeringUnits, EventState, EventType, NotifyType, ObjectType, PropertyIdentifier,
+    Segmentation,
+};
+use bacnet_types::primitives::{BACnetTimeStamp, Date, ObjectIdentifier, PropertyValue, Time};
 
 const PORT: u16 = 47808;
 /// How often the temperatures move, so live values, COV and the recording have something to show.
@@ -109,6 +114,7 @@ fn objects() -> Vec<Box<dyn BACnetObject>> {
     objects.extend(rooms);
     objects.push(Box::new(supply_air_log()));
     objects.push(Box::new(air_handling_log()));
+    objects.push(Box::new(alarm_history()));
     objects.extend(plant_view());
     objects
 }
@@ -224,6 +230,79 @@ fn air_handling_log() -> TrendLogMultipleObject {
                 LogValue::RealValue(valve.round()),
                 LogValue::EnumValue(u64::from(running)),
             ]),
+        })
+        .unwrap();
+    }
+    log
+}
+
+/// What the device logged of its alarms in the logged night: the filter, then the supply air too
+/// warm, acknowledged in the morning, and back to normal.
+fn alarm_history() -> EventLogObject {
+    let mut log = EventLogObject::new(1, "Alarm history", 100).unwrap();
+    let night = [
+        (
+            2,
+            10,
+            (ObjectType::BINARY_INPUT, 1),
+            EventState::OFFNORMAL,
+            NotifyType::ALARM,
+            "Filter dirty",
+        ),
+        (
+            3,
+            40,
+            (ObjectType::ANALOG_INPUT, 1),
+            EventState::HIGH_LIMIT,
+            NotifyType::ALARM,
+            "Supply air too warm",
+        ),
+        (
+            4,
+            5,
+            (ObjectType::ANALOG_INPUT, 1),
+            EventState::NORMAL,
+            NotifyType::ALARM,
+            "Supply air normal",
+        ),
+        (
+            7,
+            30,
+            (ObjectType::ANALOG_INPUT, 1),
+            EventState::NORMAL,
+            NotifyType::ACK_NOTIFICATION,
+            "",
+        ),
+    ];
+    for (hour, minute, (object_type, instance), to, notify_type, text) in night {
+        let time = Time {
+            hour,
+            minute,
+            second: 0,
+            hundredths: 0,
+        };
+        log.add_record(BACnetEventLogRecord {
+            date: logged_day(),
+            time,
+            log_datum: EventLogDatum::Notification(EventNotificationRequest {
+                process_identifier: 1,
+                initiating_device_identifier: at(ObjectType::DEVICE, 1001),
+                event_object_identifier: at(object_type, instance),
+                timestamp: BACnetTimeStamp::Time(time),
+                notification_class: 1,
+                priority: 100,
+                event_type: EventType::OUT_OF_RANGE,
+                message_text: (!text.is_empty()).then(|| text.to_string()),
+                notify_type,
+                ack_required: true,
+                from_state: if to == EventState::NORMAL {
+                    EventState::HIGH_LIMIT
+                } else {
+                    EventState::NORMAL
+                },
+                to_state: to,
+                event_values: None,
+            }),
         })
         .unwrap();
     }
