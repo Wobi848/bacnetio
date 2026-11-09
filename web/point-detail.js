@@ -3,9 +3,9 @@
 
 import { figures } from "./analysis.js";
 import { chartHtml, numberText } from "./chart.js";
-import { MULTISTATE, RECORDABLE, TREND_TYPES, chips, errorStrip, has, isBinary, split, stateWord, valueHtml } from "./format.js";
+import { MULTISTATE, EVENT_LOG_TYPE, RECORDABLE, TREND_TYPES, chips, errorStrip, has, isBinary, split, stateWord, valueHtml } from "./format.js";
 import { h } from "./html.js";
-import { currentLocale, objectText, statusText, t, valueWord } from "./i18n.js";
+import { currentLocale, eventStateText, objectText, statusText, t, valueWord } from "./i18n.js";
 import { priorityLabel } from "./plugins.js";
 import { propertiesBarHtml, propertySectionsHtml } from "./properties.js";
 
@@ -112,6 +112,33 @@ function trendHtml(state, object) {
   return `<p class="sub">${counted}</p>${charts}${notes}${csv}`;
 }
 
+/** How many logged alarms and events the details list; the CSV holds all. */
+const EVENTS_SHOWN = 100;
+
+/** The colour of a state: back to normal is good, a fault is an error, everything else a warning. */
+const stateChip = (to) => (to === "normal" ? "ok" : to === "fault" ? "err" : "warn");
+
+/** One logged alarm or event: when (the device's own time), which point, into which state, its text. */
+function loggedEventHtml(event) {
+  const when = new Date(Date.parse(event.time)).toLocaleString(currentLocale(), { dateStyle: "short", timeStyle: "short" });
+  const chip = event.acknowledged ? `<span class="chip">${t("evlog.acked")}</span>` : `<span class="chip ${stateChip(event.to)}">${h(eventStateText(event.to))}</span>`;
+  const text = event.text ? `<span class="desc">${h(event.text)}</span>` : "";
+  return `<div class="alarm logged"><span class="cut" title="${h(event.object)}"><span class="mono when">${h(when)}</span>${h(event.name)}${text}</span><span class="chips">${chip}</span></div>`;
+}
+
+/** An Event Log's records newest first: what the plant did while nobody watched. */
+function eventLogHtml(state, object) {
+  const log = state.eventLog;
+  if (!log) return `<p class="hint">${t("evlog.reading")}</p>`;
+  if (log.error) return errorStrip(log.error);
+  if (!log.records.length) return `<p class="hint">${t("evlog.empty")}</p>`;
+  const newest = [...log.records].reverse();
+  const rows = newest.slice(0, EVENTS_SHOWN).map(loggedEventHtml).join("");
+  const notes = [log.gaps ? t("evlog.gaps") : "", log.truncated ? t("evlog.truncated") : "", newest.length > EVENTS_SHOWN ? t("evlog.shown", { n: EVENTS_SHOWN }) : ""].filter(Boolean).map((text) => `<p class="hint">${h(text)}</p>`).join("");
+  const csv = `<div class="actions"><a class="quiet" href="/api/devices/${state.device.instance}/objects/${object.type}/${object.instance}/events.csv" download>${t("evlog.export")}</a></div>`;
+  return `<p class="sub">${t("evlog.records", { n: log.records.length })}</p><div class="alarms">${rows}</div>${notes}${csv}`;
+}
+
 function changesHtml(changes) {
   return changes.map((change) => `<span class="time-change"><b class="mono">${h(change.time)}</b> ${h(valueWord(change.value))}</span>`).join("") || `<span class="sub">–</span>`;
 }
@@ -166,10 +193,13 @@ export function detailHtml(state) {
   const point = listed(state, object);
   const stateTexts = point?.state_texts;
   const isTrend = TREND_TYPES.includes(object.type);
+  const isEventLog = object.type === EVENT_LOG_TYPE;
+  // a log keeps records, not a value of its own: nothing to show live
+  const isLog = isTrend || isEventLog;
   const held = state.held.some((entry) => entry.device === state.device.instance && entry.type === object.type && entry.instance === object.instance);
   const live = state.liveSource === "cov" ? `<span class="chip ok" title="${h(t("chip.liveHint"))}">${t("chip.live")}</span>` : "";
   const mode = state.liveModes[`${state.device.instance}:${object.type}:${object.instance}`] ?? "auto";
-  const modes = isTrend ? "" : `<div class="live-mode"><span class="sub">${t("liveMode.title")}</span><span class="seg">${[["auto", "liveMode.auto"], ["read", "liveMode.read"]].map(([name, label]) => `<button type="button" data-act="live-mode" data-mode="${name}" aria-pressed="${mode === name}">${t(label)}</button>`).join("")}</span></div>`;
+  const modes = isLog ? "" : `<div class="live-mode"><span class="sub">${t("liveMode.title")}</span><span class="seg">${[["auto", "liveMode.auto"], ["read", "liveMode.read"]].map(([name, label]) => `<button type="button" data-act="live-mode" data-mode="${name}" aria-pressed="${mode === name}">${t(label)}</button>`).join("")}</span></div>`;
   const writable = object.commandable || WRITABLE_WITHOUT_PRIORITY.includes(object.type);
   const recorded = (state.recording?.points ?? []).some((entry) => entry.device === state.device.instance && entry.type === object.type && entry.instance === object.instance);
   const watched = state.watch.some((entry) => entry.device === state.device.instance && entry.type === object.type && entry.instance === object.instance);
@@ -180,7 +210,7 @@ export function detailHtml(state) {
   const facts = [[t("col.type"), objectText(object)], [t("description"), object.description || "–"], [t("status"), statusText(object.status)]];
   if (object.units) facts.push([t("unit"), object.units]);
   if (object.error) facts.push([t("readProblem"), object.error]);
-  const value = isTrend ? "" : `<div class="big">${valueHtml(object, stateTexts)}</div>`;
+  const value = isLog ? "" : `<div class="big">${valueHtml(object, stateTexts)}</div>`;
   const who = writable && object.commandable ? `<h3>${t("stack.title")}</h3><p class="hint">${t("stack.lead")}</p>${slotsHtml(state, object, stateTexts)}` : "";
   const direct = writable && !object.commandable ? `<h3>${t("direct.title")}</h3><p class="hint">${t("direct.lead")}</p>` : "";
   return `<aside class="detail${open}" data-keep="point-detail">${back}
@@ -188,6 +218,7 @@ export function detailHtml(state) {
     ${value}<div class="chips">${chips(object, held)}${live}</div>${has(object, "overridden") ? `<p class="hint">${t("overridden.why")}</p>` : ""}${modes}
     ${errorStrip(state.error)}
     ${isTrend ? `<h3>${t("trend.title")}</h3>${trendHtml(state, object)}` : ""}
+    ${isEventLog ? `<h3>${t("evlog.title")}</h3>${eventLogHtml(state, object)}` : ""}
     ${TIME_TYPES.includes(object.type) ? timesHtml(state) : ""}
     ${who}${direct}${writable ? writeHtml(state, object, stateTexts) : ""}
     <h3>${t("details")}</h3>

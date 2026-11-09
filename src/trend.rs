@@ -1,8 +1,7 @@
 //! The device's own recordings: Trend Log and Trend Log Multiple objects, read page by page with
 //! ReadRange.
 
-use anyhow::{Context, bail};
-use bacnet_client::log_reader::LogCursor;
+use anyhow::Context;
 use bacnet_encoding::constructed::decode_device_object_property_reference;
 use bacnet_services::read_range::LogRecords;
 use bacnet_types::constructed::{
@@ -13,10 +12,7 @@ use bacnet_types::enums::PropertyIdentifier;
 use bacnet_types::primitives::{Date, ObjectIdentifier, Time};
 
 use crate::connection::Client;
-
-/// A log is read up to this many records; big buffers would take minutes over MS/TP.
-pub const MAX_RECORDS: usize = 20_000;
-const MAX_PAGES: usize = 20_000;
+use crate::log_buffer::{Buffer, read_buffer};
 
 /// One logged round with the device's local date and time: one value for a Trend Log, one per
 /// logged point for a Trend Log Multiple.
@@ -28,68 +24,32 @@ pub struct TrendRecord {
     pub values: Vec<Option<f64>>,
 }
 
-#[derive(Debug, Default)]
-pub struct TrendLog {
-    pub records: Vec<TrendRecord>,
-    /// Records the device dropped while it was read, or before.
-    pub gaps: bool,
-    /// Stopped at [`MAX_RECORDS`].
-    pub truncated: bool,
-}
+pub type TrendLog = Buffer<TrendRecord>;
 
-/// All records of a Trend Log object, oldest first, `page` records per ReadRange at most
-/// (limits.rs). A page the device cannot answer is halved at once.
+/// All records of a Trend Log or Trend Log Multiple object, oldest first.
 pub async fn read_trend_log(
     client: &Client,
     device: u32,
     log: ObjectIdentifier,
     page: u16,
 ) -> anyhow::Result<TrendLog> {
-    let found = client
-        .get_device(device)
-        .await
-        .with_context(|| format!("device {device} is not known; search for it first"))?;
-    if found.source_network.is_some() {
-        bail!("reading trend logs of devices behind a router is not supported yet");
-    }
-    let mut result = TrendLog::default();
-    let mut cursor = LogCursor::Oldest;
-    let mut size = page.max(1);
-    for _ in 0..MAX_PAGES {
-        let page = match client
-            .read_log_page(&found.mac_address, log, cursor, size)
-            .await
-        {
-            Ok(page) => page,
-            Err(_) if size > 1 => {
-                size /= 2;
-                continue;
+    read_buffer(
+        client,
+        device,
+        log,
+        page,
+        "trend log",
+        |records| match records {
+            LogRecords::TrendLog(records) => {
+                Some(records.iter().filter_map(trend_record).collect())
             }
-            Err(error) => return Err(error).context("cannot read the log buffer"),
-        };
-        result.gaps |= page.gap.is_some();
-        match page.records {
-            LogRecords::TrendLog(records) => result
-                .records
-                .extend(records.iter().filter_map(trend_record)),
-            LogRecords::TrendLogMultiple(records) => result
-                .records
-                .extend(records.iter().filter_map(multiple_record)),
-            _ => bail!("this object does not hold trend log records"),
-        }
-        if result.records.len() >= MAX_RECORDS {
-            result.records.truncate(MAX_RECORDS);
-            result.truncated = !page.done;
-            return Ok(result);
-        }
-        if page.done {
-            return Ok(result);
-        }
-        cursor = page.next;
-    }
-    // a device whose cursor never reaches the end would otherwise be asked for ever
-    result.truncated = true;
-    Ok(result)
+            LogRecords::TrendLogMultiple(records) => {
+                Some(records.iter().filter_map(multiple_record).collect())
+            }
+            _ => None,
+        },
+    )
+    .await
 }
 
 /// What a Trend Log Multiple logs, in the order of its records' values: Log_DeviceObjectProperty.

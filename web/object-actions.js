@@ -1,7 +1,7 @@
 // The chosen point: reading its details, keeping the value live, trend logs, writing, the clock.
 
 import { api } from "./api.js";
-import { TREND_TYPES } from "./format.js";
+import { EVENT_LOG_TYPE, TREND_TYPES } from "./format.js";
 import { t, valueWord } from "./i18n.js";
 import { localClock } from "./device-actions.js";
 import { loadSitePoints } from "./site-actions.js";
@@ -37,6 +37,7 @@ export async function selectPoint(key) {
   state.properties = null;
   state.liveSource = null;
   state.trend = null;
+  state.eventLog = null;
   state.times = null;
   state.editDay = null;
   state.error = null;
@@ -54,6 +55,10 @@ export async function selectPoint(key) {
   render();
   if (TREND_TYPES.includes(type)) {
     loadTrend(type, instance);
+    return;
+  }
+  if (type === EVENT_LOG_TYPE) {
+    loadEventLog(type, instance);
     return;
   }
   if (type === SCHEDULE_TYPE || type === CALENDAR_TYPE) loadTimes(type, instance);
@@ -99,6 +104,15 @@ async function loadTrend(type, instance) {
     state.trend = await api.trend(state.device.instance, type, instance);
   } catch (error) {
     state.trend = { error: error.message };
+  }
+  if (showing(type, instance)) render();
+}
+
+async function loadEventLog(type, instance) {
+  try {
+    state.eventLog = await api.eventLog(state.device.instance, type, instance);
+  } catch (error) {
+    state.eventLog = { error: error.message };
   }
   if (showing(type, instance)) render();
 }

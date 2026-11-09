@@ -9,6 +9,8 @@ export const MULTISTATE = [13, 14, 19];
 export const DEVICE_TYPE = 8;
 /** Trend Log and Trend Log Multiple: their details show the records the device logged. */
 export const TREND_TYPES = [20, 27];
+/** Event Log: its details list the alarms and events the device logged. */
+export const EVENT_LOG_TYPE = 25;
 const NAMED_PRIORITIES = [1, 2, 5, 6, 8, 16];
 
 /** Vendor and model, without the brand twice: many models already start with it ("Kieback&Peter DDC4000"). */

@@ -127,6 +127,6 @@ function groupByKind(points) {
 }
 
 /** Short names of object types, as technicians write them. */
-const TYPE_SHORT = { 0: "AI", 1: "AO", 2: "AV", 3: "BI", 4: "BO", 5: "BV", 6: "CAL", 8: "DEV", 10: "FILE", 13: "MSI", 14: "MSO", 9: "EE", 12: "LOOP", 15: "NC", 16: "PRG", 17: "SCH", 19: "MSV", 20: "TL", 27: "TLM", 29: "SV", 56: "NP" };
+const TYPE_SHORT = { 0: "AI", 1: "AO", 2: "AV", 3: "BI", 4: "BO", 5: "BV", 6: "CAL", 8: "DEV", 10: "FILE", 13: "MSI", 14: "MSO", 9: "EE", 12: "LOOP", 15: "NC", 16: "PRG", 17: "SCH", 19: "MSV", 20: "TL", 25: "EL", 27: "TLM", 29: "SV", 56: "NP" };
 
 export const typeShort = (type) => TYPE_SHORT[type] ?? String(type);

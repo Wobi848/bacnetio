@@ -10,9 +10,11 @@ pub mod commands;
 pub mod connection;
 pub mod diagnosis;
 pub mod ede;
+pub mod event_log;
 pub mod export;
 pub mod interfaces;
 pub mod limits;
+pub mod log_buffer;
 #[cfg(not(target_os = "android"))]
 pub mod mstp;
 pub mod object;

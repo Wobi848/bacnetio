@@ -44,14 +44,15 @@ export default {
     await page.waitForFunction(() => document.querySelectorAll(".row[data-point]").length === 10);
     // what no view holds stays reachable: the schedule and the trend logs
     await page.click(".node[data-node='view:outside']");
-    await page.waitForFunction(() => document.querySelectorAll(".row[data-point]").length === 3);
+    await page.waitForFunction(() => document.querySelectorAll(".row[data-point]").length === 4);
     const rest = await page.textContent(".rows");
     assert.match(rest, /Office hours/);
     assert.match(rest, /Supply air temp log/);
     assert.match(rest, /Air handling log/);
+    assert.match(rest, /Alarm history/);
     // the whole device again: the views themselves are objects of it too
     await page.click(".node[data-act=tree-device]:has-text('AHU-01')");
-    await page.waitForFunction(() => document.querySelectorAll(".row[data-point]").length === 23);
+    await page.waitForFunction(() => document.querySelectorAll(".row[data-point]").length === 24);
     // the controller has no Structured View objects, so its names still give the groups
     await openDevice(page, "DDC4000_#21");
     await page.waitForSelector(".tree .node[data-node^='part:']", { timeout: 20000 });

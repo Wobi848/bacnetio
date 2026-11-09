@@ -230,6 +230,7 @@ export default {
     "trend.reading": "Reading the trend log …", "trend.records": "{n} records", "trend.recordsOf": "{n} records of {points} points", "trend.empty": "The trend log holds no values.",
     "trend.gaps": "The device dropped some records; the line has gaps there.", "trend.truncated": "Only the first 20 000 records are shown.",
     "trend.export": "Export trend log (CSV)",
+    "evlog.title": "Alarms and events logged in the device", "evlog.reading": "Reading the event log …", "evlog.records": "{n} entries, newest first", "evlog.empty": "The event log holds no alarms or events.", "evlog.acked": "Acknowledged", "evlog.shown": "The newest {n} are shown; the CSV holds all.", "evlog.gaps": "The device dropped some entries.", "evlog.truncated": "Only the first 20 000 entries were read.", "evlog.export": "Export event log (CSV)",
     "site.remembered": "Remembered from {when}. Search again to work with the devices live.",
     "bbmd.title": "BBMD tables", "bbmd.read": "Read BBMD tables", "bbmd.readAgain": "Read BBMD tables again", "bbmd.reading": "Reading the BBMD tables …",
     "bbmd.hint": "A BBMD passes broadcasts to other subnets. bacnetio only reads its tables and never changes them.",

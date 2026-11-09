@@ -83,6 +83,7 @@ export const api = {
   saveReference: (device) => call("POST", `/api/devices/${device}/reference`),
   object: (device, type, instance) => call("GET", objectPath(device, type, instance)),
   trend: (device, type, instance) => call("GET", `${objectPath(device, type, instance)}/trend`),
+  eventLog: (device, type, instance) => call("GET", `${objectPath(device, type, instance)}/events`),
   value: (device, type, instance, mode) => call("GET", `${objectPath(device, type, instance)}/value${mode === "read" ? "?mode=read" : ""}`),
   properties: (device, type, instance) => call("GET", `${objectPath(device, type, instance)}/properties`),
   write: (device, type, instance, value, priority) =>

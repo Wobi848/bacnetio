@@ -485,6 +485,15 @@ order, `[{ "name": "Supply air temp", "units": "°C" }, …]`, from its Log_Devi
 name the point list read, else the object; the property when it is not the present value, and the
 device when it is another one. The CSV has a column per point.
 
+`GET /api/devices/{instance}/objects/25/{instance}/events`: the past alarms and events an Event Log
+object keeps, read page by page with ReadRange, oldest first: `{ "records": [{ "time":
+"2026-11-01T03:40:00", "type": 0, "instance": 1, "object": "Analog input 1", "name": "Supply air
+temp", "from": "normal", "to": "high limit", "acknowledged": false, "text": "Supply air too warm" }],
+"gaps": false, "truncated": false }`. `time` is the device's local time; `name` the name the point
+list read, else the object. An acknowledgement is its own record with `acknowledged` true. Status
+changes of the log and clock changes are left out; at most 20 000 records, as for a trend log.
+`.../events.csv` downloads the same as CSV. Nothing is acknowledged from here.
+
 ## Write and release
 
 Writing changes a running plant. The concept (section 6) asks the UI to unlock writing per
