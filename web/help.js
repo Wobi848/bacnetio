@@ -4,9 +4,12 @@ import { h } from "./html.js";
 import { currentLanguage, t } from "./i18n.js";
 import de from "./help/de.js";
 import en from "./help/en.js";
+import es from "./help/es.js";
+import fr from "./help/fr.js";
+import it from "./help/it.js";
 
-/** The guides with words of their own; the other languages show the English ones for now. */
-export const HELP_FILES = { en, de };
+/** The guides in every language of the interface; French, Italian and Spanish are drafts like their other texts. */
+export const HELP_FILES = { en, de, fr, it, es };
 
 /** The guides in the order of the list, each with its group and the place its first step is. */
 export const GUIDES = [
@@ -32,7 +35,7 @@ export const TARGETS = {
   settings: "help.goSettings", sites: "help.goSites",
 };
 
-const words = () => HELP_FILES[currentLanguage()] ?? en;
+const words = () => HELP_FILES[currentLanguage()];
 
 /** A guide's text with the interface's own names of buttons and fields, and other guides' titles. */
 export function helpText(text) {

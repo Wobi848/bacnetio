@@ -115,8 +115,8 @@ program, with guides for the usual tasks."
    VPN, write and release) in English and German, with the tests
 2. [x] The other guides: read points, BBMD, MS/TP, watch list, recording, reference and comparison,
    files, capture, sites, extensions
-3. [ ] French, Italian and Spanish: until they have help texts of their own, they show the English
-   guides; their interface words around the guides are drafts like the rest
+3. [x] French, Italian and Spanish, as drafts like the rest of their texts until someone from the
+   trade has reviewed them
 4. [x] README (Usage) points to the help
 
 ## Decided
