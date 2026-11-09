@@ -148,6 +148,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Write and release with priority, after the session unlock | point details | `ui/03-write`, `write.rs` |
 | Every property of an object | point details, *Show technical details* | `ui/14-details`, `read.rs` |
 | Trend logs of the device as chart and CSV | point details of a trend log | `ui/08-trend`, `trend.rs` |
+| Trend Log Multiple: a chart per point it logs, CSV with a column per point | point details of a trend log multiple | `ui/08-trend`, `trend.rs` |
 | Recording compared: one time axis, a chart per unit, window and zoom, lowest, highest, mean, on-share, changes, gaps | *Recording* | `ui/05-recording`, `web/ui.test.js` |
 | Recording: add, interval, start, stop, remove, clear, CSV, backup | point details, *Recording* | `ui/05-recording`, `ui/13-exports`, `record.rs` |
 | Values still held, release one or all, also after a restart | *Held by you*, status bar | `ui/03-write`, `storage.rs` |

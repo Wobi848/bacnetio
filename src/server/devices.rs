@@ -4,8 +4,6 @@ use std::collections::HashMap;
 
 use axum::Json;
 use axum::extract::{Path, Query, State};
-use axum::http::header;
-use axum::response::IntoResponse;
 use bacnet_types::enums::{EngineeringUnits, ObjectType, PropertyIdentifier};
 use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
 use serde::{Deserialize, Serialize};
@@ -13,12 +11,10 @@ use serde::{Deserialize, Serialize};
 use super::ApiError;
 use super::json::{NoteView, ObjectView, PointView};
 use super::session::Shared;
-use crate::limits::{self, Limits};
 use crate::object;
 use crate::points::ReadNote;
-use crate::trend::{self, TrendLog};
 use crate::watch::{self, Source};
-use crate::{alarms, bbmd, export, points, present, property_text, structure, write};
+use crate::{alarms, bbmd, points, present, property_text, structure, write};
 
 #[derive(Serialize)]
 pub struct PointsView {
@@ -309,70 +305,6 @@ pub async fn value(
             Source::Read => "read",
         },
     }))
-}
-
-#[derive(Serialize)]
-pub struct TrendView {
-    /// `["2026-11-01T09:30:00", 21.4]`: the device's local time without zone, and the value.
-    records: Vec<(String, Option<f64>)>,
-    gaps: bool,
-    truncated: bool,
-}
-
-/// The records of a Trend Log object, for a chart.
-pub async fn trend(
-    State(state): State<Shared>,
-    Path((device, object_type, instance)): Path<(u32, u32, u32)>,
-) -> Result<Json<TrendView>, ApiError> {
-    let log = read_trend(&state, device, object_type, instance).await?;
-    Ok(Json(TrendView {
-        records: log
-            .records
-            .iter()
-            .map(|record| {
-                let time =
-                    present::date_time_text(&record.date, &record.time).replacen(' ', "T", 1);
-                (time, record.value)
-            })
-            .collect(),
-        gaps: log.gaps,
-        truncated: log.truncated,
-    }))
-}
-
-pub async fn trend_csv(
-    State(state): State<Shared>,
-    Path((device, object_type, instance)): Path<(u32, u32, u32)>,
-) -> Result<impl IntoResponse, ApiError> {
-    let log = read_trend(&state, device, object_type, instance).await?;
-    let title = format!(
-        "{device} {}",
-        present::object_text(object_id(object_type, instance)?)
-    );
-    let disposition = format!("attachment; filename=\"trend-{device}-{instance}.csv\"");
-    Ok((
-        [
-            (header::CONTENT_TYPE, "text/csv; charset=utf-8".to_string()),
-            (header::CONTENT_DISPOSITION, disposition),
-        ],
-        export::trend_csv(&title, &log.records),
-    ))
-}
-
-async fn read_trend(
-    state: &Shared,
-    device: u32,
-    object_type: u32,
-    instance: u32,
-) -> Result<TrendLog, ApiError> {
-    let log = object_id(object_type, instance)?;
-    let client = state.client().await?;
-    let limits = limits::read_limits(&client, device)
-        .await
-        .unwrap_or(Limits::ASSUMED);
-    trend::read_trend_log(&client, device, log, limits.records_per_request())
-        .await
-        .map_err(|error| ApiError::device(format!("{error:#}")))
 }
 
 #[derive(Serialize)]

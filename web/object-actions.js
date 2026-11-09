@@ -1,6 +1,7 @@
 // The chosen point: reading its details, keeping the value live, trend logs, writing, the clock.
 
 import { api } from "./api.js";
+import { TREND_TYPES } from "./format.js";
 import { t, valueWord } from "./i18n.js";
 import { localClock } from "./device-actions.js";
 import { loadSitePoints } from "./site-actions.js";
@@ -9,7 +10,6 @@ import { refreshHeld, render, state, toast } from "./store.js";
 const OBJECT_POLL_MS = 20000;
 const VALUE_POLL_MS = 2000;
 const PROPERTY_POLL_MS = 10000;
-const TREND_LOG_TYPE = 20;
 const OUT_OF_SERVICE_PROPERTY = 81;
 const SCHEDULE_TYPE = 17;
 const CALENDAR_TYPE = 6;
@@ -52,7 +52,7 @@ export async function selectPoint(key) {
     return;
   }
   render();
-  if (type === TREND_LOG_TYPE) {
+  if (TREND_TYPES.includes(type)) {
     loadTrend(type, instance);
     return;
   }

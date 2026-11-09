@@ -18,6 +18,9 @@ All notable changes for users of bacnetio.
 - *Stop its sending* in a device's commands stops only what the device sends by itself (I-Am, COV, alarms); it still
   answers, and every device takes it. Without a time it is held under *Held by you* until resumed, as a stop of all
   communication is.
+- A Trend Log Multiple, the log of several points in one object that many controllers keep, shows its records in its
+  details: a chart per point with lowest, highest and mean value, named as the point list read them, and *Export trend
+  log (CSV)* with a column per point. Before, only its properties were shown.
 
 ### Changed
 

@@ -15,9 +15,12 @@ use bacnet_objects::group::StructuredViewObject;
 use bacnet_objects::multistate::MultiStateValueObject;
 use bacnet_objects::schedule::ScheduleObject;
 use bacnet_objects::traits::BACnetObject;
-use bacnet_objects::trend::TrendLogObject;
+use bacnet_objects::trend::{TrendLogMultipleObject, TrendLogObject};
 use bacnet_server::server::{BACnetServer, DccPolicy};
-use bacnet_types::constructed::{BACnetLogRecord, BACnetTimeValue, LogDatum};
+use bacnet_types::constructed::{
+    BACnetDeviceObjectPropertyReference, BACnetLogMultipleRecord, BACnetLogRecord, BACnetTimeValue,
+    LogData, LogDatum, LogValue,
+};
 use bacnet_types::enums::{EngineeringUnits, ObjectType, PropertyIdentifier, Segmentation};
 use bacnet_types::primitives::{Date, ObjectIdentifier, PropertyValue, Time};
 
@@ -105,6 +108,7 @@ fn objects() -> Vec<Box<dyn BACnetObject>> {
     ];
     objects.extend(rooms);
     objects.push(Box::new(supply_air_log()));
+    objects.push(Box::new(air_handling_log()));
     objects.extend(plant_view());
     objects
 }
@@ -146,27 +150,80 @@ fn plant_view() -> Vec<Box<dyn BACnetObject>> {
     vec![Box::new(root), Box::new(air), Box::new(rooms)]
 }
 
+/// The quarters of hour of the logged day: 1 November 2026, every 15 minutes.
+const QUARTERS: u32 = 96;
+
+fn logged_day() -> Date {
+    Date {
+        year: 126,
+        month: 11,
+        day: 1,
+        day_of_week: 7,
+    }
+}
+
+fn quarter_time(quarter: u32) -> Time {
+    Time {
+        hour: (quarter / 4) as u8,
+        minute: (quarter % 4 * 15) as u8,
+        second: 0,
+        hundredths: 0,
+    }
+}
+
+/// The supply air temperature over the logged day: lowest in the morning, highest in the evening.
+fn supply_air_at(quarter: u32) -> f32 {
+    let hours = quarter as f32 / 4.0;
+    let value = 20.0 + 2.0 * ((hours - 6.0) / 24.0 * TAU).sin();
+    (value * 10.0).round() / 10.0
+}
+
 /// A day of supply air temperatures every 15 minutes, as a controller's own trend log holds them.
 fn supply_air_log() -> TrendLogObject {
     let mut log = TrendLogObject::new(1, "Supply air temp log", 1000).unwrap();
-    for quarter in 0..96u32 {
-        let hours = quarter as f32 / 4.0;
-        let value = 20.0 + 2.0 * ((hours - 6.0) / 24.0 * std::f32::consts::TAU).sin();
+    for quarter in 0..QUARTERS {
         log.add_record(BACnetLogRecord {
-            date: Date {
-                year: 126,
-                month: 11,
-                day: 1,
-                day_of_week: 7,
-            },
-            time: Time {
-                hour: (quarter / 4) as u8,
-                minute: (quarter % 4 * 15) as u8,
-                second: 0,
-                hundredths: 0,
-            },
-            log_datum: LogDatum::RealValue((value * 10.0).round() / 10.0),
+            date: logged_day(),
+            time: quarter_time(quarter),
+            log_datum: LogDatum::RealValue(supply_air_at(quarter)),
             status_flags: None,
+        })
+        .unwrap();
+    }
+    log
+}
+
+/// The same day of the air handling in one log of several points, as many controllers keep it:
+/// supply air, heating valve and supply fan.
+fn air_handling_log() -> TrendLogMultipleObject {
+    let mut log = TrendLogMultipleObject::new(1, "Air handling log", 1000).unwrap();
+    for (object_type, instance) in [
+        (ObjectType::ANALOG_INPUT, 1),
+        (ObjectType::ANALOG_OUTPUT, 1),
+        (ObjectType::BINARY_OUTPUT, 1),
+    ] {
+        log.add_property_reference(BACnetDeviceObjectPropertyReference::new_local(
+            at(object_type, instance),
+            PropertyIdentifier::PRESENT_VALUE.to_raw(),
+        ))
+        .unwrap();
+    }
+    for quarter in 0..QUARTERS {
+        let supply = supply_air_at(quarter);
+        let running = (6 * 4..22 * 4).contains(&quarter);
+        let valve = if running {
+            ((22.0 - supply) * 25.0).clamp(0.0, 100.0)
+        } else {
+            0.0
+        };
+        log.add_record(BACnetLogMultipleRecord {
+            date: logged_day(),
+            time: quarter_time(quarter),
+            log_data: LogData::Values(vec![
+                LogValue::RealValue(supply),
+                LogValue::RealValue(valve.round()),
+                LogValue::EnumValue(u64::from(running)),
+            ]),
         })
         .unwrap();
     }

@@ -7,6 +7,7 @@ mod devices;
 mod exports;
 mod guard;
 mod json;
+mod logs;
 mod plugins;
 mod reading;
 mod recording;
@@ -170,8 +171,8 @@ pub fn router(state: Shared) -> Router {
         .route(object, get(devices::object))
         .route(&format!("{object}/properties"), get(devices::properties))
         .route(&format!("{object}/value"), get(devices::value))
-        .route(&format!("{object}/trend"), get(devices::trend))
-        .route(&format!("{object}/trend.csv"), get(devices::trend_csv))
+        .route(&format!("{object}/trend"), get(logs::trend))
+        .route(&format!("{object}/trend.csv"), get(logs::trend_csv))
         .route(&format!("{object}/write"), post(writing::write_value))
         .route(&format!("{object}/property"), post(writing::write_property))
         .route(&format!("{object}/release"), post(writing::release))

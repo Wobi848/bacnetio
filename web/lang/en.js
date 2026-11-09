@@ -227,7 +227,7 @@ export default {
     "rec.notStarted": "The recording is not running: press “Start recording” above, then it measures every {interval} s.", "rec.notStartedShort": "Not started yet.", "rec.poll": "Poll", "rec.cov": "COV", "rec.covRefused": "COV refused, polled", "rec.covRefusedHint": "The device does not report this point by itself; it is read at the interval instead.", "rec.waiting": "Waiting for the first value …", "rec.noValues": "No value yet: the device does not answer or the value is not a number.",
     "rec.noAnswer": "no answer",
     "trend.title": "Recorded in the device",
-    "trend.reading": "Reading the trend log …", "trend.records": "{n} records", "trend.empty": "The trend log holds no values.",
+    "trend.reading": "Reading the trend log …", "trend.records": "{n} records", "trend.recordsOf": "{n} records of {points} points", "trend.empty": "The trend log holds no values.",
     "trend.gaps": "The device dropped some records; the line has gaps there.", "trend.truncated": "Only the first 20 000 records are shown.",
     "trend.export": "Export trend log (CSV)",
     "site.remembered": "Remembered from {when}. Search again to work with the devices live.",
