@@ -213,7 +213,8 @@ and compared with a reference, trend logs, alarms and events, and Excel files be
 ### Later or never
 
 - Raspberry Pi: not a target
-- BACnet/IPv6, BACnet/SC, BACnet Ethernet: not planned
+- BACnet/IPv6, BACnet Ethernet: not planned
+- BACnet/SC: proposed in [concept-sc.md](concept-sc.md), not built
 - Acting as a BACnet server: only the minimum (a device object for devices that ask back)
 
 ## 5. Stack (open)
