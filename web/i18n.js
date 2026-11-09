@@ -43,6 +43,7 @@ const ERROR_PATTERNS = [
   [/^the device refused: BACnet error: \S+ \/ unknown-property$/, "refusedUnknownProperty"],
   [/^the device refused: BACnet error: \S+ \/ unknown-object$/, "refusedUnknownObject"],
   [/^the device refused: BACnet error: \S+ \/ service-request-denied$/, "refusedService"],
+  [/^the device no longer takes this stop/, "withdrawnStop"],
   [/^the device refused: (.*)$/, "refused"],
   [/^"(.*)" is not a number$/, "notNumber"],
   [/^"(.*)" is not active or inactive$/, "notBinary"],

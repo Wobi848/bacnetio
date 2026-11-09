@@ -54,6 +54,9 @@ export async function renameDevice() {
   render();
 }
 
+/** The two kinds of stop: of what the device sends by itself, and of all of it (devices before ASHRAE 135-2020). */
+export const STOP_COMMANDS = ["silence", "stop"];
+
 /** Restart or stop or resume the chosen device, as confirmed. */
 export async function runCommand(kind) {
   const device = state.selectedDevice;
@@ -61,13 +64,14 @@ export async function runCommand(kind) {
   const typed = state.commandMinutes.trim();
   const minutes = typed ? Number(typed) : null;
   // a slip here must not turn into stopping a device for good
-  if (kind === "stop" && typed && !(Number.isInteger(minutes) && minutes >= 1 && minutes <= MOST_STOP_MINUTES)) {
+  const stopping = STOP_COMMANDS.includes(kind);
+  if (stopping && typed && !(Number.isInteger(minutes) && minutes >= 1 && minutes <= MOST_STOP_MINUTES)) {
     toast(t("cmd.minutesInvalid"), true);
     return;
   }
   try {
     if (kind === "warm" || kind === "cold") await api.restart(device, kind, password);
-    else await api.communication(device, kind === "resume", kind === "stop" ? minutes : null, password);
+    else await api.communication(device, kind === "resume", stopping ? minutes : null, password, kind === "silence");
     toast(t(`cmd.${kind}Done`));
     state.asking = false;
     state.commandMinutes = "";

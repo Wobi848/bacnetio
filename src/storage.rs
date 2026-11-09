@@ -59,6 +59,9 @@ enum StoredAction {
 #[derive(Serialize, Deserialize)]
 struct StoredCommunication {
     enable: bool,
+    /// Missing in logs written before both kinds of stop existed: those stopped all of it.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    sending_only: bool,
     minutes: Option<u16>,
 }
 
@@ -170,8 +173,13 @@ fn stored(entry: &Entry) -> Option<StoredEntry> {
         Action::Command { text, kind, .. } => StoredAction::Command {
             text: text.clone(),
             communication: match kind {
-                Command::Communication { enable, minutes } => Some(StoredCommunication {
+                Command::Communication {
+                    enable,
+                    sending_only,
+                    minutes,
+                } => Some(StoredCommunication {
                     enable: *enable,
+                    sending_only: *sending_only,
                     minutes: *minutes,
                 }),
                 _ => None,
@@ -217,11 +225,20 @@ fn entry(stored: StoredEntry) -> Option<Entry> {
         },
         StoredAction::Command {
             text,
-            communication: Some(StoredCommunication { enable, minutes }),
+            communication:
+                Some(StoredCommunication {
+                    enable,
+                    sending_only,
+                    minutes,
+                }),
         } => Action::Command {
             text,
             password: None,
-            kind: Command::Communication { enable, minutes },
+            kind: Command::Communication {
+                enable,
+                sending_only,
+                minutes,
+            },
         },
         StoredAction::Command { text, .. } => Action::Noted(text),
         StoredAction::SetClock {
@@ -320,6 +337,7 @@ mod tests {
                 password: Some("secret-word".to_string()),
                 kind: Command::Communication {
                     enable: false,
+                    sending_only: true,
                     minutes: None,
                 },
             },
@@ -337,6 +355,19 @@ mod tests {
         let mut journal = Journal::default();
         entries.into_iter().for_each(|entry| journal.record(entry));
         assert!(journal.held()[0].is_communication_stop());
+        assert!(
+            matches!(
+                journal.held()[0].action,
+                Action::Command {
+                    kind: Command::Communication {
+                        sending_only: true,
+                        ..
+                    },
+                    ..
+                }
+            ),
+            "the kind of stop comes back too"
+        );
     }
 
     #[test]

@@ -65,7 +65,8 @@ function heldValue(state, entry) {
 /** What holds it in the plant: a priority, out of service, or a device told to stay silent. */
 function heldKind(entry) {
   if (entry.priority) return `${t("priority")} ${entry.priority}`;
-  return entry.stops_communication ? t("held.silent") : t("chip.outOfService");
+  if (!entry.stops_communication) return t("chip.outOfService");
+  return entry.sending_only ? t("held.sendingOff") : t("held.silent");
 }
 
 function heldRows(state) {

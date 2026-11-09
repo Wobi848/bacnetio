@@ -15,10 +15,16 @@ All notable changes for users of bacnetio.
 - *More → Compare with …* in a device's point list shows its points beside those of another device of the site, matched by name without each device's shared start (`AHU-01 Supply temp` meets `AHU-02 Supply temp`). Devices of the same maker and model are offered first; one not read yet is read. The views *Differences*, *Only left* and *Only right* count their rows, a difference in type, value, unit or state is marked in its cell, and *Read both again* reads both devices.
 - *Settings → Capture for Wireshark* captures bacnetio's own BACnet traffic, sent and received, on every connection it opens while the capture runs, and saves it as a pcapng file Wireshark opens: on a laptop without administrator rights, where Wireshark cannot capture. On BACnet/IP the IP and UDP headers are built from the addresses; on MS/TP every frame on the line is in it, the token and the other stations' frames too. At most 100 000 packets; while it runs, the status bar shows the count.
 - *Select* in a device's point list puts a box on each row and each group: choose points one by one, by group or *All in view*, up to 200. *Change selected …* then sets one property of all of them: the present value at a priority, releasing a priority, out of service, COV increment, description or an alarm limit. A table shows each point's value now and its new one, and leaves out with the reason a point that has no such property, cannot take the value or is already so. After the unlock and one more question naming device, property, value and count, bacnetio writes one point after the other; each is logged like a single write, counted as held where it stays in the plant, and its result shows in the table. *Stop* ends after the point being written.
+- *Stop its sending* in a device's commands stops only what the device sends by itself (I-Am, COV, alarms); it still
+  answers, and every device takes it. Without a time it is held under *Held by you* until resumed, as a stop of all
+  communication is.
 
 ### Changed
 
 - On a phone, the head shows the site's name on a line of its own above how many devices were found, so the name is no longer cut short beside the settings and help buttons.
+- *Stop communication* says that devices after ASHRAE 135-2020 refuse it, and a device that does gets the reason in
+  words with what works instead (*Stop its sending*), not only "service-request-denied". The standard withdrew this
+  stop in 2020.
 - In German, the capture for Wireshark is called *Mitschnitt* (*Mitschnitt starten*), so it is no longer confused with the recording of values (*Aufzeichnung starten*).
 - EDE files follow layout 2.3 of the B.I.G.-EU: a 17th column *notification-class* with the object's notification class, binary objects refer to their inactive and active text in the state text file (before: no texts), and binary and multi-state texts never share a row. The files are named after the project as the layout asks (`Schulhaus Nord_EDE.csv`, `Schulhaus Nord_StateTexts.csv`; before: `device-1001-ede.csv`, `site-ede.csv`), and *EDE (all devices)* names the project after the site's own name when it has one, not after the network searched. Reading a device asks binary objects for their texts and alarming objects for their notification class too.
 

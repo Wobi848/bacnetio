@@ -34,6 +34,21 @@ export default {
     await page.waitForFunction(() => /whole number of minutes/.test(document.getElementById("toast").textContent));
     assert.equal((await api("log")).filter((item) => /communication off/.test(item.value ?? "")).length, 0);
     await page.click("button[data-act=cancel-write]");
+    // a stop of all communication is withdrawn since ASHRAE 135-2020: the refusal says what works instead
+    const withdrawn = await page.request.post(`${base}/api/devices/1001/communication`, { data: { enable: false, minutes: 5 } });
+    assert.equal(withdrawn.status(), 502);
+    assert.match(await withdrawn.text(), /withdrawn in ASHRAE 135-2020/);
+    // a stop of its sending only is taken, held without end and let go again from the held values
+    await page.click("button[data-act=ask-command][data-command=silence]");
+    assert.match(await page.textContent(".ask"), /still answers/);
+    await page.fill("#cmd-minutes", "");
+    await page.click("button[data-act=run-command]");
+    await page.waitForFunction(() => /Sending stopped/.test(document.getElementById("toast").textContent));
+    const sendingOff = (await api("held")).find((entry) => entry.stops_communication);
+    assert.ok(sendingOff?.sending_only, "the stop without end is held, as a stop of sending");
+    assert.equal(sendingOff.value, "sending off");
+    await api("devices/1001/communication", "POST", { enable: true });
+    assert.equal((await api("held")).filter((entry) => entry.stops_communication).length, 0);
     // a new name for the device, the old one to start from; the simulator refuses it in words, and
     // the name stays everywhere (a device that takes it is checked on a real plant)
     await page.click("button[data-act=ask-name]");

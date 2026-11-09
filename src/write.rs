@@ -57,6 +57,8 @@ pub enum Command {
     Restart(Restart),
     Communication {
         enable: bool,
+        /// Stops only what the device sends by itself (DISABLE_INITIATION); it still answers.
+        sending_only: bool,
         minutes: Option<u16>,
     },
     /// Read back from the log: done long ago, nothing to send.
@@ -94,7 +96,10 @@ impl Entry {
     fn stops_communication(&self) -> Option<bool> {
         match &self.action {
             Action::Command {
-                kind: Command::Communication { enable, minutes },
+                kind:
+                    Command::Communication {
+                        enable, minutes, ..
+                    },
                 ..
             } => Some(!enable && minutes.is_none()),
             _ => None,
@@ -104,6 +109,21 @@ impl Entry {
     /// The device's communication stopped for good by this entry and not let on since.
     pub fn is_communication_stop(&self) -> bool {
         self.stops_communication() == Some(true)
+    }
+
+    /// A stop of only what the device sends by itself: it still answers.
+    pub fn stops_sending_only(&self) -> bool {
+        matches!(
+            self.action,
+            Action::Command {
+                kind: Command::Communication {
+                    enable: false,
+                    sending_only: true,
+                    ..
+                },
+                ..
+            }
+        )
     }
 
     fn same_slot(&self, other: &Entry) -> bool {
@@ -241,9 +261,19 @@ pub async fn perform(
                 Command::Restart(restart) => {
                     commands::restart(client, device, *restart, password.clone()).await
                 }
-                Command::Communication { enable, minutes } => {
-                    commands::communication(client, device, *enable, *minutes, password.clone())
-                        .await
+                Command::Communication {
+                    enable,
+                    sending_only,
+                    minutes,
+                } => {
+                    commands::communication(
+                        client,
+                        device,
+                        commands::communication_state(*enable, *sending_only),
+                        *minutes,
+                        password.clone(),
+                    )
+                    .await
                 }
                 Command::Logged => Ok(()),
             };
@@ -550,7 +580,11 @@ mod tests {
         Action::Command {
             text: String::new(),
             password: None,
-            kind: Command::Communication { enable, minutes },
+            kind: Command::Communication {
+                enable,
+                sending_only: false,
+                minutes,
+            },
         }
     }
 

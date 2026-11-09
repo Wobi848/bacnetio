@@ -39,19 +39,25 @@ pub async fn restart(
         .await
 }
 
+/// What DeviceCommunicationControl asks for. DISABLE stops answering too, but ASHRAE 135-2020
+/// withdrew it and newer devices refuse it; DISABLE_INITIATION stops only what the device sends by
+/// itself (I-Am, COV, alarms) and every device takes it.
+pub fn communication_state(enable: bool, sending_only: bool) -> EnableDisable {
+    match (enable, sending_only) {
+        (true, _) => EnableDisable::ENABLE,
+        (false, false) => EnableDisable::DISABLE,
+        (false, true) => EnableDisable::DISABLE_INITIATION,
+    }
+}
+
 /// Stops the device's communication for `minutes`, or for good with `None`, or lets it talk again.
 pub async fn communication(
     client: &Client,
     device: u32,
-    enable: bool,
+    state: EnableDisable,
     minutes: Option<u16>,
     password: Option<String>,
 ) -> Result<(), Error> {
-    let state = if enable {
-        EnableDisable::ENABLE
-    } else {
-        EnableDisable::DISABLE
-    };
     client
         .device_communication_control_from_device(device, state, minutes, password)
         .await

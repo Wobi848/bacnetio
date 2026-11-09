@@ -16,7 +16,7 @@ use bacnet_objects::multistate::MultiStateValueObject;
 use bacnet_objects::schedule::ScheduleObject;
 use bacnet_objects::traits::BACnetObject;
 use bacnet_objects::trend::TrendLogObject;
-use bacnet_server::server::BACnetServer;
+use bacnet_server::server::{BACnetServer, DccPolicy};
 use bacnet_types::constructed::{BACnetLogRecord, BACnetTimeValue, LogDatum};
 use bacnet_types::enums::{EngineeringUnits, ObjectType, PropertyIdentifier, Segmentation};
 use bacnet_types::primitives::{Date, ObjectIdentifier, PropertyValue, Time};
@@ -224,6 +224,9 @@ async fn main() {
         .broadcast_address(broadcast(interface))
         .device(identity)
         .database(database)
+        // takes a stop of its sending without password, as many devices in plants do; the stop of
+        // all communication it refuses, as devices after ASHRAE 135-2020 do
+        .dcc_policy(DccPolicy::LegacyPermissive)
         .build()
         .await
         .expect("cannot start the simulated device");
