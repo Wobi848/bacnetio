@@ -4,7 +4,7 @@ use bacnet_types::constructed::BACnetAddress;
 use bacnet_types::enums::{EngineeringUnits, ObjectType};
 use bacnet_types::primitives::PropertyValue;
 
-use crate::address::Address;
+use crate::address::{Address, Link};
 use crate::points::{Point, StatusFlags};
 
 mod dates;
@@ -215,9 +215,9 @@ pub fn status_text(status: Option<StatusFlags>) -> String {
     words.join(", ")
 }
 
-/// Where a notification goes: the IP on the local network, else the network and the station's MAC,
-/// as a device behind a router is addressed.
-pub fn bacnet_address_text(address: &BACnetAddress) -> String {
+/// Where a notification goes: the address on the local link of the kind bacnetio is on, else the
+/// network and the station's MAC, as a device behind a router is addressed.
+pub fn bacnet_address_text(address: &BACnetAddress, link: Link) -> String {
     let network = match address.network_number {
         0 => String::new(),
         number => format!("network {number} "),
@@ -225,7 +225,13 @@ pub fn bacnet_address_text(address: &BACnetAddress) -> String {
     if address.mac_address.is_empty() {
         return format!("{network}broadcast");
     }
-    match Address::from_mac(&address.mac_address) {
+    // behind a router the kind of that network's link is unknown: six octets are taken for IP
+    let link = match address.mac_address.len() {
+        6 if address.network_number == 0 => link,
+        1 => Link::Mstp,
+        _ => Link::Ip,
+    };
+    match Address::from_mac(link, &address.mac_address) {
         Some(found) => format!("{network}{}", found.shown()),
         None => format!("{network}MAC {}", hex(&address.mac_address)),
     }

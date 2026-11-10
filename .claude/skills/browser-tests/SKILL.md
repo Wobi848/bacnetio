@@ -14,6 +14,7 @@ network or device.
 cargo fmt --check
 cargo test
 cargo clippy --all-targets -- -D warnings
+cargo clippy --no-default-features -- -D warnings   # the build without BACnet/SC
 node --test tests/web/*.test.js   # as CI (.github/workflows/build.yml)
 cargo build --all-targets
 export PLAYWRIGHT=$(ls -d ~/.npm/_npx/*/node_modules/playwright 2>/dev/null | head -1)

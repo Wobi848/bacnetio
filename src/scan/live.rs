@@ -7,14 +7,15 @@ use std::net::SocketAddrV4;
 use bacnet_client::discovery::DiscoveredDevice;
 
 use super::{Details, Device, ObjectList, Phase, Progress, RemoteStation};
-use crate::address::Address;
+use crate::address::{Address, Link};
 
-#[derive(Default)]
 pub(super) struct Live {
     pub devices: Vec<Device>,
     pub refused: Vec<(SocketAddrV4, String)>,
     pub asked: usize,
     pub total: usize,
+    /// The kind of link the scan runs on, to read the devices' MACs.
+    pub link: Link,
     /// Devices whose details are being read or were read.
     detailed: BTreeSet<(u32, Address)>,
     /// Devices found by asking directly and made known to the client by us; the client then
@@ -23,17 +24,22 @@ pub(super) struct Live {
 }
 
 impl Live {
-    pub fn new(total: usize) -> Self {
+    pub fn new(total: usize, link: Link) -> Self {
         Live {
+            devices: Vec::new(),
+            refused: Vec::new(),
+            asked: 0,
             total,
-            ..Live::default()
+            link,
+            detailed: BTreeSet::new(),
+            added: BTreeSet::new(),
         }
     }
 
     /// Devices that answered Who-Is; a device asked directly before is marked as answering too.
     pub fn merge(&mut self, found: Vec<DiscoveredDevice>) {
         for found in found {
-            let Some(address) = Address::from_mac(&found.mac_address) else {
+            let Some(address) = Address::from_mac(self.link, &found.mac_address) else {
                 continue;
             };
             let instance = found.object_identifier.instance_number();

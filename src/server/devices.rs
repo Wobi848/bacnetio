@@ -381,6 +381,7 @@ pub async fn properties(
                             values,
                             units,
                             &reading.encoded,
+                            crate::connection::link(&client),
                         )),
                         None,
                     ),

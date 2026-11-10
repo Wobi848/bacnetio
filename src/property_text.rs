@@ -14,6 +14,7 @@ use bacnet_types::enums::{
 };
 use bacnet_types::primitives::{BACnetTimeStamp, PropertyValue};
 
+use crate::address::Link;
 use crate::points::StatusFlags;
 use crate::present::{
     bacnet_address_text, date_time_text, object_text, object_type_text, plain_text, status_text,
@@ -39,9 +40,10 @@ pub fn property_text(
     values: &[PropertyValue],
     units: Option<EngineeringUnits>,
     encoded: &[u8],
+    link: Link,
 ) -> String {
     if property == PropertyIdentifier::RECIPIENT_LIST
-        && let Some(text) = recipients_text(encoded)
+        && let Some(text) = recipients_text(encoded, link)
     {
         return text;
     }
@@ -200,7 +202,7 @@ fn listed(texts: Vec<String>) -> String {
 /// `Recipient_List` of a Notification Class: who gets its alarms, when and how. The entries are
 /// `BACnetDestination` (Clause 21), which the flat list of values cannot express, so they are read
 /// from the bytes the device sent; `None` where they do not decode.
-fn recipients_text(encoded: &[u8]) -> Option<String> {
+fn recipients_text(encoded: &[u8], link: Link) -> Option<String> {
     let destinations = decode_destination_list(encoded).ok()?;
     if destinations.is_empty() {
         return Some("nobody".to_string());
@@ -208,16 +210,16 @@ fn recipients_text(encoded: &[u8]) -> Option<String> {
     Some(
         destinations
             .iter()
-            .map(destination_text)
+            .map(|destination| destination_text(destination, link))
             .collect::<Vec<_>>()
             .join("; "),
     )
 }
 
-fn destination_text(destination: &BACnetDestination) -> String {
+fn destination_text(destination: &BACnetDestination, link: Link) -> String {
     let who = match &destination.recipient {
         BACnetRecipient::Device(device) => object_text(*device),
-        BACnetRecipient::Address(address) => bacnet_address_text(address),
+        BACnetRecipient::Address(address) => bacnet_address_text(address, link),
     };
     let days = if destination.valid_days == DaysOfWeek::all() {
         "every day".to_string()
@@ -292,7 +294,7 @@ mod tests {
         values: &[PropertyValue],
         units: Option<EngineeringUnits>,
     ) -> String {
-        property_text(object_type, property, values, units, &[])
+        property_text(object_type, property, values, units, &[], Link::Ip)
     }
 
     fn stamp(stamp: &BACnetTimeStamp) -> PropertyValue {
@@ -488,6 +490,7 @@ mod tests {
             &[],
             None,
             &encoded,
+            Link::Ip,
         );
         assert_eq!(
             text,
@@ -501,6 +504,7 @@ mod tests {
                 &[],
                 None,
                 &[],
+                Link::Ip,
             ),
             "nobody"
         );
