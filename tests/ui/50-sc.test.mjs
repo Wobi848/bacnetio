@@ -6,7 +6,7 @@ import { assert, open, openDevice } from "./helpers.mjs";
 // SC network and the log. Against simulated_sc, which the runner starts.
 export default {
   name: "BACnet/SC: choose the files, connect to the hub, find its device, leave",
-  async run({ page, base }) {
+  async run({ page, base, api }) {
     const dir = process.env.BACNETIO_TEST_SC_DIR;
     if (!dir) return;
     const file = (name) => path.join(dir, name);
@@ -85,5 +85,12 @@ export default {
     await page.waitForFunction(() => /Matches the certificate/.test(document.body.textContent));
     assert.equal(await page.inputValue("#sc-hub"), process.env.BACNETIO_TEST_SC_HUB);
     assert.ok(!(await page.isDisabled("[data-act=sc-search]")));
+
+    // the site is kept by its hub and remembers it
+    const sites = await api("sites");
+    const site = sites.find((kept) => kept.sc_hub === process.env.BACNETIO_TEST_SC_HUB);
+    assert.ok(site, JSON.stringify(sites));
+    assert.match(site.name, /^localhost:\d+$/);
+    assert.equal(site.sc_failover_hub, null);
   },
 };

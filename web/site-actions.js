@@ -4,6 +4,7 @@ import { api } from "./api.js";
 import { excelHref } from "./excel.js";
 import { saveMemory } from "./memory.js";
 import { searchScope } from "./shell.js";
+import { takeSiteHubs } from "./sc-actions.js";
 import { openSiteOf, siteName } from "./sites.js";
 import { go, render, state, toast } from "./store.js";
 import { t } from "./i18n.js";
@@ -34,6 +35,7 @@ async function showSite(change) {
     state.node = null;
     saveMemory(state);
     await Promise.all([loadSitePoints(), loadSites()]);
+    takeSiteHubs(openSiteOf(state));
     go("workspace");
   } catch (error) {
     toast(error.message, true);

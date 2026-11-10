@@ -51,6 +51,12 @@ pub struct Site {
     /// groups them by itself (docs/concept-toolbox.md part 4).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub grouping: Option<String>,
+    /// The hubs the site was found through on BACnet/SC, offered again when it is opened
+    /// (docs/concept-sc.md); none for a site on IP or MS/TP.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sc_hub: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sc_failover_hub: Option<String>,
 }
 
 /// What the technician chose for a site: kept when the same network is searched again.
@@ -190,6 +196,9 @@ pub struct SiteView {
     devices: usize,
     /// Devices whose points are kept.
     read: usize,
+    /// The hubs of a site found on BACnet/SC.
+    sc_hub: Option<String>,
+    sc_failover_hub: Option<String>,
 }
 
 /// The sites kept, to go back to one without searching.
@@ -215,6 +224,8 @@ pub async fn list(State(state): State<Shared>) -> Json<Vec<SiteView>> {
                 open: shown.as_ref() == Some(&site.name),
                 title: site.title,
                 grouping: site.grouping,
+                sc_hub: site.sc_hub,
+                sc_failover_hub: site.sc_failover_hub,
                 name: site.name,
                 saved_ms: site.saved_ms,
             })
