@@ -78,6 +78,11 @@ impl Capture {
         if !inner.running {
             return;
         }
+        // on BACnet/SC the frames would be written as BACnet/IP: Wireshark reads SC only from the
+        // WebSocket traffic, which is encrypted (docs/concept-sc.md)
+        if crate::connection::link(client) == crate::address::Link::Sc {
+            return;
+        }
         let Some(tap) = client.transport().frame_tap() else {
             return;
         };

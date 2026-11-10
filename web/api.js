@@ -73,6 +73,7 @@ export const api = {
   scPassword: (line, password) => call("POST", "/api/sc/password", { line, password }),
   scSearch: (hub, rememberKey) => call("POST", "/api/sc/search", { hub, remember_key: rememberKey }),
   scLeave: () => call("POST", "/api/sc/leave"),
+  scForgetKey: () => call("POST", "/api/sc/forget-key"),
   startScan: (settings) => call("POST", "/api/scan", settings),
   stopScan: () => call("POST", "/api/scan/stop"),
   locate: (request) => call("POST", "/api/devices/locate", request),

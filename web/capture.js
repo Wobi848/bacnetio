@@ -20,6 +20,7 @@ export function captureCardHtml(state) {
     <div class="figure">${count(capture)}</div>
     <p class="update-status">${t(capture.running ? "capture.running" : "capture.stopped")}</p>
     ${overflowed}
+    ${state.sc?.view?.hub ? `<p class="hint warn">${t("capture.notOnSc")}</p>` : ""}
     <div class="acts">${toggle}${kept}</div>
     <p class="hint">${t("capture.what")}</p></section>`;
 }

@@ -15,7 +15,9 @@ All notable changes for users of bacnetio.
   the hub's certificate is not from this CA, the hub refuses bacnetio's certificate. *Leave the SC network* in the
   sidebar asks first while you hold values. Connecting and leaving are in the log. The files are kept for the next
   start; the key only when it came without a password or *Remember the key on this computer* is ticked, readable only
-  for you (on Windows encrypted for your user). A help guide *Open a BACnet/SC plant* in every language.
+  for you (on Windows encrypted for your user); *Settings → BACnet/SC key* deletes it again. A help guide *Open a
+  BACnet/SC plant* in every language. The capture for Wireshark records nothing on SC, as its traffic is encrypted, and
+  says so.
 - A simulated BACnet/SC hub with a device and its certificate files (`cargo run --example simulated_sc`).
 
 ## v0.3.0 (09.11.2026)

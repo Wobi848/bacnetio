@@ -75,6 +75,7 @@ fn sc_routes() -> Router<Shared> {
         .route("/api/sc/password", post(sc::password))
         .route("/api/sc/search", post(sc::search))
         .route("/api/sc/leave", post(sc::leave))
+        .route("/api/sc/forget-key", post(sc::forget_key))
 }
 
 #[cfg(not(feature = "sc"))]

@@ -115,7 +115,8 @@ to (`hub`, else `null`) and the hub of the last connection (`last_hub`), kept in
     "key_password": true
   },
   "hub": null,
-  "last_hub": "wss://hub.example:443/"
+  "last_hub": "wss://hub.example:443/",
+  "key_kept": true
 }
 ```
 
@@ -145,6 +146,10 @@ from the CA chosen or made out to another name, the hub refuses bacnetio's certi
 are then kept in the data folder for the next start, the key only when it came without a password
 or `remember_key` is set: readable only for the user, on Windows encrypted for the user with DPAPI.
 Connecting is logged (`GET /api/log`, under device 4194303, action `command`).
+
+`key_kept`: a private key is kept in the data folder. `POST /api/sc/forget-key` deletes it and
+empties the key line; the certificates stay, a connection open now keeps running until it is left.
+Answers like `GET /api/sc`.
 
 `POST /api/sc/leave`: leaves the SC network; logged like connecting. `204`, also when bacnetio is on
 none.

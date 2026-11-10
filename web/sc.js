@@ -68,6 +68,15 @@ export function scActsHtml(state) {
   return `<button type="button" data-act="sc-search"${canConnect(state.sc) ? "" : " disabled"}>${t("sc.connect")}</button>`;
 }
 
+/** In the settings: whether a key is kept on this computer, and the way to delete it. */
+export function scKeyCardHtml(state) {
+  if (!state.scAvailable) return "";
+  const kept = Boolean(state.sc.view?.key_kept);
+  const forget = kept ? `<div class="acts"><button type="button" data-act="sc-forget-key">${t("sc.forgetKey")}</button></div>` : "";
+  return `<section class="card sc-key"><h2>${t("sc.keyTitle")}</h2>
+    <p class="hint">${t(kept ? "sc.keyKept" : "sc.keyNotKept")}</p>${forget}</section>`;
+}
+
 /** In the sidebar while bacnetio is on an SC network: the hub, and the way off it. */
 export function scNetworkHtml(state) {
   const hub = state.sc.view?.hub;

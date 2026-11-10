@@ -234,10 +234,10 @@ for the demo and the browser tests. No key or certificate enters the repository.
    routes `/api/sc…` (`src/server/sc.rs`), `web/sc.js`; `simulated_sc` and `ui/50-sc`; help guide
    *Open a BACnet/SC plant* in all languages. The hub of the last connection is offered again.
 3. **Status, leaving, sites:** done: *Leave the SC network* (asks first while values are held),
-   the hub in the sidebar head, held values only on SC. Open: the status bar with the state of the
-   connection (connecting, reconnected, failover hub), the failover hub, a site that remembers its
-   hub and certificates, *Forget the SC key* in *Settings*, and *Capture* saying it is not available
-   on SC.
+   the hub in the sidebar head and the status bar, held values only on SC, *Forget the SC key* in
+   *Settings*, *Capture* saying it records nothing on SC. Open: the state of the connection
+   (connecting, reconnected, failover hub), the failover hub, a site that remembers its hub and
+   certificates.
 4. **Android:** the file picker, checked on a phone.
 5. **Key and CSR made in bacnetio**, the signed certificate taken back.
 6. **Direct connections** (Annex AB.4, node to node without the hub), where the hub announces them:
