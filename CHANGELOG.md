@@ -19,6 +19,9 @@ All notable changes for users of bacnetio.
   BACnet/SC plant* in every language. The capture for Wireshark records nothing on SC, as its traffic is encrypted, and
   says so.
 - A simulated BACnet/SC hub with a device and its certificate files (`cargo run --example simulated_sc`).
+- BACnet/SC: an optional *Failover hub*, taken when the first does not answer and left again when it returns. When the
+  connection to the hub drops, bacnetio connects again by itself; the sidebar and the status bar say *connected*,
+  *connection lost, connecting again* or *on the failover hub*.
 
 ### Fixed
 

@@ -9,6 +9,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use crate::sc_certificates::Line;
+use crate::sc_connection::Hubs;
 use crate::sc_identity::SC_DIR;
 
 /// Which file each line came from, to show its name again.
@@ -63,20 +64,37 @@ pub fn kept(data_dir: &Path) -> io::Result<Vec<(Line, String, Vec<u8>)>> {
     Ok(found)
 }
 
-/// Keeps the address of the hub the files connected to.
-pub fn keep_hub(data_dir: &Path, hub: &str) -> io::Result<()> {
+/// Keeps the addresses of the hubs the files connected to: the primary on the first line, the
+/// failover hub on the second.
+pub fn keep_hub(data_dir: &Path, hubs: &Hubs) -> io::Result<()> {
     let dir = data_dir.join(SC_DIR);
     fs::create_dir_all(&dir)?;
-    write_replacing(&dir.join(HUB_FILE), hub.as_bytes())
+    let text = format!(
+        "{}\n{}\n",
+        hubs.primary,
+        hubs.failover.as_deref().unwrap_or("")
+    );
+    write_replacing(&dir.join(HUB_FILE), text.as_bytes())
 }
 
-/// The hub kept last, if any.
-pub fn kept_hub(data_dir: &Path) -> io::Result<Option<String>> {
-    match fs::read_to_string(data_dir.join(SC_DIR).join(HUB_FILE)) {
-        Ok(hub) => Ok(Some(hub.trim().to_string()).filter(|hub| !hub.is_empty())),
-        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(None),
-        Err(error) => Err(error),
-    }
+/// The hubs kept last, if any.
+pub fn kept_hub(data_dir: &Path) -> io::Result<Option<Hubs>> {
+    let text = match fs::read_to_string(data_dir.join(SC_DIR).join(HUB_FILE)) {
+        Ok(text) => text,
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(error),
+    };
+    let mut lines = text.lines().map(str::trim);
+    let Some(primary) = lines.next().filter(|hub| !hub.is_empty()) else {
+        return Ok(None);
+    };
+    Ok(Some(Hubs {
+        primary: primary.to_string(),
+        failover: lines
+            .next()
+            .filter(|hub| !hub.is_empty())
+            .map(str::to_string),
+    }))
 }
 
 /// Whether a key is kept.
@@ -251,11 +269,18 @@ mod tests {
             assert_eq!(on_disk, b"KEY");
         }
         assert_eq!(kept_hub(&dir).unwrap(), None);
-        keep_hub(&dir, "wss://hub.example:443/").unwrap();
-        assert_eq!(
-            kept_hub(&dir).unwrap().as_deref(),
-            Some("wss://hub.example:443/")
-        );
+        let hubs = Hubs {
+            primary: "wss://hub.example:443/".to_string(),
+            failover: Some("wss://hub2.example:443/".to_string()),
+        };
+        keep_hub(&dir, &hubs).unwrap();
+        assert_eq!(kept_hub(&dir).unwrap(), Some(hubs));
+        let alone = Hubs {
+            primary: "wss://hub.example:443/".to_string(),
+            failover: None,
+        };
+        keep_hub(&dir, &alone).unwrap();
+        assert_eq!(kept_hub(&dir).unwrap(), Some(alone));
         forget_key(&dir).unwrap();
         forget_key(&dir).unwrap();
         assert_eq!(kept(&dir).unwrap().len(), 1);

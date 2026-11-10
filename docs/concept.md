@@ -115,6 +115,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Connect to an SC hub and search it; why it failed in words | *Search settings* with BACnet/SC, *Connect to the hub and search*; *Search again* | `tests/sc.rs`, `ui/50-sc` |
 | Read, write, release over SC; a value held on an SC device released only over SC | as on IP; *Held by you* | `tests/sc.rs`, `session.rs` (`a_device_is_reached_only_over_the_link_it_was_written_on`), `ui/50-sc` |
 | Leave the SC network; asks first while values are held; connecting and leaving logged | sidebar head while on an SC network; *Written* log | `ui/50-sc` |
+| A failover hub taken when the primary does not answer; connecting again by itself; the state of the hub connection | *Search settings* with BACnet/SC; sidebar head and status bar | `tests/sc.rs` (`the_failover_hub_takes_over_…`), `ui/50-sc` |
 | The SC files kept for the next start, the key protected | data folder `sc/` | `sc_store.rs`, `ui/50-sc` (reload) |
 | Forget the SC key; the certificates stay | *Settings*, card *BACnet/SC key* | `ui/51-sc-key` |
 | The capture records nothing on SC and says so | *Settings*, card *Capture for Wireshark* | `ui/51-sc-key` |

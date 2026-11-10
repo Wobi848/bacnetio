@@ -17,6 +17,7 @@ use super::scanning::{ScanView, begin_scan, spawn_scan};
 use super::session::{AppState, ScanStatus, Shared};
 use super::writing::record_command;
 use crate::sc_certificates::{Line, View};
+use crate::sc_connection::{HubStatus, Hubs};
 use crate::sc_identity::Identity;
 use crate::sc_store;
 use crate::scan::{self, WILDCARD_INSTANCE};
@@ -31,8 +32,13 @@ pub struct ScView {
     certificates: View,
     /// The hub bacnetio is connected to, if it is.
     hub: Option<String>,
-    /// The hub of the last connection, kept in the data folder, to offer again.
+    /// Its failover hub, where the site has one.
+    failover_hub: Option<String>,
+    /// Whether the connection stands now, and to which of the two hubs.
+    link: Option<HubStatus>,
+    /// The hubs of the last connection, kept in the data folder, to offer again.
     last_hub: Option<String>,
+    last_failover_hub: Option<String>,
     /// A private key is kept in the data folder.
     key_kept: bool,
 }
@@ -43,15 +49,19 @@ fn now() -> i64 {
 
 async fn view(state: &AppState) -> ScView {
     let certificates = crate::locked(&state.sc).view(now());
-    let last_hub = state
+    let last = state
         .data_dir
         .as_ref()
         .and_then(|dir| sc_store::kept_hub(dir).ok().flatten());
     let key_kept = state.data_dir.as_deref().is_some_and(sc_store::key_kept);
+    let network = state.sc_network().await;
     ScView {
         certificates,
-        hub: state.sc_hub().await,
-        last_hub,
+        hub: network.as_ref().map(|(hubs, _)| hubs.primary.clone()),
+        failover_hub: network.as_ref().and_then(|(hubs, _)| hubs.failover.clone()),
+        link: network.and_then(|(_, status)| status),
+        last_hub: last.as_ref().map(|hubs| hubs.primary.clone()),
+        last_failover_hub: last.and_then(|hubs| hubs.failover),
         key_kept,
     }
 }
@@ -112,6 +122,9 @@ pub async fn password(
 pub struct SearchRequest {
     /// The hub's `wss://` URL.
     hub: String,
+    /// The failover hub's, where the site has one.
+    #[serde(default)]
+    failover_hub: Option<String>,
     /// Keep a key that came with a password; one without is kept anyway.
     #[serde(default)]
     remember_key: bool,
@@ -122,12 +135,16 @@ pub async fn search(
     State(state): State<Shared>,
     Json(request): Json<SearchRequest>,
 ) -> Result<StatusCode, ApiError> {
-    let hub = request.hub.trim().to_string();
-    if !hub.starts_with("wss://") || TlsWebSocket::validate_url(&hub).is_err() {
-        return Err(ApiError::bad_request(format!(
-            "{hub} is no hub address: wss://name:port/path, as the integrator gives it"
-        )));
-    }
+    let hubs = Hubs {
+        primary: hub_address(&request.hub)?,
+        failover: request
+            .failover_hub
+            .as_deref()
+            .filter(|hub| !hub.trim().is_empty())
+            .map(hub_address)
+            .transpose()?,
+    };
+    let hub = hubs.primary.clone();
     let tls = crate::locked(&state.sc)
         .tls_config()
         .map_err(ApiError::conflict)?;
@@ -136,9 +153,9 @@ pub async fn search(
         None => Identity::new(),
     }
     .map_err(|error| ApiError::internal(format!("bacnetio's SC identity: {error}")))?;
-    let joined = state.sc_hub().await.as_deref() == Some(hub.as_str());
+    let joined = state.sc_network().await.map(|(on, _)| on).as_ref() == Some(&hubs);
     begin_scan(&state)?;
-    let client = match state.join_sc(&hub, tls, identity).await {
+    let client = match state.join_sc(&hubs, tls, identity).await {
         Ok(client) => client,
         Err(error) => {
             let reason = format!("{error:#}");
@@ -149,7 +166,7 @@ pub async fn search(
     if !joined {
         log_hub(&state, &hub, "Connected to");
     }
-    keep_files(&state, &hub, request.remember_key);
+    keep_files(&state, &hubs, request.remember_key);
     // the site found is named after its hub, as one on IP after its network
     spawn_scan(state, hub_host(&hub).to_string(), |state| async move {
         let report = scan::run_in_range(
@@ -168,6 +185,17 @@ pub async fn search(
     Ok(StatusCode::ACCEPTED)
 }
 
+/// A hub's `wss://` URL as typed, checked.
+fn hub_address(typed: &str) -> Result<String, ApiError> {
+    let hub = typed.trim();
+    if !hub.starts_with("wss://") || TlsWebSocket::validate_url(hub).is_err() {
+        return Err(ApiError::bad_request(format!(
+            "{hub} is no hub address: wss://name:port/path, as the integrator gives it"
+        )));
+    }
+    Ok(hub.to_string())
+}
+
 /// `hub.example:443` of `wss://hub.example:443/bacnet`.
 fn hub_host(hub: &str) -> &str {
     let rest = hub.strip_prefix("wss://").unwrap_or(hub);
@@ -176,11 +204,11 @@ fn hub_host(hub: &str) -> &str {
 
 /// The files that made the connection, in the data folder for the next start; the key only when it
 /// came without a password or the user asked for it.
-fn keep_files(state: &AppState, hub: &str, remember_key: bool) {
+fn keep_files(state: &AppState, hubs: &Hubs, remember_key: bool) {
     let Some(dir) = &state.data_dir else {
         return;
     };
-    if let Err(error) = sc_store::keep_hub(dir, hub) {
+    if let Err(error) = sc_store::keep_hub(dir, hubs) {
         eprintln!(
             "Note: the SC hub could not be kept in {}: {error}",
             dir.display()
@@ -220,8 +248,8 @@ pub async fn leave(State(state): State<Shared>) -> Result<StatusCode, ApiError> 
         .leave_sc()
         .await
         .map_err(|error| ApiError::conflict(format!("{error:#}")))?;
-    if let Some(hub) = left {
-        log_hub(&state, &hub, "Left");
+    if let Some(hubs) = left {
+        log_hub(&state, &hubs.primary, "Left");
     }
     Ok(StatusCode::NO_CONTENT)
 }

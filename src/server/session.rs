@@ -80,9 +80,9 @@ struct Open {
 enum Key {
     Ip(Ipv4Addr, u16, Option<SocketAddrV4>),
     Mstp(Trunk),
-    /// The `wss://` URL of a BACnet/SC hub.
+    /// The hubs of a BACnet/SC network.
     #[cfg(feature = "sc")]
-    Sc(String),
+    Sc(crate::sc_connection::Hubs),
 }
 
 #[derive(Default)]
@@ -232,34 +232,43 @@ impl AppState {
     #[cfg(feature = "sc")]
     pub(super) async fn join_sc(
         self: &Arc<Self>,
-        hub: &str,
+        hubs: &crate::sc_connection::Hubs,
         tls: bacnet_transport::sc_tls::ScNodeTlsConfig,
         identity: crate::sc_identity::Identity,
     ) -> anyhow::Result<Arc<Client>> {
-        let key = Key::Sc(hub.to_string());
+        let key = Key::Sc(hubs.clone());
         let (client, _) = self
-            .connect_with(key, || crate::sc_connection::open_sc(hub, tls, identity))
+            .connect_with(key, || crate::sc_connection::open_sc(hubs, tls, identity))
             .await?;
         Ok(client)
     }
 
-    /// Leaves the SC network; the hub it was on, if bacnetio was on one.
+    /// Leaves the SC network; its hubs, if bacnetio was on one.
     #[cfg(feature = "sc")]
-    pub(super) async fn leave_sc(&self) -> anyhow::Result<Option<String>> {
+    pub(super) async fn leave_sc(&self) -> anyhow::Result<Option<crate::sc_connection::Hubs>> {
         self.close_where(|key| match key {
-            Key::Sc(hub) => Some(hub.clone()),
+            Key::Sc(hubs) => Some(hubs.clone()),
             _ => None,
         })
         .await
     }
 
-    /// The hub bacnetio is on, if it is on one.
+    /// The hubs of the SC network bacnetio is on, with the state of the connection.
     #[cfg(feature = "sc")]
-    pub(super) async fn sc_hub(&self) -> Option<String> {
+    pub(super) async fn sc_network(
+        &self,
+    ) -> Option<(
+        crate::sc_connection::Hubs,
+        Option<crate::sc_connection::HubStatus>,
+    )> {
         match &*self.connection.lock().await {
             Some(Open {
-                key: Key::Sc(hub), ..
-            }) => Some(hub.clone()),
+                key: Key::Sc(hubs),
+                connection,
+            }) => Some((
+                hubs.clone(),
+                crate::sc_connection::hub_status(&connection.client),
+            )),
             _ => None,
         }
     }
@@ -326,8 +335,8 @@ impl AppState {
                 super::serial::log_trunk(self, trunk, "Left");
             }
             #[cfg(feature = "sc")]
-            if let Key::Sc(hub) = &old.key {
-                super::sc::log_hub(self, hub, "Left");
+            if let Key::Sc(hubs) = &old.key {
+                super::sc::log_hub(self, &hubs.primary, "Left");
             }
         }
         let connection = open().await?;

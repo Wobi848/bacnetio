@@ -14,14 +14,40 @@ export async function loadSc() {
     toast(error.message, true);
     return;
   }
-  const { hub, last_hub: lastHub } = state.sc.view;
+  const { hub, failover_hub: failoverHub, last_hub: lastHub, last_failover_hub: lastFailoverHub } = state.sc.view;
   if (hub) {
     state.link = "sc";
     state.sc.hub = hub;
+    state.sc.failoverHub = failoverHub ?? "";
+    pollSc();
   } else if (!state.sc.hub && lastHub) {
     state.sc.hub = lastHub;
+    state.sc.failoverHub = lastFailoverHub ?? "";
   }
   render();
+}
+
+const POLL_EVERY = 5000;
+let polling = false;
+
+/** While bacnetio is on an SC network, the state of its hub connection is asked for now and then. */
+function pollSc() {
+  if (polling) return;
+  polling = true;
+  (async () => {
+    while (state.sc.view?.hub) {
+      await new Promise((done) => setTimeout(done, POLL_EVERY));
+      const before = JSON.stringify(state.sc.view?.link ?? null);
+      try {
+        state.sc.view = await api.sc();
+      } catch (error) {
+        toast(error.message, true);
+        break;
+      }
+      if (JSON.stringify(state.sc.view.link ?? null) !== before) render();
+    }
+    polling = false;
+  })();
 }
 
 /** Sends a file chosen for a line; the server reads it and says what it found. */
@@ -49,9 +75,9 @@ export async function openScFile(line) {
 
 /** Connects to the hub with the files chosen and searches the SC network. */
 export async function searchOnSc() {
-  const { hub, rememberKey } = state.sc;
+  const { hub, failoverHub, rememberKey } = state.sc;
   state.menu = null;
-  const joined = await runSearch(() => api.scSearch(hub.trim(), rememberKey));
+  const joined = await runSearch(() => api.scSearch(hub.trim(), failoverHub.trim(), rememberKey));
   await loadSc();
   return joined;
 }

@@ -7,23 +7,83 @@ use std::time::Duration;
 use anyhow::Context;
 use bacnet_client::client::BACnetClient;
 use bacnet_transport::any::AnyTransport;
-use bacnet_transport::sc::ScTransport;
+use bacnet_transport::sc::{ScActiveHub, ScConnectionState, ScReconnectConfig, ScTransport};
 use bacnet_transport::sc_tls::{ScNodeTlsConfig, TlsWebSocket};
 
-use crate::connection::{APDU_RETRIES, APDU_TIMEOUT_MS, Connection};
+use crate::connection::{APDU_RETRIES, APDU_TIMEOUT_MS, Client, Connection};
 use crate::sc_identity::Identity;
 
 /// How long the TLS and WebSocket handshake with an SC hub may take.
 const SC_CONNECT_WAIT: Duration = Duration::from_secs(10);
 
+/// After the connection drops: again after 1 s, then less often up to every 30 s, for as long as
+/// bacnetio is on the network; with a failover hub the library turns to it when the primary stays
+/// away, and back when it returns (Annex AB.5.2).
+const RECONNECT: ScReconnectConfig = ScReconnectConfig {
+    initial_delay_ms: 1_000,
+    max_delay_ms: 30_000,
+    max_retries: u32::MAX,
+};
+
+/// The hubs of an SC network: the primary, and the failover hub where the site has one.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Hubs {
+    pub primary: String,
+    pub failover: Option<String>,
+}
+
+/// The state of the connection to the hub, for the status bar.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+pub struct HubStatus {
+    /// Connected now; otherwise bacnetio is connecting again by itself.
+    pub connected: bool,
+    /// On the failover hub, or dialling it.
+    pub failover: bool,
+}
+
 /// Connects to the hub of a BACnet/SC network (docs/concept-sc.md) as `identity`, with the
-/// certificates in `tls`. `hub` is the hub's `wss://` URL.
+/// certificates in `tls`: the primary hub, or the failover hub when the primary does not answer.
+/// The reason given is the primary's.
 pub async fn open_sc(
-    hub: &str,
+    hubs: &Hubs,
     tls: ScNodeTlsConfig,
     identity: Identity,
 ) -> anyhow::Result<Connection> {
-    let socket = tokio::time::timeout(SC_CONNECT_WAIT, TlsWebSocket::connect(hub, tls))
+    let (socket, initial) = match dial(&hubs.primary, &tls).await {
+        Ok(socket) => (socket, ScActiveHub::Primary),
+        Err(primary) => match &hubs.failover {
+            Some(failover) => match dial(failover, &tls).await {
+                Ok(socket) => (socket, ScActiveHub::Failover),
+                Err(_) => return Err(primary),
+            },
+            None => return Err(primary),
+        },
+    };
+    let mut transport = ScTransport::new(socket, identity.vmac)
+        .with_device_uuid(identity.uuid)
+        .with_initial_hub(initial)
+        .with_reconnect(RECONNECT)
+        .with_connector(connector(&hubs.primary, &tls));
+    if let Some(failover) = &hubs.failover {
+        transport = transport.with_failover_connector(connector(failover, &tls));
+    }
+    let client = BACnetClient::generic_builder()
+        .transport(AnyTransport::Sc(Box::new(transport)))
+        .apdu_timeout_ms(APDU_TIMEOUT_MS)
+        .apdu_retries(APDU_RETRIES)
+        .build()
+        .await
+        .with_context(|| format!("the hub at {} did not take bacnetio in", hubs.primary))?;
+    Ok(Connection {
+        client: Arc::new(client),
+        local_port: 0,
+        port_unavailable: None,
+    })
+}
+
+/// The TLS and WebSocket connection to one hub, or why it failed in words.
+async fn dial(hub: &str, tls: &ScNodeTlsConfig) -> anyhow::Result<TlsWebSocket> {
+    tokio::time::timeout(SC_CONNECT_WAIT, TlsWebSocket::connect(hub, tls.clone()))
         .await
         .with_context(|| {
             format!(
@@ -31,19 +91,34 @@ pub async fn open_sc(
                 SC_CONNECT_WAIT.as_secs()
             )
         })?
-        .map_err(|error| anyhow::anyhow!(hub_failure(hub, &error.to_string())))?;
-    let transport = ScTransport::new(socket, identity.vmac).with_device_uuid(identity.uuid);
-    let client = BACnetClient::generic_builder()
-        .transport(AnyTransport::Sc(Box::new(transport)))
-        .apdu_timeout_ms(APDU_TIMEOUT_MS)
-        .apdu_retries(APDU_RETRIES)
-        .build()
-        .await
-        .with_context(|| format!("the hub at {hub} did not take bacnetio in"))?;
-    Ok(Connection {
-        client: Arc::new(client),
-        local_port: 0,
-        port_unavailable: None,
+        .map_err(|error| anyhow::anyhow!(hub_failure(hub, &error.to_string())))
+}
+
+/// A fresh connection to `hub` for every attempt to connect again.
+fn connector(
+    hub: &str,
+    tls: &ScNodeTlsConfig,
+) -> impl Fn() -> std::pin::Pin<
+    Box<dyn std::future::Future<Output = Result<TlsWebSocket, bacnet_types::error::Error>> + Send>,
+> + Send
++ Sync
++ 'static {
+    let (hub, tls) = (hub.to_string(), tls.clone());
+    move || {
+        let (hub, tls) = (hub.clone(), tls.clone());
+        Box::pin(async move { TlsWebSocket::connect(&hub, tls).await })
+    }
+}
+
+/// The state of the hub connection of an SC client; `None` on another link.
+pub fn hub_status(client: &Client) -> Option<HubStatus> {
+    let AnyTransport::Sc(transport) = client.transport() else {
+        return None;
+    };
+    let status = transport.connection_status();
+    Some(HubStatus {
+        connected: status.state == ScConnectionState::Connected,
+        failover: status.active_hub == Some(ScActiveHub::Failover),
     })
 }
 

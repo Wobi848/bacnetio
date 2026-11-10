@@ -100,6 +100,7 @@ document.addEventListener("input", (event) => {
   if (id.startsWith("sc-password-")) state.sc.passwords[id.slice("sc-password-".length)] = event.target.value;
   // the button to connect follows the hub typed
   if (id === "sc-hub") { state.sc.hub = event.target.value; render(); }
+  if (id === "sc-failover") state.sc.failoverHub = event.target.value;
   if (FIELDS[id]) FIELDS[id](event.target.value);
   if (FILTERS[id]) { FILTERS[id](event.target.value); render(); }
   if (id === "table-filter") { state[TABLE_FILTERS[event.target.dataset.list]].text = event.target.value; render(); }
