@@ -98,7 +98,7 @@ pub async fn start_scan(
 
 /// Marks a search as running; refused while one runs.
 pub(super) fn begin_scan(state: &AppState) -> Result<(), ApiError> {
-    let mut status = state.scan.lock().expect("scan status lock");
+    let mut status = crate::locked(&state.scan);
     if matches!(*status, ScanStatus::Running(_)) {
         return Err(ApiError::conflict("a search is already running"));
     }
@@ -125,14 +125,11 @@ where
             let scan = serde_json::to_value(scan_view(&status)).expect("scan state is JSON");
             let choices = state.kept_choices(&scope);
             // another site starts without the points read on the last one, as opening one does
-            let other_site = state
-                .site
-                .lock()
-                .expect("site lock")
+            let other_site = crate::locked(&state.site)
                 .as_ref()
                 .is_some_and(|site| site.name != scope);
             if other_site {
-                state.readings.lock().expect("readings lock").clear();
+                crate::locked(&state.readings).clear();
             }
             state.remember(|site| {
                 choices.apply(site);
@@ -147,7 +144,7 @@ where
 
 /// A stopped search ends like a finished one, with the devices it has found.
 fn found_so_far(state: &AppState) -> ScanStatus {
-    let devices = match &*state.scan.lock().expect("scan status lock") {
+    let devices = match &*crate::locked(&state.scan) {
         ScanStatus::Running(progress) => progress.devices.clone(),
         _ => Vec::new(),
     };
@@ -156,16 +153,13 @@ fn found_so_far(state: &AppState) -> ScanStatus {
         ..scan::ScanReport::default()
     };
     let view = ScanView::new(&report, Vec::new());
-    *state.devices.lock().expect("devices lock") = report.devices;
+    *crate::locked(&state.devices) = report.devices;
     ScanStatus::Done(view)
 }
 
 /// Stops the running search; without one there is nothing to do.
 pub async fn stop(State(state): State<Shared>) -> StatusCode {
-    let running = matches!(
-        *state.scan.lock().expect("scan status lock"),
-        ScanStatus::Running(_)
-    );
+    let running = matches!(*crate::locked(&state.scan), ScanStatus::Running(_));
     if running {
         state.scan_stop.notify_one();
     }
@@ -193,10 +187,7 @@ pub async fn locate(
 ) -> Result<Json<DeviceView>, ApiError> {
     let address =
         connection::parse_address(request.address.trim()).map_err(ApiError::bad_request)?;
-    if matches!(
-        *state.scan.lock().expect("scan status lock"),
-        ScanStatus::Running(_)
-    ) {
+    if matches!(*crate::locked(&state.scan), ScanStatus::Running(_)) {
         return Err(ApiError::conflict("a search is already running"));
     }
     let (_, endpoint) = request.network.endpoint(state.loopback)?;
@@ -219,7 +210,7 @@ pub async fn locate(
     };
     let device = found.map_err(|error| ApiError::device(format!("{error:#}")))?;
     let view = DeviceView::new(&device);
-    let mut devices = state.devices.lock().expect("devices lock");
+    let mut devices = crate::locked(&state.devices);
     devices.retain(|known| known.instance != device.instance);
     devices.push(device);
     Ok(Json(view))
@@ -243,7 +234,7 @@ async fn scan_with(
     .await?;
     let context = diagnosis::Context::new(sweep, adapter, plan.port_unavailable);
     let view = ScanView::new(&report, diagnosis::notes(&report, &context));
-    *state.devices.lock().expect("devices lock") = report.devices;
+    *crate::locked(&state.devices) = report.devices;
     Ok(view)
 }
 
@@ -312,9 +303,9 @@ pub struct ScanState {
 /// The scan as the interface follows it; before the first search the remembered site, marked
 /// with `remembered_ms`.
 pub async fn scan_state(State(state): State<Shared>) -> Json<serde_json::Value> {
-    let status = state.scan.lock().expect("scan status lock");
+    let status = crate::locked(&state.scan);
     if matches!(*status, ScanStatus::Idle)
-        && let Some(site) = &*state.site.lock().expect("site lock")
+        && let Some(site) = &*crate::locked(&state.site)
         && let Some(mut scan) = site.scan.clone()
     {
         scan["remembered_ms"] = site.saved_ms.into();

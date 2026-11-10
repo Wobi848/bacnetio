@@ -201,6 +201,9 @@ mod dpapi {
         if call(&input, &mut output) == 0 {
             return Err(io::Error::last_os_error());
         }
+        if output.pbData.is_null() || output.cbData == 0 {
+            return Ok(Vec::new());
+        }
         // SAFETY: on success the system hands over a buffer of cbData bytes, freed with LocalFree
         let result =
             unsafe { std::slice::from_raw_parts(output.pbData, output.cbData as usize) }.to_vec();

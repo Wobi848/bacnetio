@@ -24,10 +24,7 @@ pub async fn file(
     let content = file_object::read_file(&client, device, file, limits.file_octets_per_request())
         .await
         .map_err(|error| ApiError::device(format!("{error:#}")))?;
-    let name = state
-        .readings
-        .lock()
-        .expect("readings lock")
+    let name = crate::locked(&state.readings)
         .get(&device)
         .and_then(|points| points.iter().find(|point| point.object == file))
         .and_then(|point| point.name.clone())

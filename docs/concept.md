@@ -119,7 +119,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Forget the SC key; the certificates stay | *Settings*, card *BACnet/SC key* | `ui/51-sc-key` |
 | The capture records nothing on SC and says so | *Settings*, card *Capture for Wireshark* | `ui/51-sc-key` |
 | BBMD tables read (BDT and FDT), never written; a device that is none says so | device details, *BBMD tables* | `ui/24-bbmd`, `tests/bbmd.rs` (both tables, no BBMD), `web/ui.test.js` |
-| Device by IP address | table of the site, toolbar, *Device by IP …* (BACnet/IP only, not on a trunk) | `ui/10-locate` |
+| Device by IP address | table of the site, toolbar, *Device by IP …* (BACnet/IP only, not on a trunk or an SC network) | `ui/10-locate`, `ui/38-mstp-join`, `ui/50-sc` |
 | Routers and the networks behind them | tree and strips above the table | `scan.rs` (routers) |
 | Diagnosis in plain words (firewall, port taken, link-local, duplicates …) | strips above the table | `diagnosis.rs`, `scan.rs` (taken port) |
 | Device list as CSV | table of the site, toolbar, *CSV* | `ui/13-exports`, `export.rs` |
@@ -152,7 +152,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Save a reference, show what changed since | table of a device, toolbar | `ui/06-reference`, `reference.rs` |
 | Value live: COV where offered or asked every 2 s, chosen per point | point details | `ui/14-details`, `watch.rs` |
 | All 16 priorities: who holds what, what wins | point details | `ui/03-write`, `ui/19-priorities` |
-| Write and release with priority, after the session unlock | point details | `ui/03-write`, `write.rs` |
+| Write and release with priority, after the session unlock | point details | `ui/03-write`, `write.rs`, `typed.rs` (what was typed) |
 | Every property of an object | point details, *Show technical details* | `ui/14-details`, `read.rs` |
 | Trend logs of the device as chart and CSV | point details of a trend log | `ui/08-trend`, `trend.rs` |
 | Trend Log Multiple: a chart per point it logs, CSV with a column per point | point details of a trend log multiple | `ui/08-trend`, `trend.rs` |
@@ -188,7 +188,7 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Change any property with a plain value, logged; the device decides | technical details, after the unlock | `ui/21-tools`, `ui/22-commands`, `storage.rs` |
 | The priority that wins on each point | table of a device, *Read priorities* | `ui/21-tools` |
 | Values reported unasked (unconfirmed COV) count as live | point details | `watch.rs` |
-| Several sites kept, opened again, named, removed, saved to and loaded from a file | the site field in the sidebar (known sites, *All sites …*); a site without a name: *All sites …* opens its name field | `ui/21-tools`, `site.rs` |
+| Several sites kept, opened again, named, removed, saved to and loaded from a file | the site field in the sidebar (known sites, *All sites …*); a site without a name: *All sites …* opens its name field | `ui/21-tools`, `site.rs`, `site_file.rs` (the file checked) |
 | Android app with the same UI | phone | not automated (concept section 9) |
 
 ## 4. Scope

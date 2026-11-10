@@ -31,6 +31,12 @@ light and dark theme, the system's language (English or German), keys `1`–`6`,
   address. Then it joins the trunk and searches it; its devices are read, written and recorded as
   on IP. *Leave the trunk* in the sidebar frees the port. On Linux the user must be in the group
   `dialout` once.
+- **BACnet/SC** (every platform): a plant whose devices talk through a hub over TLS, chosen under
+  *Search settings*. Enter the hub's address and the site's three files: its CA, bacnetio's
+  certificate and its key, as PEM, DER or one PKCS#12 file, each checked in words (valid until,
+  not from this CA, key does not match, needs its password). Then the devices on the SC network
+  are read, written and recorded as on IP; *Leave the SC network* in the sidebar ends it. The files
+  are kept for the next start, the key readable only for you; *Settings* forgets it again.
 - **A device** in the workspace, its points: grouped by plant part where the names are paths (`/21/000/00/00/HZ_Kessel.01/temp`),
   otherwise by kind; search, filters for faults, overrides and changes since a saved reference,
   CSV, a page to print, a comparison with another device by point name, one property changed at

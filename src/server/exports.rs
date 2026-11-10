@@ -12,7 +12,7 @@ use crate::{ede, export, object};
 
 /// The devices of the last scan as CSV.
 pub async fn devices_csv(State(state): State<Shared>) -> impl IntoResponse {
-    let devices = state.devices.lock().expect("devices lock");
+    let devices = crate::locked(&state.devices);
     (
         [
             (header::CONTENT_TYPE, "text/csv; charset=utf-8"),
@@ -30,7 +30,7 @@ pub async fn points_csv(
     State(state): State<Shared>,
     Path(device): Path<u32>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let readings = state.readings.lock().expect("readings lock");
+    let readings = crate::locked(&state.readings);
     let points = readings
         .get(&device)
         .ok_or_else(|| ApiError::conflict("read the device's points first"))?;
@@ -77,10 +77,7 @@ pub(super) fn attachment(name: &str) -> String {
 
 fn device_project(state: &Shared, device: u32, query: EdeQuery) -> String {
     query.project.unwrap_or_else(|| {
-        state
-            .devices
-            .lock()
-            .expect("devices lock")
+        crate::locked(&state.devices)
             .iter()
             .find(|found| found.instance == device)
             .and_then(|found| found.details.name.clone())
@@ -95,7 +92,7 @@ pub async fn points_ede(
     Query(query): Query<EdeQuery>,
 ) -> Result<impl IntoResponse, ApiError> {
     let project = device_project(&state, device, query);
-    let readings = state.readings.lock().expect("readings lock");
+    let readings = crate::locked(&state.readings);
     let points = readings
         .get(&device)
         .ok_or_else(|| ApiError::conflict("read the device's points first"))?;
@@ -118,7 +115,7 @@ pub async fn site_ede(
     State(state): State<Shared>,
     Query(query): Query<EdeQuery>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let readings = state.readings.lock().expect("readings lock");
+    let readings = crate::locked(&state.readings);
     if readings.is_empty() {
         return Err(ApiError::conflict("read the devices' points first"));
     }
@@ -147,7 +144,7 @@ pub async fn points_ede_states(
     Query(query): Query<EdeQuery>,
 ) -> Result<impl IntoResponse, ApiError> {
     let project = device_project(&state, device, query);
-    let readings = state.readings.lock().expect("readings lock");
+    let readings = crate::locked(&state.readings);
     let points = readings
         .get(&device)
         .ok_or_else(|| ApiError::conflict("read the device's points first"))?;
@@ -170,7 +167,7 @@ pub async fn site_ede_states(
     State(state): State<Shared>,
     Query(query): Query<EdeQuery>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let readings = state.readings.lock().expect("readings lock");
+    let readings = crate::locked(&state.readings);
     if readings.is_empty() {
         return Err(ApiError::conflict("read the devices' points first"));
     }
@@ -201,10 +198,7 @@ pub(super) async fn priority_rows(
     state: &Shared,
     device: u32,
 ) -> Result<Vec<(Point, export::Priorities)>, ApiError> {
-    let points = state
-        .readings
-        .lock()
-        .expect("readings lock")
+    let points = crate::locked(&state.readings)
         .get(&device)
         .cloned()
         .ok_or_else(|| ApiError::conflict("read the device's points first"))?;

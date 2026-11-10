@@ -1,7 +1,7 @@
 //! The recording: which points, sampling in the background, and the data for chart and CSV.
 
 use std::sync::Arc;
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime};
 
 use axum::Json;
 use axum::extract::{Query, State};
@@ -51,13 +51,10 @@ struct SeriesView {
 }
 
 pub async fn recording(State(state): State<Shared>) -> Json<RecordingView> {
-    let interval = state
-        .sampler
-        .lock()
-        .expect("sampler lock")
+    let interval = crate::locked(&state.sampler)
         .as_ref()
         .map(|sampler| sampler.interval);
-    let recording = state.recording.lock().expect("recording lock");
+    let recording = crate::locked(&state.recording);
     let points = recording
         .series()
         .iter()
@@ -69,7 +66,7 @@ pub async fn recording(State(state): State<Shared>) -> Json<RecordingView> {
             samples: series
                 .samples
                 .iter()
-                .map(|sample| (milliseconds(sample.time), sample.value))
+                .map(|sample| (crate::unix_time::millis(sample.time), sample.value))
                 .collect(),
             mode: series.mode,
             cov_refused: series.cov_refused,
@@ -99,10 +96,7 @@ pub async fn add_point(
     let client = state.client_for(request.device, None).await?;
     let mut point = Point::new(object);
     points::read_single(&client, request.device, &mut point, &|_| {}).await;
-    state
-        .recording
-        .lock()
-        .expect("recording lock")
+    crate::locked(&state.recording)
         .add(RecordedPoint {
             device: request.device,
             object,
@@ -118,11 +112,7 @@ pub async fn remove_point(
     Json(request): Json<PointRequest>,
 ) -> Result<Json<RecordingView>, ApiError> {
     let object = object_id(request.object_type, request.instance)?;
-    state
-        .recording
-        .lock()
-        .expect("recording lock")
-        .remove(request.device, object);
+    crate::locked(&state.recording).remove(request.device, object);
     Ok(recording(State(state)).await)
 }
 
@@ -141,11 +131,7 @@ pub async fn set_mode(
     Json(request): Json<ModeRequest>,
 ) -> Result<Json<RecordingView>, ApiError> {
     let object = object_id(request.object_type, request.instance)?;
-    let found = state.recording.lock().expect("recording lock").set_mode(
-        request.device,
-        object,
-        request.mode,
-    );
+    let found = crate::locked(&state.recording).set_mode(request.device, object, request.mode);
     if !found {
         return Err(ApiError::bad_request("this point is not in the recording"));
     }
@@ -169,22 +155,12 @@ pub async fn start(
             MIN_INTERVAL.as_secs()
         )));
     }
-    if state
-        .recording
-        .lock()
-        .expect("recording lock")
-        .series()
-        .is_empty()
-    {
+    if crate::locked(&state.recording).series().is_empty() {
         return Err(ApiError::conflict("add a point to the recording first"));
     }
     state.client().await?;
     let task = tokio::spawn(sample_forever(Arc::clone(&state), interval));
-    let old = state
-        .sampler
-        .lock()
-        .expect("sampler lock")
-        .replace(Sampler { task, interval });
+    let old = crate::locked(&state.sampler).replace(Sampler { task, interval });
     if let Some(old) = old {
         old.task.abort();
     }
@@ -192,7 +168,7 @@ pub async fn start(
 }
 
 pub async fn stop(State(state): State<Shared>) -> Json<RecordingView> {
-    if let Some(sampler) = state.sampler.lock().expect("sampler lock").take() {
+    if let Some(sampler) = crate::locked(&state.sampler).take() {
         sampler.task.abort();
     }
     recording(State(state)).await
@@ -200,11 +176,7 @@ pub async fn stop(State(state): State<Shared>) -> Json<RecordingView> {
 
 /// Drops the samples, keeps the points.
 pub async fn clear(State(state): State<Shared>) -> Json<RecordingView> {
-    state
-        .recording
-        .lock()
-        .expect("recording lock")
-        .clear_samples();
+    crate::locked(&state.recording).clear_samples();
     recording(State(state)).await
 }
 
@@ -216,7 +188,7 @@ pub struct CsvQuery {
 }
 
 pub async fn csv(State(state): State<Shared>, Query(query): Query<CsvQuery>) -> impl IntoResponse {
-    let recording = state.recording.lock().expect("recording lock");
+    let recording = crate::locked(&state.recording);
     (
         [
             (header::CONTENT_TYPE, "text/csv; charset=utf-8"),
@@ -241,11 +213,7 @@ async fn sample_forever(state: Shared, interval: Duration) {
         let Ok(client) = state.client().await else {
             continue;
         };
-        let points = state
-            .recording
-            .lock()
-            .expect("recording lock")
-            .points_with_mode();
+        let points = crate::locked(&state.recording).points_with_mode();
         let time = SystemTime::now();
         let mut round = Vec::with_capacity(points.len());
         for (point, mode) in points {
@@ -253,11 +221,7 @@ async fn sample_forever(state: Shared, interval: Duration) {
                 let reporting =
                     watch::keep_subscribed(&state.watch, &client, point.device, point.object).await;
                 if !reporting {
-                    state
-                        .recording
-                        .lock()
-                        .expect("recording lock")
-                        .cov_refused(point.device, point.object);
+                    crate::locked(&state.recording).cov_refused(point.device, point.object);
                 } else if !first {
                     // the reports come in by themselves (session.rs); only the start needs a value,
                     // since a device reports again only when the value changes
@@ -271,11 +235,7 @@ async fn sample_forever(state: Shared, interval: Duration) {
             round.push((point, value));
         }
         first = false;
-        state
-            .recording
-            .lock()
-            .expect("recording lock")
-            .record(time, &round);
+        crate::locked(&state.recording).record(time, &round);
         if saved.elapsed() >= BACKUP_EVERY {
             save_backup(&state);
             saved = Instant::now();
@@ -289,7 +249,7 @@ fn save_backup(state: &AppState) {
     let Some(dir) = &state.data_dir else {
         return;
     };
-    let csv = export::recording_csv(&state.recording.lock().expect("recording lock"), 0);
+    let csv = export::recording_csv(&crate::locked(&state.recording), 0);
     let path = dir.join(BACKUP_FILE);
     let written = std::fs::create_dir_all(dir).and_then(|()| std::fs::write(&path, csv));
     if let Err(reason) = written {
@@ -298,9 +258,4 @@ fn save_backup(state: &AppState) {
             path.display()
         );
     }
-}
-
-fn milliseconds(time: SystemTime) -> u64 {
-    time.duration_since(UNIX_EPOCH)
-        .map_or(0, |since| since.as_millis() as u64)
 }

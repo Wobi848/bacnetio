@@ -39,7 +39,7 @@ pub async fn set_clock(
     Path(device): Path<u32>,
     Json(request): Json<ClockRequest>,
 ) -> Result<axum::http::StatusCode, ApiError> {
-    let (date, time) = write::parse_clock(&request.date, &request.time, request.weekday)
+    let (date, time) = crate::typed::parse_clock(&request.date, &request.time, request.weekday)
         .map_err(ApiError::bad_request)?;
     let object = object_id(ObjectType::DEVICE.to_raw(), device)?;
     journaled(
@@ -67,8 +67,8 @@ pub async fn write_value(
     Json(request): Json<WriteRequest>,
 ) -> Result<Json<ObjectView>, ApiError> {
     let object = object_id(object_type, instance)?;
-    let value =
-        write::parse_value(object.object_type(), &request.value).map_err(ApiError::bad_request)?;
+    let value = crate::typed::parse_value(object.object_type(), &request.value)
+        .map_err(ApiError::bad_request)?;
     let priority = request.priority.map(checked_priority).transpose()?;
     if priority.is_none() && has_priority_array(&state, device, object).await? {
         // the device would take 16, and the value would stay in the plant without being held
@@ -124,7 +124,7 @@ pub async fn write_property(
             "{name} cannot be changed here"
         )));
     }
-    let value = write::parse_property_value(&request.data_type, &request.value)
+    let value = crate::typed::parse_property_value(&request.data_type, &request.value)
         .map_err(ApiError::bad_request)?;
     let renamed = match &value {
         PropertyValue::CharacterString(name)
@@ -145,7 +145,7 @@ pub async fn write_property(
     .await?;
     // the device list, the site memory and the exports name the device by what the search read
     if let Some(name) = renamed {
-        for known in state.devices.lock().expect("devices lock").iter_mut() {
+        for known in crate::locked(&state.devices).iter_mut() {
             if known.instance == device {
                 known.details.name = Some(name.clone());
             }
@@ -180,10 +180,7 @@ pub async fn change_instance(
             "{device} is already the ID of this device"
         )));
     }
-    let holding = state
-        .journal
-        .lock()
-        .expect("journal lock")
+    let holding = crate::locked(&state.journal)
         .held()
         .iter()
         .any(|entry| entry.device == device);
@@ -193,10 +190,7 @@ pub async fn change_instance(
             "release the values you hold on this device first",
         ));
     }
-    let known = state
-        .devices
-        .lock()
-        .expect("devices lock")
+    let known = crate::locked(&state.devices)
         .iter()
         .any(|known| known.instance == request.instance);
     let client = state.client().await?;
@@ -309,10 +303,7 @@ pub(super) async fn journaled(
         state.client_for(device, address).await?
     };
     // the device whose details the interface shows: the first in the list with this ID
-    let listed = state
-        .devices
-        .lock()
-        .expect("devices lock")
+    let listed = crate::locked(&state.devices)
         .iter()
         .find(|known| known.instance == device)
         .cloned();
@@ -329,11 +320,7 @@ pub(super) async fn journaled(
     let result = write::perform(&client, device, object, priority, &action).await;
     let error = result.err().map(|error| error.to_string());
     if error.is_none() {
-        state
-            .watch
-            .lock()
-            .expect("watch lock")
-            .forget_report(device, object);
+        crate::locked(&state.watch).forget_report(device, object);
     }
     let entry = Entry {
         time: SystemTime::now(),
@@ -353,7 +340,7 @@ pub(super) async fn journaled(
             path.display()
         );
     }
-    state.journal.lock().expect("journal lock").record(entry);
+    crate::locked(&state.journal).record(entry);
     match error {
         Some(reason) => Err(ApiError::device(format!("the device refused: {reason}"))),
         None => Ok(()),
@@ -362,7 +349,7 @@ pub(super) async fn journaled(
 
 /// Where the device was reached when bacnetio last wrote to it, from the journal.
 fn held_address(state: &Shared, device: u32) -> Option<Address> {
-    let journal = state.journal.lock().expect("journal lock");
+    let journal = crate::locked(&state.journal);
     journal
         .entries()
         .iter()
@@ -373,13 +360,13 @@ fn held_address(state: &Shared, device: u32) -> Option<Address> {
 
 /// Values bacnetio wrote at a priority and has not released yet.
 pub async fn held(State(state): State<Shared>) -> Json<Vec<EntryView>> {
-    let journal = state.journal.lock().expect("journal lock");
+    let journal = crate::locked(&state.journal);
     Json(journal.held().into_iter().map(EntryView::new).collect())
 }
 
 /// Every write and release of this session, oldest first.
 pub async fn log(State(state): State<Shared>) -> Json<Vec<EntryView>> {
-    let journal = state.journal.lock().expect("journal lock");
+    let journal = crate::locked(&state.journal);
     Json(journal.entries().iter().map(EntryView::new).collect())
 }
 
@@ -388,7 +375,7 @@ pub async fn log_csv(
     State(state): State<Shared>,
     Query(query): Query<CsvQuery>,
 ) -> impl IntoResponse {
-    let journal = state.journal.lock().expect("journal lock");
+    let journal = crate::locked(&state.journal);
     (
         [
             (header::CONTENT_TYPE, "text/csv; charset=utf-8"),
@@ -433,5 +420,5 @@ pub(super) fn record_command(
     {
         eprintln!("Warning: cannot save the write log: {reason}");
     }
-    state.journal.lock().expect("journal lock").record(entry);
+    crate::locked(&state.journal).record(entry);
 }

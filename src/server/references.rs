@@ -27,7 +27,7 @@ pub async fn save(
         .clone()
         .ok_or_else(|| ApiError::conflict("bacnetio has no data folder to save to"))?;
     let saved = {
-        let readings = state.readings.lock().expect("readings lock");
+        let readings = crate::locked(&state.readings);
         let points = readings
             .get(&device)
             .ok_or_else(|| ApiError::conflict("read the device's points first"))?;
@@ -59,7 +59,7 @@ pub async fn compare(
             changes: Vec::new(),
         }));
     };
-    let readings = state.readings.lock().expect("readings lock");
+    let readings = crate::locked(&state.readings);
     let points = readings
         .get(&device)
         .ok_or_else(|| ApiError::conflict("read the device's points first"))?;

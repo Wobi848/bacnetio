@@ -52,7 +52,7 @@ pub struct CaptureState {
 
 impl Capture {
     fn lock(&self) -> std::sync::MutexGuard<'_, Inner> {
-        self.inner.lock().expect("capture lock")
+        crate::locked(&self.inner)
     }
 
     pub fn state(&self) -> CaptureState {

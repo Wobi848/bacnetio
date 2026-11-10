@@ -34,11 +34,7 @@ pub async fn points(
         points: reading.points.iter().map(PointView::new).collect(),
         notes: reading.notes.into_iter().map(NoteView::new).collect(),
     };
-    state
-        .readings
-        .lock()
-        .expect("readings lock")
-        .insert(device, reading.points);
+    crate::locked(&state.readings).insert(device, reading.points);
     Ok(Json(view))
 }
 
@@ -48,7 +44,7 @@ pub async fn last_points(
     State(state): State<Shared>,
     Path(device): Path<u32>,
 ) -> Json<Option<serde_json::Value>> {
-    if let Some(points) = state.readings.lock().expect("readings lock").get(&device) {
+    if let Some(points) = crate::locked(&state.readings).get(&device) {
         let view = PointsView {
             points: points.iter().map(PointView::new).collect(),
             notes: Vec::new(),
@@ -56,7 +52,7 @@ pub async fn last_points(
         return Json(Some(serde_json::to_value(view).expect("points are JSON")));
     }
     // after a restart: the points as they were remembered for the site
-    let site = state.site.lock().expect("site lock");
+    let site = crate::locked(&state.site);
     Json(
         site.as_ref()
             .and_then(|site| site.points.get(&device.to_string()).cloned()),
@@ -85,7 +81,7 @@ pub async fn alarms(
     let found = alarms::read_alarms(&client, device)
         .await
         .map_err(|error| ApiError::device(format!("{error:#}")))?;
-    let readings = state.readings.lock().expect("readings lock");
+    let readings = crate::locked(&state.readings);
     let name = |object| {
         readings
             .get(&device)
@@ -139,10 +135,7 @@ pub async fn bbmd_tables(
     State(state): State<Shared>,
     Path(device): Path<u32>,
 ) -> Result<Json<TablesView>, ApiError> {
-    let address = state
-        .devices
-        .lock()
-        .expect("devices lock")
+    let address = crate::locked(&state.devices)
         .iter()
         .find(|found| found.instance == device)
         .map(|found| found.address)
@@ -212,7 +205,7 @@ pub async fn structure(
     Path(device): Path<u32>,
 ) -> Result<Json<StructureView>, ApiError> {
     let (views, names) = {
-        let readings = state.readings.lock().expect("readings lock");
+        let readings = crate::locked(&state.readings);
         let points = readings
             .get(&device)
             .ok_or_else(|| ApiError::conflict("read the device's points first"))?;
@@ -444,10 +437,7 @@ pub async fn priorities(
     State(state): State<Shared>,
     Path(device): Path<u32>,
 ) -> Result<Json<Vec<WinnerView>>, ApiError> {
-    let objects: Vec<ObjectIdentifier> = state
-        .readings
-        .lock()
-        .expect("readings lock")
+    let objects: Vec<ObjectIdentifier> = crate::locked(&state.readings)
         .get(&device)
         .ok_or_else(|| ApiError::conflict("read the device's points first"))?
         .iter()
@@ -504,12 +494,7 @@ pub async fn live_values(
         .collect::<Result<Vec<_>, _>>()?;
     let client = state.client().await?;
     let fresh = points::read_again(&client, device, objects).await;
-    if let Some(known) = state
-        .readings
-        .lock()
-        .expect("readings lock")
-        .get_mut(&device)
-    {
+    if let Some(known) = crate::locked(&state.readings).get_mut(&device) {
         for point in fresh.iter().filter(|point| point.error.is_none()) {
             if let Some(listed) = known
                 .iter_mut()
@@ -533,10 +518,7 @@ pub(super) async fn object_view(
     // what was just read is newer than the last reading of the device, which the problems, the
     // search and the exports use
     if detail.point.error.is_none()
-        && let Some(listed) = state
-            .readings
-            .lock()
-            .expect("readings lock")
+        && let Some(listed) = crate::locked(&state.readings)
             .get_mut(&device)
             .and_then(|points| points.iter_mut().find(|point| point.object == object))
     {
@@ -545,7 +527,7 @@ pub(super) async fn object_view(
         listed.name = detail.point.name.clone();
         listed.description = detail.point.description.clone();
     }
-    let mut journal = state.journal.lock().expect("journal lock");
+    let mut journal = crate::locked(&state.journal);
     if let Some(slots) = &detail.priority_array {
         journal.compare_with_device(device, object, slots);
     }

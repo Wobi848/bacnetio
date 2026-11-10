@@ -1,7 +1,7 @@
 //! BACnet/SC over HTTP (docs/concept-sc.md): the site's certificate files chosen and checked in
 //! words, the connection to its hub with a search, and leaving it.
 
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime};
 
 use axum::Json;
 use axum::body::Bytes;
@@ -38,13 +38,11 @@ pub struct ScView {
 }
 
 fn now() -> i64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map_or(0, |since| since.as_secs() as i64)
+    crate::unix_time::seconds(SystemTime::now()) as i64
 }
 
 async fn view(state: &AppState) -> ScView {
-    let certificates = state.sc.lock().expect("sc lock").view(now());
+    let certificates = crate::locked(&state.sc).view(now());
     let last_hub = state
         .data_dir
         .as_ref()
@@ -86,12 +84,7 @@ pub async fn file(
     Query(query): Query<FileQuery>,
     body: Bytes,
 ) -> Json<ScView> {
-    state.sc.lock().expect("sc lock").choose(
-        query.line,
-        &file_name(&query.name),
-        body.to_vec(),
-        None,
-    );
+    crate::locked(&state.sc).choose(query.line, &file_name(&query.name), body.to_vec(), None);
     Json(view(&state).await)
 }
 
@@ -106,11 +99,7 @@ pub async fn password(
     State(state): State<Shared>,
     Json(request): Json<PasswordRequest>,
 ) -> Result<Json<ScView>, ApiError> {
-    let opened = state
-        .sc
-        .lock()
-        .expect("sc lock")
-        .open_with(request.line, &request.password);
+    let opened = crate::locked(&state.sc).open_with(request.line, &request.password);
     if !opened {
         return Err(ApiError::conflict(
             "no file waits for a password: choose it again",
@@ -139,10 +128,7 @@ pub async fn search(
             "{hub} is no hub address: wss://name:port/path, as the integrator gives it"
         )));
     }
-    let tls = state
-        .sc
-        .lock()
-        .expect("sc lock")
+    let tls = crate::locked(&state.sc)
         .tls_config()
         .map_err(ApiError::conflict)?;
     let identity = match &state.data_dir {
@@ -176,7 +162,7 @@ pub async fn search(
         )
         .await?;
         let view = ScanView::new(&report, Vec::new());
-        *state.devices.lock().expect("devices lock") = report.devices;
+        *crate::locked(&state.devices) = report.devices;
         Ok(view)
     });
     Ok(StatusCode::ACCEPTED)
@@ -200,7 +186,7 @@ fn keep_files(state: &AppState, hub: &str, remember_key: bool) {
             dir.display()
         );
     }
-    let certificates = state.sc.lock().expect("sc lock");
+    let certificates = crate::locked(&state.sc);
     let keep_key = remember_key || !certificates.key_had_password();
     for line in [Line::Ca, Line::Own, Line::Key] {
         if line == Line::Key && !keep_key {
@@ -224,7 +210,7 @@ pub async fn forget_key(State(state): State<Shared>) -> Result<Json<ScView>, Api
         sc_store::forget_key(dir)
             .map_err(|error| ApiError::internal(format!("cannot delete the SC key: {error}")))?;
     }
-    state.sc.lock().expect("sc lock").forget_key();
+    crate::locked(&state.sc).forget_key();
     Ok(Json(view(&state).await))
 }
 
@@ -247,7 +233,7 @@ pub(super) fn restore(state: &AppState) {
     };
     match sc_store::kept(dir) {
         Ok(kept) => {
-            let mut certificates = state.sc.lock().expect("sc lock");
+            let mut certificates = crate::locked(&state.sc);
             for (line, name, pem) in kept {
                 certificates.choose(line, &name, pem, None);
             }

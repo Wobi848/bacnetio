@@ -46,7 +46,17 @@ pub mod storage;
 pub mod structure;
 pub mod table;
 pub mod trend;
+pub mod typed;
+pub mod unix_time;
 pub mod update;
 pub mod watch;
 pub mod workbook;
 pub mod write;
+
+/// The guard of a lock, also after a task holding it panicked: the state behind it is simple
+/// (lists and maps replaced whole), so going on beats every later request panicking in turn.
+pub fn locked<T>(mutex: &std::sync::Mutex<T>) -> std::sync::MutexGuard<'_, T> {
+    mutex
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+}

@@ -154,7 +154,7 @@ fn points_of(remembered: &Value) -> Option<Vec<Point>> {
 
 /// Fills in what the site remembers, keeping nothing else: a device read since stays as read.
 pub(super) fn restore(state: &AppState) {
-    let Some(site) = state.site.lock().expect("site lock").clone() else {
+    let Some(site) = crate::locked(&state.site).clone() else {
         return;
     };
     let devices: Vec<Device> = site
@@ -166,8 +166,8 @@ pub(super) fn restore(state: &AppState) {
         .filter_map(|found| RememberedDevice::deserialize(found).ok())
         .filter_map(device)
         .collect();
-    *state.devices.lock().expect("devices lock") = devices;
-    let mut readings = state.readings.lock().expect("readings lock");
+    *crate::locked(&state.devices) = devices;
+    let mut readings = crate::locked(&state.readings);
     for (instance, remembered) in &site.points {
         if let (Ok(instance), Some(points)) = (instance.parse(), points_of(remembered)) {
             readings.entry(instance).or_insert(points);

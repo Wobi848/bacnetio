@@ -128,7 +128,7 @@ pub async fn start(
 ) -> Result<Json<ReadView>, ApiError> {
     let client = state.client().await?;
     {
-        let mut jobs = state.reads.lock().expect("reads lock");
+        let mut jobs = crate::locked(&state.reads);
         let job = jobs.entry(device).or_default();
         if !job.running {
             *job = ReadJob {
@@ -140,7 +140,7 @@ pub async fn start(
             let state = std::sync::Arc::clone(&state);
             let task = tokio::spawn(async move {
                 let observe = |event: Event<'_>| {
-                    if let Some(job) = state.reads.lock().expect("reads lock").get_mut(&device) {
+                    if let Some(job) = crate::locked(&state.reads).get_mut(&device) {
                         job.take(event);
                     }
                 };
@@ -163,7 +163,7 @@ pub async fn start(
 /// Stops the running reading of the device. What has been read stays, with a note about the rest.
 pub async fn stop(State(state): State<Shared>, Path(device): Path<u32>) -> StatusCode {
     let reading = {
-        let mut jobs = state.reads.lock().expect("reads lock");
+        let mut jobs = crate::locked(&state.reads);
         let Some(job) = jobs.get_mut(&device).filter(|job| job.running) else {
             return StatusCode::NO_CONTENT;
         };
@@ -192,7 +192,7 @@ fn take_searched_list(
     state: &Shared,
     device: u32,
 ) -> Option<(Vec<bacnet_types::primitives::ObjectIdentifier>, bool)> {
-    let mut devices = state.devices.lock().expect("devices lock");
+    let mut devices = crate::locked(&state.devices);
     let list = &mut devices
         .iter_mut()
         .find(|found| found.instance == device)?
@@ -201,7 +201,7 @@ fn take_searched_list(
 }
 
 fn finish(state: &Shared, device: u32, result: anyhow::Result<points::DeviceReading>) {
-    let mut jobs = state.reads.lock().expect("reads lock");
+    let mut jobs = crate::locked(&state.reads);
     let Some(job) = jobs.get_mut(&device) else {
         return;
     };
@@ -218,11 +218,7 @@ fn finish(state: &Shared, device: u32, result: anyhow::Result<points::DeviceRead
             state.remember(|site| {
                 site.points.insert(device.to_string(), remembered);
             });
-            state
-                .readings
-                .lock()
-                .expect("readings lock")
-                .insert(device, reading.points);
+            crate::locked(&state.readings).insert(device, reading.points);
         }
         Err(error) => job.error = Some(format!("{error:#}")),
     }
@@ -230,7 +226,7 @@ fn finish(state: &Shared, device: u32, result: anyhow::Result<points::DeviceRead
 
 /// How far the reading of the device is, with the points so far and the request log.
 pub async fn progress(State(state): State<Shared>, Path(device): Path<u32>) -> Json<ReadView> {
-    let jobs = state.reads.lock().expect("reads lock");
+    let jobs = crate::locked(&state.reads);
     Json(ReadView::new(
         jobs.get(&device).unwrap_or(&ReadJob::default()),
     ))

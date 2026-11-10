@@ -46,8 +46,9 @@ done
      target/debug/examples/simulated_plant 127.0.0.2 47809 &
      target/debug/examples/simulated_controller 127.0.0.3 47809 &
      target/debug/examples/simulated_commands 127.0.0.4 47809 &
+     target/debug/examples/simulated_sc <folder> 47443 &          # BACnet/SC: hub, SC-AHU and the certificate files in <folder>
      target/debug/bacnetio --no-browser --web-port 18700 --data-dir $S/shots-data --test-loopback &
-     sleep 2; node $S/shots.mjs; kill %1 %2 %3 %4"
+     sleep 2; node $S/shots.mjs; kill %1 %2 %3 %4 %5"
    ```
    The Playwright script (`shots.mjs`, in the scratchpad) runs inside, as the browser must reach
    the server in that network. A screen with a plugin needs its built file, which is kept

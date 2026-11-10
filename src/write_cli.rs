@@ -22,7 +22,8 @@ pub async fn write_value(
     priority: Option<u8>,
     data_dir: Option<&Path>,
 ) -> anyhow::Result<()> {
-    let value = write::parse_value(object.object_type(), text).map_err(anyhow::Error::msg)?;
+    let value =
+        bacnetio::typed::parse_value(object.object_type(), text).map_err(anyhow::Error::msg)?;
     change(target, object, priority, Action::Write(value), data_dir).await
 }
 
