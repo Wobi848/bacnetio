@@ -6,7 +6,7 @@ import { t } from "./i18n.js";
 import { heardHtml, linkChoiceHtml, mstpActsHtml, mstpFieldsHtml, trunkHtml } from "./mstp.js";
 import { resizeHandle } from "./panels.js";
 import { pluginTabsHtml } from "./plugins.js";
-import { hubHost, scActsHtml, scFieldsHtml, scNetworkHtml } from "./sc.js";
+import { hubHost, linkState, scActsHtml, scFieldsHtml, scNetworkHtml } from "./sc.js";
 import { siteProblems } from "./problems.js";
 import { openSiteOf, siteName } from "./sites.js";
 
@@ -212,7 +212,10 @@ export function statusHtml(state) {
   const busy = state.scan.state === "running" || state.reading;
   const trunk = state.mstp?.trunk;
   const hub = state.sc?.view?.hub;
-  const link = trunk ? t("mstp.status", { baud: trunk.baud }) : hub ? t("sc.status", { hub: hubHost(hub) }) : `${t("port")} ${state.settings.port.trim() || "47808"}`;
+  const scState = linkState(state.sc?.view);
+  const link = trunk ? t("mstp.status", { baud: trunk.baud })
+    : hub ? [t("sc.status", { hub: hubHost(hub) }), scState?.text].filter(Boolean).join(" · ")
+    : `${t("port")} ${state.settings.port.trim() || "47808"}`;
   const held = state.held.length ? `<button type="button" class="chip warn" data-area-go="log">${t("held", { n: state.held.length })}</button>` : "";
   const recording = state.recording?.running ? `<button type="button" class="chip accent" data-area-go="recording">● ${t("rec.on")}</button>` : "";
   return `<span class="state"><span class="dot ${busy ? "busy" : "on"}"></span>${h(activity(state))}</span>

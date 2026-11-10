@@ -55,6 +55,9 @@ export function scFieldsHtml(state) {
   return `<dt><label for="sc-hub">${t("sc.hub")}</label></dt>
     <dd><input id="sc-hub" class="mono" placeholder="wss://hub.example:443/" value="${h(sc.hub)}"></dd>
     <dd class="hint">${t("sc.hubHint")}</dd>
+    <dt><label for="sc-failover">${t("sc.failoverHub")}</label></dt>
+    <dd><input id="sc-failover" class="mono" placeholder="wss://hub2.example:443/" value="${h(sc.failoverHub)}"></dd>
+    <dd class="hint">${t("sc.failoverHint")}</dd>
     ${LINES.map((name) => lineHtml(sc, name)).join("")}
     <dd class="hint">${t("sc.filesHint")}</dd>
     ${remember}`;
@@ -77,7 +80,16 @@ export function scKeyCardHtml(state) {
     <p class="hint">${t(kept ? "sc.keyKept" : "sc.keyNotKept")}</p>${forget}</section>`;
 }
 
-/** In the sidebar while bacnetio is on an SC network: the hub, and the way off it. */
+/** The state of the hub connection in words, and its colour: green while it stands. */
+export function linkState(view) {
+  const link = view?.link;
+  if (!link) return null;
+  if (!link.connected) return { text: t("sc.link.reconnecting"), kind: "err" };
+  if (link.failover) return { text: t("sc.link.failover"), kind: "warn" };
+  return { text: t("sc.link.connected"), kind: "ok" };
+}
+
+/** In the sidebar while bacnetio is on an SC network: the hub, how the connection stands, and the way off it. */
 export function scNetworkHtml(state) {
   const hub = state.sc.view?.hub;
   if (!hub) return "";
@@ -88,6 +100,8 @@ export function scNetworkHtml(state) {
       <button type="button" data-act="release-all">${releaseLabel(count)}</button>
       <button type="button" class="quiet" data-act="sc-leave-anyway">${t("sc.leaveAnyway")}</button></div>`;
   }
-  return `<div class="side-trunk"><span class="side-detail">${t("sc.onNetwork", { hub: h(hubHost(hub)) })}</span>
+  const link = linkState(state.sc.view);
+  const chip = link ? ` <span class="chip ${link.kind}">${h(link.text)}</span>` : "";
+  return `<div class="side-trunk"><span class="side-detail">${t("sc.onNetwork", { hub: h(hubHost(hub)) })}${chip}</span>
     <button type="button" class="quiet" data-act="sc-leave">${t("sc.leave")}</button></div>`;
 }

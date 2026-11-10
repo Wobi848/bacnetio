@@ -47,7 +47,7 @@ export const state = {
   /** Whether this bacnetio has BACnet/SC at all, from /api/info. */
   scAvailable: false,
   /** BACnet/SC: the hub typed, the certificate lines as the server checked them, passwords typed for a waiting file. */
-  sc: { hub: "", view: null, passwords: {}, rememberKey: false, leaving: false },
+  sc: { hub: "", failoverHub: "", view: null, passwords: {}, rememberKey: false, leaving: false },
   /** Which menu is open: "network", "locate" or "export". */
   menu: null,
   scan: { state: "idle" },

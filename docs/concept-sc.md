@@ -235,9 +235,9 @@ for the demo and the browser tests. No key or certificate enters the repository.
    *Open a BACnet/SC plant* in all languages. The hub of the last connection is offered again.
 3. **Status, leaving, sites:** done: *Leave the SC network* (asks first while values are held),
    the hub in the sidebar head and the status bar, held values only on SC, *Forget the SC key* in
-   *Settings*, *Capture* saying it records nothing on SC. Open: the state of the connection
-   (connecting, reconnected, failover hub), the failover hub, a site that remembers its hub and
-   certificates.
+   *Settings*, *Capture* saying it records nothing on SC, the failover hub and connecting again by
+   itself (`src/sc_connection.rs`), the state of the connection in the sidebar and the status bar.
+   Open: a site that remembers its hub and certificates.
 4. **Android:** the file picker, checked on a phone.
 5. **Key and CSR made in bacnetio**, the signed certificate taken back.
 6. **Direct connections** (Annex AB.4, node to node without the hub), where the hub announces them:

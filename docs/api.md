@@ -103,7 +103,8 @@ stay as they were.
 In builds with the feature `sc`, which every release has (`docs/concept-sc.md`).
 
 `GET /api/sc`: the three certificate lines as bacnetio checked them, the hub bacnetio is connected
-to (`hub`, else `null`) and the hub of the last connection (`last_hub`), kept in the data folder:
+to (`hub`, its failover hub in `failover_hub`, else `null`), how that connection stands (`link`), and
+the hubs of the last connection (`last_hub`, `last_failover_hub`), kept in the data folder:
 
 ```json
 {
@@ -115,7 +116,10 @@ to (`hub`, else `null`) and the hub of the last connection (`last_hub`), kept in
     "key_password": true
   },
   "hub": null,
+  "failover_hub": null,
+  "link": { "connected": true, "failover": false },
   "last_hub": "wss://hub.example:443/",
+  "last_failover_hub": null,
   "key_kept": true
 }
 ```
@@ -137,7 +141,11 @@ a file with more in it fills every line it holds. At most 1 MB.
 with its password; answers like `GET /api/sc`. The password is not kept. `409` when no file waits
 for one.
 
-`POST /api/sc/search` `{ "hub": "wss://hub.example:443/", "remember_key": false }`: connects to the
+`link.connected` is false while the connection dropped and bacnetio connects again by itself (after
+1 s, then up to every 30 s, for as long as it stays on the network); `link.failover` while it is on
+the failover hub, where the primary did not answer. `link` is `null` on another kind of link.
+
+`POST /api/sc/search` `{ "hub": "wss://hub.example:443/", "failover_hub": null, "remember_key": false }`: connects to the
 hub with the certificates chosen and searches the SC network like `POST /api/scan` (Who-Is through
 the hub; no sweep, no BBMD); the progress and the result come from `GET /api/scan`. `202` when the
 search runs. `400` for an address that is no `wss://` URL, `409` while a line is missing, `502` when

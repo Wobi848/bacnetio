@@ -48,6 +48,9 @@ export default {
     assert.match(row, /SC-AHU/);
     assert.match(row, /SC 22:00:00:00:00:01/);
     assert.match(await page.textContent(".side-trunk"), /On the BACnet\/SC network at localhost:\d+/);
+    // the connection stands, and the status bar says so too
+    assert.match(await page.textContent(".side-trunk .chip"), /connected/);
+    assert.match(await page.textContent(".status"), /BACnet\/SC localhost:\d+ · connected/);
     // no device by IP on an SC network
     assert.equal(await page.locator("[data-act=locate-menu]").count(), 0);
 

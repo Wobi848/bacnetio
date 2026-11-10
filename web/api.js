@@ -71,7 +71,7 @@ export const api = {
   sc: () => call("GET", "/api/sc"),
   scFile: (line, file) => call("POST", `/api/sc/file?line=${line}&name=${encodeURIComponent(file.name)}`, file, "application/octet-stream"),
   scPassword: (line, password) => call("POST", "/api/sc/password", { line, password }),
-  scSearch: (hub, rememberKey) => call("POST", "/api/sc/search", { hub, remember_key: rememberKey }),
+  scSearch: (hub, failoverHub, rememberKey) => call("POST", "/api/sc/search", { hub, failover_hub: failoverHub || null, remember_key: rememberKey }),
   scLeave: () => call("POST", "/api/sc/leave"),
   scForgetKey: () => call("POST", "/api/sc/forget-key"),
   startScan: (settings) => call("POST", "/api/scan", settings),

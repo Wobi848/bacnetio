@@ -15,13 +15,21 @@ use bacnet_types::enums::{EngineeringUnits, ObjectType, PropertyIdentifier};
 use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
 use bacnetio::address::Address;
 use bacnetio::connection;
-use bacnetio::sc_connection::open_sc;
+use bacnetio::sc_connection::{Hubs, open_sc};
 use bacnetio::sc_identity::Identity;
 use bacnetio::scan;
 use rcgen::{CertificateParams, Issuer, KeyPair};
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 
 const WHO_IS_WAIT: Duration = Duration::from_secs(2);
+/// The hubs of a network with no failover hub.
+fn alone(hub: &str) -> Hubs {
+    Hubs {
+        primary: hub.to_string(),
+        failover: None,
+    }
+}
+
 const DEVICE_VMAC: [u8; 6] = [0x22, 0, 0, 0, 0, 1];
 
 struct Ca {
@@ -87,7 +95,7 @@ async fn plant(ca: &Ca) -> (ScHub, BACnetServer<ScTransport<TlsWebSocket>>, Stri
 async fn finds_and_reads_a_device_through_the_hub() {
     let ca = Ca::new();
     let (_hub, _device, url) = plant(&ca).await;
-    let connection = open_sc(&url, ca.node(), Identity::new().unwrap())
+    let connection = open_sc(&alone(&url), ca.node(), Identity::new().unwrap())
         .await
         .unwrap();
 
@@ -123,7 +131,7 @@ async fn finds_and_reads_a_device_through_the_hub() {
 async fn a_certificate_of_another_ca_is_refused() {
     let ca = Ca::new();
     let (_hub, _device, url) = plant(&ca).await;
-    let error = open_sc(&url, Ca::new().node(), Identity::new().unwrap())
+    let error = open_sc(&alone(&url), Ca::new().node(), Identity::new().unwrap())
         .await
         .err()
         .expect("refused");
@@ -141,7 +149,7 @@ async fn why_a_hub_cannot_be_reached_in_words() {
     let other = Ca::new();
     let (chain, key) = other.issue();
     let tls = ScNodeTlsConfig::from_der(vec![ca.certificate.clone()], chain, key).unwrap();
-    let error = open_sc(&url, tls, Identity::new().unwrap())
+    let error = open_sc(&alone(&url), tls, Identity::new().unwrap())
         .await
         .err()
         .unwrap();
@@ -151,10 +159,14 @@ async fn why_a_hub_cannot_be_reached_in_words() {
             .starts_with("the hub refuses bacnetio's certificate"),
         "{error:#}"
     );
-    let error = open_sc("wss://localhost:1/", ca.node(), Identity::new().unwrap())
-        .await
-        .err()
-        .unwrap();
+    let error = open_sc(
+        &alone("wss://localhost:1/"),
+        ca.node(),
+        Identity::new().unwrap(),
+    )
+    .await
+    .err()
+    .unwrap();
     assert!(
         error
             .to_string()
@@ -162,7 +174,7 @@ async fn why_a_hub_cannot_be_reached_in_words() {
         "{error:#}"
     );
     let ip_url = url.replace("localhost", "127.0.0.1");
-    let error = open_sc(&ip_url, ca.node(), Identity::new().unwrap())
+    let error = open_sc(&alone(&ip_url), ca.node(), Identity::new().unwrap())
         .await
         .err()
         .unwrap();
@@ -170,4 +182,25 @@ async fn why_a_hub_cannot_be_reached_in_words() {
         error.to_string().contains("is made out to another name"),
         "{error:#}"
     );
+}
+
+#[tokio::test]
+async fn the_failover_hub_takes_over_when_the_primary_does_not_answer() {
+    let ca = Ca::new();
+    let (_hub, _device, url) = plant(&ca).await;
+    let hubs = Hubs {
+        primary: "wss://localhost:1/".to_string(),
+        failover: Some(url),
+    };
+    let connection = open_sc(&hubs, ca.node(), Identity::new().unwrap())
+        .await
+        .unwrap();
+    // the device is reached through the failover hub as through the primary
+    let report = scan::run(&connection.client, WHO_IS_WAIT, Vec::new(), &|_| {})
+        .await
+        .unwrap();
+    assert!(report.devices.iter().any(|device| device.instance == 5001));
+    let status = bacnetio::sc_connection::hub_status(&connection.client).unwrap();
+    assert!(status.connected && status.failover, "{status:?}");
+    connection.close().await.unwrap();
 }
