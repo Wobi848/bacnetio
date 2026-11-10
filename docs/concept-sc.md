@@ -1,6 +1,6 @@
 # Concept: BACnet/SC (Secure Connect)
 
-Status: approved on 09.11.2026, decisions below; nothing is built yet. Branch `concept-sc`. The maintainer asked for the
+Status: approved on 09.11.2026, decisions below. Step 0 (build check) on branch `sc-build`; nothing to see yet. The maintainer asked for the
 concept in full and whether it works with bacnetio's interface to BACnet ("bitte nichts bauen zu SC
 aber Konzept voll ausbauen und ob es geht mit unserer Schnittstelle").
 
@@ -57,8 +57,13 @@ SC. It compiled for Linux at the first try.
 | Android (aarch64) | built with the NDK, with the same patch of `bacnet-transport` that `android/build-core.sh` applies today; not run on a phone |
 | Windows | not tried: no Windows toolchain here. The TLS stack (`aws-lc-sys`) ships ready-made assembler objects for Windows x64, so neither NASM nor anything else should be needed beside what CI has. Step 0 below checks it in CI before anything else |
 
-The TLS stack makes bacnetio larger and its build slower (it compiles C code). Step 0 measures by
-how much.
+The TLS stack makes bacnetio larger and its build slower (it compiles C code). Measured in step 0
+on 10.11.2026, the Linux release build from scratch on the maintainer's machine:
+
+| | without `sc-tls` | with `sc-tls` |
+| --- | --- | --- |
+| Program size | 9.6 MB | 10.7 MB (+1.1 MB) |
+| Build time | 97 s | 129 s (+32 s) |
 
 ## What has to change in bacnetio
 
@@ -208,7 +213,7 @@ for the demo and the browser tests. No key or certificate enters the repository.
   `10.0.0.20:47808` and `mstp:12`. An older bacnetio counts a line with an SC address as
   unreadable and goes on, as it does for any line it cannot read.
 - The web API gets new fields and routes, none renamed.
-- The program grows by the TLS stack; Step 0 measures it. `CHANGELOG.md` names SC when it is
+- The program grows by the TLS stack, about 1.1 MB (step 0). `CHANGELOG.md` names SC when it is
   built.
 
 ## Order of building
