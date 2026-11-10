@@ -5,6 +5,7 @@ import { saveMemory } from "./memory.js";
 import { installPlugin } from "./plugin-actions.js";
 import { CHANGES } from "./change-many.js";
 import { TABLE_FILTERS } from "./table-filter.js";
+import { chooseScFile } from "./sc-actions.js";
 import { forgetDeviceReads, render, state } from "./store.js";
 
 /** Fields whose typing goes straight into the state. */
@@ -36,6 +37,14 @@ const FILTERS = {
 document.addEventListener("change", (event) => {
   if (event.target.id === "plugin-file") {
     if (event.target.files[0]) installPlugin(event.target.files[0]);
+    return;
+  }
+  if (event.target.id.startsWith("sc-file-")) {
+    chooseScFile(event.target.dataset.line, event.target.files[0]);
+    return;
+  }
+  if (event.target.id === "sc-remember") {
+    state.sc.rememberKey = event.target.checked;
     return;
   }
   if (event.target.id === "site-file") {
@@ -88,6 +97,9 @@ document.addEventListener("input", (event) => {
   }
   if (id === "many-value") { state.changeMany.value = event.target.value; render(); }
   if (id === "many-priority") { state.changeMany.priority = Number(event.target.value); render(); }
+  if (id.startsWith("sc-password-")) state.sc.passwords[id.slice("sc-password-".length)] = event.target.value;
+  // the button to connect follows the hub typed
+  if (id === "sc-hub") { state.sc.hub = event.target.value; render(); }
   if (FIELDS[id]) FIELDS[id](event.target.value);
   if (FILTERS[id]) { FILTERS[id](event.target.value); render(); }
   if (id === "table-filter") { state[TABLE_FILTERS[event.target.dataset.list]].text = event.target.value; render(); }

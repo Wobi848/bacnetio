@@ -1,6 +1,6 @@
 # Concept: BACnet/SC (Secure Connect)
 
-Status: approved on 09.11.2026, decisions below. Steps 0 and 1 built on 10.11.2026 (branches `sc-build`, `sc-connection`); nothing to see yet. The maintainer asked for the
+Status: approved on 09.11.2026, decisions below. Steps 0 to 2 built on 10.11.2026, step 3 in part (branches `sc-build`, `sc-connection`, `sc-search`, `sc-dialog`). The maintainer asked for the
 concept in full and whether it works with bacnetio's interface to BACnet ("bitte nichts bauen zu SC
 aber Konzept voll ausbauen und ob es geht mit unserer Schnittstelle").
 
@@ -228,11 +228,16 @@ for the demo and the browser tests. No key or certificate enters the repository.
    in `sc/identity.json` (`src/sc_identity.rs`); a device is released only over the link it was
    written on, SC included (`other_link` in `src/server/session.rs`). Test: `tests/sc.rs` with a hub
    and an SC device made in the test, and a certificate of another CA refused.
-2. **Search settings and certificates:** the third connection type, the three files checked in
-   words, the key kept as described, the reasons for a failed connection; `simulated_sc` and
-   browser tests; help guide *Open a BACnet/SC plant* in all languages.
-3. **Status, leaving, sites:** status bar, *Leave the SC network*, a site remembers its hub and
-   certificates, held values only on SC.
+2. ✓ **Search settings and certificates** (done 10.11.2026): the third connection type, the three
+   files checked in words, the key kept as described, the reasons for a failed connection
+   (`src/sc_connection.rs`, by the stage the connection failed at: name, TCP, TLS, WebSocket);
+   routes `/api/sc…` (`src/server/sc.rs`), `web/sc.js`; `simulated_sc` and `ui/50-sc`; help guide
+   *Open a BACnet/SC plant* in all languages. The hub of the last connection is offered again.
+3. **Status, leaving, sites:** done: *Leave the SC network* (asks first while values are held),
+   the hub in the sidebar head, held values only on SC. Open: the status bar with the state of the
+   connection (connecting, reconnected, failover hub), the failover hub, a site that remembers its
+   hub and certificates, *Forget the SC key* in *Settings*, and *Capture* saying it is not available
+   on SC.
 4. **Android:** the file picker, checked on a phone.
 5. **Key and CSR made in bacnetio**, the signed certificate taken back.
 6. **Direct connections** (Annex AB.4, node to node without the hub), where the hub announces them:

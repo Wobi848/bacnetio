@@ -35,7 +35,7 @@ export default {
 
     // every guide opens, and each button leads to its place
     const guides = await page.$$eval("button[data-act=help-guide]", (buttons) => buttons.map((button) => button.dataset.guide));
-    assert.equal(guides.length, 14);
+    assert.equal(guides.length, 15);
     for (const [guide, hash] of [["watch", "#/watch"], ["record", "#/recording"], ["capture", "#/settings"], ["sites", "#/sites"]]) {
       await page.goto(`${base}/#/help`);
       await page.click(`button[data-guide=${guide}]`);

@@ -14,7 +14,8 @@ use bacnet_transport::sc_tls::{ScNodeTlsConfig, TlsWebSocket};
 use bacnet_types::enums::{EngineeringUnits, ObjectType, PropertyIdentifier};
 use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
 use bacnetio::address::Address;
-use bacnetio::connection::{self, open_sc};
+use bacnetio::connection;
+use bacnetio::sc_connection::open_sc;
 use bacnetio::sc_identity::Identity;
 use bacnetio::scan;
 use rcgen::{CertificateParams, Issuer, KeyPair};
@@ -127,7 +128,46 @@ async fn a_certificate_of_another_ca_is_refused() {
         .err()
         .expect("refused");
     assert!(
-        format!("{error:#}").contains("cannot connect to the hub"),
+        format!("{error:#}").starts_with("the hub's certificate is not signed by the site CA"),
+        "{error:#}"
+    );
+}
+
+#[tokio::test]
+async fn why_a_hub_cannot_be_reached_in_words() {
+    let ca = Ca::new();
+    let (_hub, _device, url) = plant(&ca).await;
+    // bacnetio's certificate from another CA, the hub's CA trusted
+    let other = Ca::new();
+    let (chain, key) = other.issue();
+    let tls = ScNodeTlsConfig::from_der(vec![ca.certificate.clone()], chain, key).unwrap();
+    let error = open_sc(&url, tls, Identity::new().unwrap())
+        .await
+        .err()
+        .unwrap();
+    assert!(
+        error
+            .to_string()
+            .starts_with("the hub refuses bacnetio's certificate"),
+        "{error:#}"
+    );
+    let error = open_sc("wss://localhost:1/", ca.node(), Identity::new().unwrap())
+        .await
+        .err()
+        .unwrap();
+    assert!(
+        error
+            .to_string()
+            .starts_with("no hub answers at wss://localhost:1/"),
+        "{error:#}"
+    );
+    let ip_url = url.replace("localhost", "127.0.0.1");
+    let error = open_sc(&ip_url, ca.node(), Identity::new().unwrap())
+        .await
+        .err()
+        .unwrap();
+    assert!(
+        error.to_string().contains("is made out to another name"),
         "{error:#}"
     );
 }

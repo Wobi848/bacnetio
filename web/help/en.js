@@ -99,6 +99,23 @@ export default {
       "No master takes bacnetio into the token ring: listen again and join with the address offered.",
     ],
   },
+  sc: {
+    title: "Open a BACnet/SC plant",
+    intro: "On BACnet/SC, devices talk through a hub over TLS-encrypted connections. bacnetio needs three files from the integrator: the site's CA, a certificate for bacnetio and its private key, often all in one PKCS#12 file.",
+    steps: [
+      "Open {btn:side.searchSettings} and choose {btn:link.sc} under {btn:link.title}. Enter the hub's address under {btn:sc.hub}.",
+      "For {btn:sc.line.ca}, {btn:sc.line.own} and {btn:sc.line.key}, press {btn:sc.choose} and choose the file. A PKCS#12 file fills all three lines at once.",
+      "If a file has a password, type it and press {btn:sc.open}. Each line says what bacnetio found: valid until, expired, not from this CA, does not match.",
+      "Press {btn:sc.connect}. The devices on the SC network are read, written and recorded as on IP.",
+      "When you are done, press {btn:sc.leave} in the sidebar.",
+    ],
+    causes: [
+      "No hub answers: check the address and that this computer reaches the hub (VPN, firewall, port).",
+      "The hub's certificate is not from the site CA: the CA file is the wrong one, or the address is not the hub of this site.",
+      "The hub refuses bacnetio's certificate: it is from another CA, has run out, or the hub does not admit it yet. Ask the integrator.",
+      "Key does not match: the key file belongs to another certificate.",
+    ],
+  },
   watch: {
     title: "Keep an eye on values",
     intro: "The watch list shows points of several devices together, with their values live.",

@@ -32,6 +32,8 @@ pub mod reference;
 #[cfg(feature = "sc")]
 pub mod sc_certificates;
 #[cfg(feature = "sc")]
+pub mod sc_connection;
+#[cfg(feature = "sc")]
 pub mod sc_files;
 #[cfg(feature = "sc")]
 pub mod sc_identity;

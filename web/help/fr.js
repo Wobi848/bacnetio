@@ -99,6 +99,23 @@ export default {
       "Aucun maître ne prend bacnetio dans l'anneau à jeton : écoutez à nouveau et entrez avec l'adresse proposée.",
     ],
   },
+  sc: {
+    title: "Ouvrir une installation BACnet/SC",
+    intro: "En BACnet/SC, les appareils communiquent par un hub, sur des connexions chiffrées par TLS. bacnetio a besoin de trois fichiers de l'intégrateur : la CA du site, un certificat pour bacnetio et sa clé privée, souvent tous dans un fichier PKCS#12.",
+    steps: [
+      "Ouvrez {btn:side.searchSettings} et choisissez {btn:link.sc} sous {btn:link.title}. Saisissez l'adresse du hub sous {btn:sc.hub}.",
+      "Pour {btn:sc.line.ca}, {btn:sc.line.own} et {btn:sc.line.key}, appuyez sur {btn:sc.choose} et choisissez le fichier. Un fichier PKCS#12 remplit les trois lignes d'un coup.",
+      "Si un fichier a un mot de passe, saisissez-le et appuyez sur {btn:sc.open}. Chaque ligne dit ce que bacnetio a trouvé : valable jusqu'au, expiré, pas de cette CA, ne correspond pas.",
+      "Appuyez sur {btn:sc.connect}. Les appareils du réseau SC sont lus, écrits et enregistrés comme sur IP.",
+      "Quand vous avez terminé, appuyez sur {btn:sc.leave} dans la barre latérale.",
+    ],
+    causes: [
+      "Aucun hub ne répond : vérifiez l'adresse et que cet ordinateur atteint le hub (VPN, pare-feu, port).",
+      "Le certificat du hub ne vient pas de la CA du site : le fichier CA n'est pas le bon, ou l'adresse n'est pas le hub de ce site.",
+      "Le hub refuse le certificat de bacnetio : il vient d'une autre CA, a expiré, ou le hub ne l'admet pas encore. Demandez à l'intégrateur.",
+      "La clé ne correspond pas : le fichier de clé appartient à un autre certificat.",
+    ],
+  },
   watch: {
     title: "Garder un œil sur des valeurs",
     intro: "La liste de suivi montre ensemble des points de plusieurs appareils, avec leurs valeurs en direct.",

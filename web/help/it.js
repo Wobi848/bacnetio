@@ -99,6 +99,23 @@ export default {
       "Nessun master accoglie bacnetio nell'anello del token: ascoltate di nuovo ed entrate con l'indirizzo proposto.",
     ],
   },
+  sc: {
+    title: "Aprire un impianto BACnet/SC",
+    intro: "In BACnet/SC i dispositivi comunicano tramite un hub, su connessioni cifrate con TLS. bacnetio ha bisogno di tre file dall'integratore: la CA dell'impianto, un certificato per bacnetio e la sua chiave privata, spesso tutti in un file PKCS#12.",
+    steps: [
+      "Aprite {btn:side.searchSettings} e scegliete {btn:link.sc} in {btn:link.title}. Inserite l'indirizzo dell'hub in {btn:sc.hub}.",
+      "Per {btn:sc.line.ca}, {btn:sc.line.own} e {btn:sc.line.key} premete {btn:sc.choose} e scegliete il file. Un file PKCS#12 riempie tutte e tre le righe in una volta.",
+      "Se un file ha una password, digitatela e premete {btn:sc.open}. Ogni riga dice cosa ha trovato bacnetio: valido fino al, scaduto, non di questa CA, non corrisponde.",
+      "Premete {btn:sc.connect}. I dispositivi della rete SC vengono letti, scritti e registrati come su IP.",
+      "Quando avete finito, premete {btn:sc.leave} nella barra laterale.",
+    ],
+    causes: [
+      "Nessun hub risponde: controllate l'indirizzo e che questo computer raggiunga l'hub (VPN, firewall, porta).",
+      "Il certificato dell'hub non è della CA dell'impianto: il file CA è sbagliato, o l'indirizzo non è l'hub di questo impianto.",
+      "L'hub rifiuta il certificato di bacnetio: è di un'altra CA, è scaduto, o l'hub non lo ammette ancora. Chiedete all'integratore.",
+      "La chiave non corrisponde: il file della chiave appartiene a un altro certificato.",
+    ],
+  },
   watch: {
     title: "Tenere d'occhio dei valori",
     intro: "La lista di controllo mostra insieme punti di più dispositivi, con i loro valori in tempo reale.",

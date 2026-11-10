@@ -13,6 +13,7 @@ import { saveFile } from "./file-actions.js";
 import { installPlugin, removePlugin, switchPlugin } from "./plugin-actions.js";
 import { recordHere, recordingRequest, recordPoint, removeRecorded, setRecordMode } from "./recording-actions.js";
 import { chooseLink, leaveTrunk, listenToTrunk, loadSerialPorts, searchOnTrunk, searchTrunkAgain } from "./mstp-actions.js";
+import { leaveSc, openScFile, searchOnSc } from "./sc-actions.js";
 import { setAccent, setBackground, setTheme } from "./settings.js";
 import { openSiteOf, siteName } from "./sites.js";
 import { chooseCompare, openComparedPoint, readBoth, startCompare } from "./compare-actions.js";
@@ -36,7 +37,13 @@ const listedPoint = (key) => state.points.find((point) => pointKey(point) === ke
 
 export const actions = {
   // with MS/TP chosen, searching again searches the trunk bacnetio is on
-  find: () => { forgetDeviceReads(); if (state.link === "mstp" && state.mstp.trunk) searchTrunkAgain(); else find(); },
+  find: () => {
+    forgetDeviceReads();
+    if (state.link === "mstp" && state.mstp.trunk) searchTrunkAgain();
+    // on an SC network a new search goes through its hub again
+    else if (state.link === "sc" && state.sc.view?.hub) searchOnSc();
+    else find();
+  },
   locate: () => locate(),
   network: () => { state.menu = state.menu === "network" ? null : "network"; render(); document.getElementById("subnet")?.focus(); },
   "locate-menu": () => { state.menu = state.menu === "locate" ? null : "locate"; render(); document.getElementById("locate-address")?.focus(); },
@@ -49,6 +56,12 @@ export const actions = {
     if (state.held.length) { state.mstp.leaving = true; render(); } else leaveTrunk();
   },
   "mstp-leave-anyway": () => leaveTrunk(),
+  "sc-open": (el) => openScFile(el.dataset.line),
+  "sc-search": () => { forgetDeviceReads(); searchOnSc(); },
+  "sc-leave": () => {
+    if (state.held.length) { state.sc.leaving = true; render(); } else leaveSc();
+  },
+  "sc-leave-anyway": () => leaveSc(),
   "toggle-head": () => { state.headOpen = !state.headOpen; render(); },
   // the adapter is chosen in the search settings: open them with the choice in focus
   "focus-adapter": () => {

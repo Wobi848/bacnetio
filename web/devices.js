@@ -62,7 +62,7 @@ function toolbar(state, devices, also) {
   return `<div class="toolbar">${search}${progress(state.scan)}
     <div class="end">
       ${state.selectedDevice !== null ? `<button type="button" class="tonal" data-act="find"${searching ? " disabled" : ""}>${t("searchAgain")}</button>` : headToolHtml(also)}
-      ${state.link === "mstp" ? "" : `<span class="menu-host"><button type="button" class="quiet" data-act="locate-menu" aria-expanded="${state.menu === "locate"}">${t("locate.short")}</button>${locateMenu(state)}</span>`}
+      ${state.link === "mstp" || state.link === "sc" ? "" : `<span class="menu-host"><button type="button" class="quiet" data-act="locate-menu" aria-expanded="${state.menu === "locate"}">${t("locate.short")}</button>${locateMenu(state)}</span>`}
       ${devices.length ? exportMenu(state, searching) : ""}
     </div></div>`;
 }

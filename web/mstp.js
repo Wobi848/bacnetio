@@ -8,11 +8,12 @@ import { releaseLabel } from "./log.js";
 /** The speeds MS/TP trunks run at, as the server takes them. */
 export const MSTP_SPEEDS = [9600, 19200, 38400, 76800, 115200];
 
-/** BACnet/IP or MS/TP, first in the search settings; only where this bacnetio has MS/TP. */
+/** BACnet/IP, MS/TP or BACnet/SC, first in the search settings; only the ones this bacnetio has. */
 export function linkChoiceHtml(state) {
-  if (!state.mstpAvailable) return "";
+  if (!state.mstpAvailable && !state.scAvailable) return "";
   const choice = (link, label) => `<button type="button" id="link-${link}" data-act="link" data-link="${link}" aria-pressed="${state.link === link}">${t(label)}</button>`;
-  return `<dt><span id="link-label">${t("link.title")}</span></dt><dd><span class="seg" role="group" aria-labelledby="link-label">${choice("ip", "link.ip")}${choice("mstp", "link.mstp")}</span></dd>`;
+  const choices = [choice("ip", "link.ip"), state.mstpAvailable ? choice("mstp", "link.mstp") : "", state.scAvailable ? choice("sc", "link.sc") : ""].join("");
+  return `<dt><span id="link-label">${t("link.title")}</span></dt><dd><span class="seg" role="group" aria-labelledby="link-label">${choices}</span></dd>`;
 }
 
 function portField(mstp) {

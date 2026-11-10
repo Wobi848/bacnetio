@@ -18,6 +18,7 @@ export const GUIDES = [
   { id: "vpn", group: "site", target: "network" },
   { id: "bbmd", group: "site", target: "network" },
   { id: "mstp", group: "site", target: "network" },
+  { id: "sc", group: "site", target: "network" },
   { id: "write", group: "values", target: "log" },
   { id: "watch", group: "values", target: "watch" },
   { id: "record", group: "values", target: "recording" },

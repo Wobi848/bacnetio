@@ -3,13 +3,15 @@
 
 import { api } from "./api.js";
 import { runSearch } from "./device-actions.js";
+import { loadSc } from "./sc-actions.js";
 import { render, state, toast } from "./store.js";
 
-/** BACnet/IP or MS/TP; the serial ports are asked for the first time MS/TP is chosen. */
+/** BACnet/IP, MS/TP or BACnet/SC; the serial ports or the certificate lines are asked for the first time. */
 export function chooseLink(link) {
   state.link = link;
   render();
   if (link === "mstp" && state.mstp.ports === null) loadSerialPorts();
+  if (link === "sc" && state.sc.view === null) loadSc();
 }
 
 /** The serial ports, the chosen one kept while it is still there, else the first (USB first). */

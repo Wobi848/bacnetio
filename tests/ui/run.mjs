@@ -13,7 +13,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { SIM_PORT, SIMULATORS } from "./helpers.mjs";
+import { SC_PORT, SIM_PORT, SIMULATORS } from "./helpers.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../..");
@@ -71,6 +71,32 @@ async function startMstpSimulator() {
   return started;
 }
 const mstpSimulator = await startMstpSimulator();
+
+/**
+ * The BACnet/SC hub with its device (docs/concept-sc.md): it writes its certificate files into a
+ * folder of its own, which the tests find in BACNETIO_TEST_SC_DIR, its hub in BACNETIO_TEST_SC_HUB.
+ */
+async function startScSimulator() {
+  const program = path.join(root, `target/debug/examples/simulated_sc${exe}`);
+  if (!fs.existsSync(program)) return null;
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bacnetio-sc-"));
+  const started = spawn(program, [dir, String(SC_PORT)], { stdio: ["ignore", "pipe", "inherit"] });
+  const hub = await new Promise((found) => {
+    let printed = "";
+    started.stdout.on("data", (chunk) => {
+      printed += chunk;
+      const url = printed.match(/hub at (wss:\/\/\S+) /);
+      if (url) found(url[1]);
+    });
+    started.once("exit", () => found(null));
+  });
+  if (hub) {
+    process.env.BACNETIO_TEST_SC_DIR = dir;
+    process.env.BACNETIO_TEST_SC_HUB = hub;
+  }
+  return { started, dir };
+}
+const scSimulator = await startScSimulator();
 
 /** Starts bacnetio on `port` with the data folder `dir` and waits until its API answers. */
 async function launch(port, dir) {
@@ -165,5 +191,9 @@ for (const test of tests.filter((candidate) => candidate.name.includes(filter) |
 await browser.close();
 for (const simulator of simulators) simulator.kill();
 mstpSimulator?.kill();
+if (scSimulator) {
+  scSimulator.started.kill();
+  fs.rmSync(scSimulator.dir, { recursive: true, force: true });
+}
 console.log(failed ? `${failed} failed` : "all tests passed");
 process.exit(failed ? 1 : 0);
