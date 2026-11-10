@@ -98,6 +98,23 @@ export default {
       "Kein Master nimmt bacnetio in den Token-Ring auf: neu mithören und mit der angebotenen Adresse teilnehmen.",
     ],
   },
+  sc: {
+    title: "Eine BACnet/SC-Anlage öffnen",
+    intro: "Bei BACnet/SC sprechen die Geräte über einen Hub mit TLS-verschlüsselten Verbindungen. bacnetio braucht vom Integrator drei Dateien: die CA der Anlage, ein Zertifikat für bacnetio und seinen privaten Schlüssel, oft alles in einer PKCS#12-Datei.",
+    steps: [
+      "{btn:side.searchSettings} öffnen und unter {btn:link.title} {btn:link.sc} wählen. Unter {btn:sc.hub} die Adresse des Hubs eingeben.",
+      "Bei {btn:sc.line.ca}, {btn:sc.line.own} und {btn:sc.line.key} jeweils {btn:sc.choose} drücken und die Datei wählen. Eine PKCS#12-Datei füllt alle drei Zeilen auf einmal.",
+      "Hat eine Datei ein Passwort, es eingeben und {btn:sc.open} drücken. Jede Zeile sagt, was bacnetio gefunden hat: gültig bis, abgelaufen, nicht von dieser CA, passt nicht.",
+      "{btn:sc.connect} drücken. Die Geräte im SC-Netz werden gelesen, geschrieben und aufgezeichnet wie über IP.",
+      "Wenn du fertig bist, in der Seitenleiste {btn:sc.leave} drücken.",
+    ],
+    causes: [
+      "Kein Hub antwortet: die Adresse prüfen, und ob dieser Computer den Hub erreicht (VPN, Firewall, Port).",
+      "Das Zertifikat des Hubs ist nicht von der CA der Anlage: falsche CA-Datei, oder die Adresse ist nicht der Hub dieser Anlage.",
+      "Der Hub lehnt das Zertifikat von bacnetio ab: Es ist von einer anderen CA, abgelaufen, oder der Hub lässt es noch nicht zu. Beim Integrator nachfragen.",
+      "Der Schlüssel passt nicht: Die Schlüsseldatei gehört zu einem anderen Zertifikat.",
+    ],
+  },
   watch: {
     title: "Werte im Blick behalten",
     intro: "Die Merkliste zeigt Punkte mehrerer Geräte zusammen, mit ihren Werten live.",

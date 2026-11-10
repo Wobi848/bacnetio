@@ -99,6 +99,23 @@ export default {
       "Ningún maestro acepta a bacnetio en el anillo de testigo: escuche de nuevo y entre con la dirección ofrecida.",
     ],
   },
+  sc: {
+    title: "Abrir una instalación BACnet/SC",
+    intro: "En BACnet/SC los dispositivos se comunican a través de un hub, con conexiones cifradas con TLS. bacnetio necesita tres archivos del integrador: la CA de la instalación, un certificado para bacnetio y su clave privada, a menudo todo en un archivo PKCS#12.",
+    steps: [
+      "Abra {btn:side.searchSettings} y elija {btn:link.sc} en {btn:link.title}. Introduzca la dirección del hub en {btn:sc.hub}.",
+      "Para {btn:sc.line.ca}, {btn:sc.line.own} y {btn:sc.line.key}, pulse {btn:sc.choose} y elija el archivo. Un archivo PKCS#12 rellena las tres líneas de una vez.",
+      "Si un archivo tiene contraseña, escríbala y pulse {btn:sc.open}. Cada línea dice lo que bacnetio encontró: válido hasta, caducado, no es de esta CA, no corresponde.",
+      "Pulse {btn:sc.connect}. Los dispositivos de la red SC se leen, se escriben y se registran como en IP.",
+      "Cuando termine, pulse {btn:sc.leave} en la barra lateral.",
+    ],
+    causes: [
+      "Ningún hub responde: compruebe la dirección y que este ordenador alcance el hub (VPN, cortafuegos, puerto).",
+      "El certificado del hub no es de la CA de la instalación: el archivo CA no es el correcto, o la dirección no es el hub de esta instalación.",
+      "El hub rechaza el certificado de bacnetio: es de otra CA, ha caducado, o el hub aún no lo admite. Pregunte al integrador.",
+      "La clave no corresponde: el archivo de clave pertenece a otro certificado.",
+    ],
+  },
   watch: {
     title: "Vigilar valores",
     intro: "La lista de seguimiento muestra juntos puntos de varios dispositivos, con sus valores en vivo.",

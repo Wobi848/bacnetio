@@ -6,6 +6,7 @@ import { t } from "./i18n.js";
 import { heardHtml, linkChoiceHtml, mstpActsHtml, mstpFieldsHtml, trunkHtml } from "./mstp.js";
 import { resizeHandle } from "./panels.js";
 import { pluginTabsHtml } from "./plugins.js";
+import { hubHost, scActsHtml, scFieldsHtml, scNetworkHtml } from "./sc.js";
 import { siteProblems } from "./problems.js";
 import { openSiteOf, siteName } from "./sites.js";
 
@@ -51,6 +52,8 @@ function connection(state) {
 export function searchScope(state) {
   const trunk = state.mstp?.trunk;
   if (trunk) return `${trunk.port} · ${trunk.baud}`;
+  const hub = state.sc?.view?.hub;
+  if (hub) return hubHost(hub);
   // a finished search is the site it found: where it looked then, not what the settings say now
   const site = state.scan.state === "done" ? openSiteOf(state) : null;
   if (site) return site.name;
@@ -73,13 +76,15 @@ function adapterField(state) {
 export function searchDialog(state) {
   if (state.menu !== "network") return "";
   const mstp = state.mstpAvailable && state.link === "mstp";
-  const next = mstp ? mstpActsHtml(state) : `<button type="button" data-act="find">${t("searchWithSettings")}</button>`;
+  const sc = state.scAvailable && state.link === "sc";
+  const next = mstp ? mstpActsHtml(state) : sc ? scActsHtml(state) : `<button type="button" data-act="find">${t("searchWithSettings")}</button>`;
+  const fields = mstp ? mstpFieldsHtml(state) : sc ? scFieldsHtml(state) : ipFields(state);
   return `<div class="modal"><div class="modal-box search-settings" role="dialog" aria-modal="true" aria-labelledby="net-title">
     <h2 id="net-title">${t("net.title")}</h2>
     <p class="sub">${t("net.lead")}</p>
     <dl class="facts">
       ${linkChoiceHtml(state)}
-      ${mstp ? mstpFieldsHtml(state) : ipFields(state)}
+      ${fields}
     </dl>
     ${mstp ? heardHtml(state) : ""}
     <div class="acts"><button type="button" class="quiet" data-act="close-menu">${t("cancel")}</button>${next}</div>
@@ -130,7 +135,7 @@ function sideCard(state) {
       <div class="menu-host site-host"><button type="button" id="site-switch" class="quiet site-switch" data-act="site-menu" aria-haspopup="listbox" aria-expanded="${state.menu === "sites"}" title="${h(name)}"><span class="site-now">${h(name)}</span>${CHEVRON}</button>${siteMenu(state)}</div>
       <div class="side-meta"><span class="side-detail">${network}${connection(state)}</span>
         <button type="button" id="search-settings" class="quiet side-tool" data-act="network" aria-expanded="${state.menu === "network"}" aria-label="${t("side.searchSettings")}" title="${t("side.searchSettings")}">${SLIDERS_ICON}<span class="side-tool-label">${t("side.searchSettings")}</span></button></div>
-      ${trunkHtml(state)}</section>
+      ${trunkHtml(state)}${scNetworkHtml(state)}</section>
   </div>`;
 }
 
@@ -206,7 +211,8 @@ export function readingText(progress) {
 export function statusHtml(state) {
   const busy = state.scan.state === "running" || state.reading;
   const trunk = state.mstp?.trunk;
-  const link = trunk ? t("mstp.status", { baud: trunk.baud }) : `${t("port")} ${state.settings.port.trim() || "47808"}`;
+  const hub = state.sc?.view?.hub;
+  const link = trunk ? t("mstp.status", { baud: trunk.baud }) : hub ? t("sc.status", { hub: hubHost(hub) }) : `${t("port")} ${state.settings.port.trim() || "47808"}`;
   const held = state.held.length ? `<button type="button" class="chip warn" data-area-go="log">${t("held", { n: state.held.length })}</button>` : "";
   const recording = state.recording?.running ? `<button type="button" class="chip accent" data-area-go="recording">● ${t("rec.on")}</button>` : "";
   return `<span class="state"><span class="dot ${busy ? "busy" : "on"}"></span>${h(activity(state))}</span>

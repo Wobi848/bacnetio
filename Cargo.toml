@@ -57,6 +57,10 @@ zip = { version = "9", default-features = false, features = ["deflate"] }
 [target.'cfg(unix)'.dev-dependencies]
 libc = "0.2"
 
+[[example]]
+name = "simulated_sc"
+required-features = ["sc"]
+
 [profile.release]
 lto = true
 strip = true

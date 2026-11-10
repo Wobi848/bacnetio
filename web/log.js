@@ -5,12 +5,18 @@ import { excelLink } from "./excel.js";
 import { h } from "./html.js";
 import { currentLocale, objectText, t, valueWord } from "./i18n.js";
 
-/** Joining and leaving an MS/TP trunk are logged under no device (docs/concept-mstp.md). */
+/**
+ * Joining and leaving an MS/TP trunk or a BACnet/SC network are logged under no device
+ * (docs/concept-mstp.md, docs/concept-sc.md).
+ */
 const TRUNK_DEVICE = 4194303;
 const TRUNK_ENTRY = /^(Joined|Left) the MS\/TP trunk on (\S+) at (\d+) baud as station (\d+)$/;
+const HUB_ENTRY = /^(Connected to|Left) the BACnet\/SC hub at (\S+)$/;
 
 /** "Joined the trunk on COM3 at 38400 baud as station 9" in the interface's language. */
 function trunkText(text) {
+  const [, connected, hub] = text.match(HUB_ENTRY) ?? [];
+  if (connected) return t(connected === "Left" ? "log.scLeft" : "log.scConnected", { hub });
   const [, done, port, baud, station] = text.match(TRUNK_ENTRY) ?? [];
   if (!done) return text;
   return t(done === "Joined" ? "log.joined" : "log.left", { port, baud, station });
@@ -18,7 +24,7 @@ function trunkText(text) {
 
 /** The device's name as found, or its number. */
 function ownerName(state, entry) {
-  if (entry.device === TRUNK_DEVICE) return t("log.trunk");
+  if (entry.device === TRUNK_DEVICE) return HUB_ENTRY.test(entry.value ?? "") ? t("log.scNetwork") : t("log.trunk");
   const device = state.scan.devices?.find((found) => found.instance === entry.device);
   return device ? deviceName(device) : t("device", { n: entry.device });
 }
@@ -72,8 +78,8 @@ function heldKind(entry) {
 function heldRows(state) {
   if (!state.held.length) return `<div class="empty"><h2>${t("held.noneTitle")}</h2><span>${t("held.noneText")}</span></div>`;
   return state.held.map((entry, index) => {
-    // a value on an MS/TP trunk is released only from that trunk: the line says so (docs/concept-mstp.md)
-    const trunk = /^MS\/TP \d+$/.test(entry.address ?? "") ? entry.address : "";
+    // a value on an MS/TP trunk or an SC network is released only from there: the line says so
+    const trunk = /^(MS\/TP \d+|SC [0-9a-f:]{17})$/.test(entry.address ?? "") ? entry.address : "";
     const place = [pointPlace(state, entry), trunk, t("held.since", { time: heldSince(entry) })].filter(Boolean).join(" · ");
     const release = entry.stops_communication ? t("cmd.resume") : t("release");
     return `<div class="row held"><span class="name">${h(pointName(state, entry))}<span class="desc">${h(place)}</span></span>

@@ -5,6 +5,8 @@ export { assert };
 /** The simulated devices: example, loopback address. Both share one port, each on its address. */
 export const SIMULATORS = [["simulated_plant", "127.0.0.2"], ["simulated_controller", "127.0.0.3"]];
 export const SIM_PORT = 47809;
+/** The port of the simulated BACnet/SC hub. */
+export const SC_PORT = 47443;
 /** Search settings that reach the simulators: loopback adapter, their port, their addresses. */
 export const SEARCH = { subnet: "127.0.0.0/29", bbmd: "", port: String(SIM_PORT), locate: "", idFrom: "", idTo: "" };
 

@@ -13,6 +13,7 @@ import { selectPoint } from "./object-actions.js";
 import { installPluginBridge, loadPlugins, pluginsMayAsk } from "./plugin-actions.js";
 import { pollRecording } from "./recording-actions.js";
 import { loadTrunk } from "./mstp-actions.js";
+import { loadSc } from "./sc-actions.js";
 import { loadCapture } from "./capture-actions.js";
 import { checkForUpdate } from "./update.js";
 import { areaOfHash, go, refreshHeld, render, state } from "./store.js";
@@ -102,7 +103,8 @@ async function start() {
     api.info().then((info) => {
       state.version = info.version;
       state.mstpAvailable = Boolean(info.mstp);
-      if (state.mstpAvailable) return loadTrunk();
+      state.scAvailable = Boolean(info.sc);
+      return Promise.all([state.mstpAvailable ? loadTrunk() : null, state.scAvailable ? loadSc() : null]);
     }),
   ]).catch((error) => { state.error = error.message; });
   render();

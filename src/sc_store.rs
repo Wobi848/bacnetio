@@ -13,6 +13,8 @@ use crate::sc_identity::SC_DIR;
 
 /// Which file each line came from, to show its name again.
 const NAMES_FILE: &str = "files.json";
+/// The hub last connected to, offered again.
+const HUB_FILE: &str = "hub.txt";
 
 fn file_of(line: Line) -> &'static str {
     match line {
@@ -59,6 +61,22 @@ pub fn kept(data_dir: &Path) -> io::Result<Vec<(Line, String, Vec<u8>)>> {
         found.push((line, name, bytes));
     }
     Ok(found)
+}
+
+/// Keeps the address of the hub the files connected to.
+pub fn keep_hub(data_dir: &Path, hub: &str) -> io::Result<()> {
+    let dir = data_dir.join(SC_DIR);
+    fs::create_dir_all(&dir)?;
+    write_replacing(&dir.join(HUB_FILE), hub.as_bytes())
+}
+
+/// The hub kept last, if any.
+pub fn kept_hub(data_dir: &Path) -> io::Result<Option<String>> {
+    match fs::read_to_string(data_dir.join(SC_DIR).join(HUB_FILE)) {
+        Ok(hub) => Ok(Some(hub.trim().to_string()).filter(|hub| !hub.is_empty())),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(error),
+    }
 }
 
 /// Deletes the kept key; the certificates stay.
@@ -224,6 +242,12 @@ mod tests {
             assert_eq!(mode & 0o777, 0o600);
             assert_eq!(on_disk, b"KEY");
         }
+        assert_eq!(kept_hub(&dir).unwrap(), None);
+        keep_hub(&dir, "wss://hub.example:443/").unwrap();
+        assert_eq!(
+            kept_hub(&dir).unwrap().as_deref(),
+            Some("wss://hub.example:443/")
+        );
         forget_key(&dir).unwrap();
         forget_key(&dir).unwrap();
         assert_eq!(kept(&dir).unwrap().len(), 1);

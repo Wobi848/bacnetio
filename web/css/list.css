@@ -72,7 +72,7 @@ button.quick.on { opacity: 1; color: var(--accent); }
 button.quick.on .nav-i { fill: var(--accent-soft); }
 button.quick .nav-i { display: block; width: 16px; height: 16px; color: inherit; }
 /* the name is the data and takes the room first; the vendor gives way (concept-hierarchy.md, 2) */
-.row.devices { grid-template-columns: minmax(180px, 2.4fr) 76px 170px minmax(100px, 1fr) 80px; }
+.row.devices { grid-template-columns: minmax(180px, 2.4fr) 76px 185px minmax(100px, 1fr) 80px; }
 .row.devices > :nth-child(4) { color: var(--muted); }
 .row.devices .objects { text-align: right; }
 .row.devices .objects .label { display: none; }
@@ -115,7 +115,7 @@ mark { border-radius: 2px; background: var(--warn-soft); color: inherit; border-
 .row.log .reason { text-align: right; overflow-wrap: anywhere; }
 /* in a narrow table the vendor gives way: name, ID, address and objects are what you work with */
 @container (max-width: 760px) {
-  .row.devices { grid-template-columns: minmax(140px, 1fr) 66px 150px 80px; }
+  .row.devices { grid-template-columns: minmax(140px, 1fr) 66px 185px 80px; }
   .row.devices > :nth-child(4) { display: none; }
 }
 @container (max-width: 560px) {

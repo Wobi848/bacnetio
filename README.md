@@ -71,7 +71,10 @@ on another machine or network namespace than bacnetio, because two programs on o
 both use port 47808 properly; the browser tests run them on loopback addresses with port 47809.
 On Linux, `cargo run --example simulated_mstp -- [station]` is an MS/TP device on a
 pseudo-terminal: it prints the terminal's name (`/dev/pts/7`), which bacnetio opens like a USB
-RS-485 adapter.
+RS-485 adapter. `cargo run --example simulated_sc -- <folder> [port]` is a BACnet/SC hub on
+`wss://localhost:47443/` with a device on it; it writes the certificate files bacnetio needs into
+the folder (`ca.pem`, `bacnetio.pem`, `bacnetio.key`, and the same with the password `demo` in
+`bacnetio.p12` and `bacnetio-locked.key`).
 
 ```text
 bacnetio interfaces                   list network adapters (* = used by default)

@@ -15,6 +15,8 @@ mod recording;
 mod references;
 mod remembered;
 mod running;
+#[cfg(feature = "sc")]
+mod sc;
 mod scanning;
 #[cfg(not(target_os = "android"))]
 mod serial;
@@ -64,6 +66,22 @@ fn serial_routes() -> Router<Shared> {
     Router::new()
 }
 
+/// BACnet/SC, in every build with the feature `sc` (docs/concept-sc.md).
+#[cfg(feature = "sc")]
+fn sc_routes() -> Router<Shared> {
+    Router::new()
+        .route("/api/sc", get(sc::sc))
+        .route("/api/sc/file", post(sc::file))
+        .route("/api/sc/password", post(sc::password))
+        .route("/api/sc/search", post(sc::search))
+        .route("/api/sc/leave", post(sc::leave))
+}
+
+#[cfg(not(feature = "sc"))]
+fn sc_routes() -> Router<Shared> {
+    Router::new()
+}
+
 pub fn router(state: Shared) -> Router {
     let object = "/api/devices/{device}/objects/{type}/{instance}";
     Router::new()
@@ -71,6 +89,7 @@ pub fn router(state: Shared) -> Router {
         .route("/api/update", get(update))
         .route("/api/adapters", get(scanning::adapters))
         .merge(serial_routes())
+        .merge(sc_routes())
         .route("/api/scan/stop", post(scanning::stop))
         .route(
             "/api/scan",
@@ -282,6 +301,8 @@ async fn info() -> Json<serde_json::Value> {
         "version": env!("CARGO_PKG_VERSION"),
         // MS/TP over a serial port (docs/concept-mstp.md): not on Android
         "mstp": cfg!(not(target_os = "android")),
+        // BACnet/SC: left out of a build without the feature `sc`
+        "sc": cfg!(feature = "sc"),
     }))
 }
 

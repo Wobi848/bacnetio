@@ -111,6 +111,11 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Leave the trunk; asks first while values are held; joining and leaving logged | sidebar head while on a trunk; *Written* log | `ui/38-mstp-join` |
 | A value held on a trunk, after a restart: its address shown, releasing asks to join the trunk first | *Held by you* | `session.rs` (`a_device_is_reached_only_over_the_link_it_was_written_on`), `ui/39-mstp-held` |
 | Read, write, release, COV over MS/TP | as on IP | `tests/mstp.rs` (`writing_releasing_and_cov_reports_work_over_the_trunk`), `ui/38-mstp-join` |
+| Choose BACnet/SC; the hub and the site's three files, each checked in words; a file's password | *Search settings* with BACnet/SC | `sc_files.rs`, `sc_certificates.rs`, `ui/50-sc` |
+| Connect to an SC hub and search it; why it failed in words | *Search settings* with BACnet/SC, *Connect to the hub and search*; *Search again* | `tests/sc.rs`, `ui/50-sc` |
+| Read, write, release over SC; a value held on an SC device released only over SC | as on IP; *Held by you* | `tests/sc.rs`, `session.rs` (`a_device_is_reached_only_over_the_link_it_was_written_on`), `ui/50-sc` |
+| Leave the SC network; asks first while values are held; connecting and leaving logged | sidebar head while on an SC network; *Written* log | `ui/50-sc` |
+| The SC files kept for the next start, the key protected | data folder `sc/` | `sc_store.rs`, `ui/50-sc` (reload) |
 | BBMD tables read (BDT and FDT), never written; a device that is none says so | device details, *BBMD tables* | `ui/24-bbmd`, `tests/bbmd.rs` (both tables, no BBMD), `web/ui.test.js` |
 | Device by IP address | table of the site, toolbar, *Device by IP …* (BACnet/IP only, not on a trunk) | `ui/10-locate` |
 | Routers and the networks behind them | tree and strips above the table | `scan.rs` (routers) |

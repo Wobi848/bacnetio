@@ -86,10 +86,20 @@ label.button:hover { background: var(--accent-soft); border-color: var(--accent)
 .search-settings .facts { grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 8px 10px; }
 .search-settings .facts dd input, .search-settings .facts dd select { width: 100%; }
 .search-settings .facts dd.hint { grid-column: 2; margin-top: -4px; }
+/* the three kinds of connection in one row; on a phone they wrap and share the width */
+.modal-box.search-settings { width: min(620px, 100%); }
+.search-settings .seg { flex-wrap: wrap; max-width: 100%; }
+.search-settings .seg button { flex: 1 1 auto; }
+/* BACnet/SC: a certificate line with its file, what was found in it and the button for another */
+.search-settings .facts dd.sc-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
+.search-settings .sc-file { max-width: 100%; }
+.search-settings .facts dd.sc-password, .search-settings .facts dd.sc-remember { grid-column: 2; display: flex; align-items: center; gap: 8px; }
+.search-settings .facts dd.sc-password input { flex: 1 1 auto; width: auto; min-width: 0; }
+.search-settings .facts dd.sc-remember input { width: auto; height: auto; }
 @media (max-width: 560px) {
   .search-settings .facts { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .search-settings .facts dd { margin-bottom: 6px; }
-  .search-settings .facts dd.hint { grid-column: 1; }
+  .search-settings .facts dd.hint, .search-settings .facts dd.sc-password, .search-settings .facts dd.sc-remember { grid-column: 1; }
 }
 
 /* ---------------------------------------------------------------- Charts */

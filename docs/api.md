@@ -21,8 +21,9 @@ from `web/` and this JSON API under `/api/`.
 
 ## Version
 
-`GET /api/info`: `{ "version": "0.1.0", "mstp": true }`. `mstp` says whether this bacnetio can use
-MS/TP over a serial port (not the Android app).
+`GET /api/info`: `{ "version": "0.1.0", "mstp": true, "sc": true }`. `mstp` says whether this
+bacnetio can use MS/TP over a serial port (not the Android app), `sc` whether it was built with
+BACnet/SC (every release is).
 
 `GET /api/update` asks GitHub for the newest release (docs/concept-update-check.md):
 `{ "current": "0.1.0", "latest": { "version": "0.2.0", "url": "https://github.com/…/releases/tag/v0.2.0" }, "newer": true }`.
@@ -97,6 +98,60 @@ bacnetio is on no trunk.
 
 Devices on a trunk have the `address` `MS/TP 5`. Written entries keep it as `mstp:5`; IP addresses
 stay as they were.
+## BACnet/SC through a hub
+
+In builds with the feature `sc`, which every release has (`docs/concept-sc.md`).
+
+`GET /api/sc`: the three certificate lines as bacnetio checked them, the hub bacnetio is connected
+to (`hub`, else `null`) and the hub of the last connection (`last_hub`), kept in the data folder:
+
+```json
+{
+  "certificates": {
+    "ca": { "file": "ca.pem", "state": "valid", "from": 1762732800, "until": 1920499200, "days": null },
+    "own": { "file": "site.p12", "state": "expires_soon", "from": 1762732800, "until": 1765324800, "days": 12 },
+    "key": { "file": "site.p12", "state": "matches", "from": null, "until": null, "days": null },
+    "ready": true,
+    "key_password": true
+  },
+  "hub": null,
+  "last_hub": "wss://hub.example:443/"
+}
+```
+
+`state` says in a code what the line holds: `missing`, `valid`, `expires_soon` (within 30 days,
+`days` left), `expired`, `not_yet_valid`, `not_from_ca` (bacnetio's certificate is not signed by the
+CA chosen), `matches` and `mismatch` (the key against the certificate), `unusable`, `chosen`
+(nothing to check it against yet), or why the file gave nothing: `needs_password`,
+`wrong_password`, `old_encrypted_pem`, `too_large`, `nothing`, `no_key`, `no_certificate`. `from`
+and `until` are Unix seconds. `ready`: all three lines filled and the key fits. `key_password`: the
+key came with a password and is kept on this computer only with `remember_key`.
+
+`POST /api/sc/file?line=ca&name=ca.pem` with the file's bytes as the body
+(`application/octet-stream`): reads the file for that line (`ca`, `own` or `key`) and answers like
+`GET /api/sc`. PEM or DER, certificate and key in one PEM file, an encrypted key or a PKCS#12 file;
+a file with more in it fills every line it holds. At most 1 MB.
+
+`POST /api/sc/password` `{ "line": "key", "password": "…" }`: opens the file waiting on that line
+with its password; answers like `GET /api/sc`. The password is not kept. `409` when no file waits
+for one.
+
+`POST /api/sc/search` `{ "hub": "wss://hub.example:443/", "remember_key": false }`: connects to the
+hub with the certificates chosen and searches the SC network like `POST /api/scan` (Who-Is through
+the hub; no sweep, no BBMD); the progress and the result come from `GET /api/scan`. `202` when the
+search runs. `400` for an address that is no `wss://` URL, `409` while a line is missing, `502` when
+the hub cannot be reached, with the reason in words (no hub answers, the hub's certificate is not
+from the CA chosen or made out to another name, the hub refuses bacnetio's certificate). The files
+are then kept in the data folder for the next start, the key only when it came without a password
+or `remember_key` is set: readable only for the user, on Windows encrypted for the user with DPAPI.
+Connecting is logged (`GET /api/log`, under device 4194303, action `command`).
+
+`POST /api/sc/leave`: leaves the SC network; logged like connecting. `204`, also when bacnetio is on
+none.
+
+Devices on an SC network have the `address` `SC 22:00:00:00:00:01` (their VMAC). Written entries keep
+it as `sc:22:00:00:00:00:01`.
+
 ## Search for devices
 
 `POST /api/scan/stop` stops a running search (`204`); it ends as done, with the devices found so far.

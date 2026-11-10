@@ -61,6 +61,9 @@ pub struct AppState {
     /// (docs/concept-mstp.md).
     #[cfg(not(target_os = "android"))]
     pub(super) heard: Mutex<Option<(String, crate::mstp::Heard)>>,
+    /// The certificates of the BACnet/SC site chosen in the search settings (docs/concept-sc.md).
+    #[cfg(feature = "sc")]
+    pub(super) sc: Mutex<crate::sc_certificates::Certificates>,
     /// bacnetio's own traffic, while a capture runs (docs/concept-toolbox.md part 3).
     pub(super) capture: Arc<crate::capture::Capture>,
 }
@@ -77,6 +80,9 @@ struct Open {
 enum Key {
     Ip(Ipv4Addr, u16, Option<SocketAddrV4>),
     Mstp(Trunk),
+    /// The `wss://` URL of a BACnet/SC hub.
+    #[cfg(feature = "sc")]
+    Sc(String),
 }
 
 #[derive(Default)]
@@ -120,6 +126,8 @@ impl AppState {
             ..AppState::default()
         };
         super::remembered::restore(&state);
+        #[cfg(feature = "sc")]
+        super::sc::restore(&state);
         Ok(state)
     }
 
@@ -213,19 +221,59 @@ impl AppState {
 
     /// Leaves the MS/TP trunk, closing its port; the trunk it was on, if bacnetio was on one.
     pub(super) async fn leave(&self) -> anyhow::Result<Option<Trunk>> {
+        self.close_where(|key| match key {
+            Key::Mstp(trunk) => Some(trunk.clone()),
+            _ => None,
+        })
+        .await
+    }
+
+    /// Joins the hub of a BACnet/SC network, or stays on it when already there.
+    #[cfg(feature = "sc")]
+    pub(super) async fn join_sc(
+        self: &Arc<Self>,
+        hub: &str,
+        tls: bacnet_transport::sc_tls::ScNodeTlsConfig,
+        identity: crate::sc_identity::Identity,
+    ) -> anyhow::Result<Arc<Client>> {
+        let key = Key::Sc(hub.to_string());
+        let (client, _) = self
+            .connect_with(key, || crate::sc_connection::open_sc(hub, tls, identity))
+            .await?;
+        Ok(client)
+    }
+
+    /// Leaves the SC network; the hub it was on, if bacnetio was on one.
+    #[cfg(feature = "sc")]
+    pub(super) async fn leave_sc(&self) -> anyhow::Result<Option<String>> {
+        self.close_where(|key| match key {
+            Key::Sc(hub) => Some(hub.clone()),
+            _ => None,
+        })
+        .await
+    }
+
+    /// The hub bacnetio is on, if it is on one.
+    #[cfg(feature = "sc")]
+    pub(super) async fn sc_hub(&self) -> Option<String> {
+        match &*self.connection.lock().await {
+            Some(Open {
+                key: Key::Sc(hub), ..
+            }) => Some(hub.clone()),
+            _ => None,
+        }
+    }
+
+    /// Closes the connection when `which` picks it, once its requests have ended.
+    async fn close_where<T>(&self, which: impl Fn(&Key) -> Option<T>) -> anyhow::Result<Option<T>> {
         let mut current = self.connection.lock().await;
-        let Some(Open {
-            key: Key::Mstp(trunk),
-            ..
-        }) = current.as_ref()
-        else {
+        let Some(found) = current.as_ref().and_then(|open| which(&open.key)) else {
             return Ok(None);
         };
-        let trunk = trunk.clone();
         if let Some(open) = current.take() {
             open.connection.close_when_idle(REQUESTS_END_WAIT).await?;
         }
-        Ok(Some(trunk))
+        Ok(Some(found))
     }
 
     /// The kind of link bacnetio is on; BACnet/IP also when no connection is open, as one on the
@@ -235,6 +283,10 @@ impl AppState {
             Some(Open {
                 key: Key::Mstp(_), ..
             }) => Link::Mstp,
+            #[cfg(feature = "sc")]
+            Some(Open {
+                key: Key::Sc(_), ..
+            }) => Link::Sc,
             _ => Link::Ip,
         }
     }
@@ -272,6 +324,10 @@ impl AppState {
             #[cfg(not(target_os = "android"))]
             if let Key::Mstp(trunk) = &old.key {
                 super::serial::log_trunk(self, trunk, "Left");
+            }
+            #[cfg(feature = "sc")]
+            if let Key::Sc(hub) = &old.key {
+                super::sc::log_hub(self, hub, "Left");
             }
         }
         let connection = open().await?;

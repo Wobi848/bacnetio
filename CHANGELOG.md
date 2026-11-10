@@ -2,6 +2,22 @@
 
 All notable changes for users of bacnetio.
 
+## Unreleased
+
+### Added
+
+- BACnet/SC (Secure Connect): *Search settings* offer *BACnet/SC* beside *BACnet/IP* and *MS/TP*. Enter the hub's
+  address and choose the site's three files: its CA, bacnetio's certificate and its private key, as PEM or DER, in one
+  PEM file, as a key with a password or as one PKCS#12 file (`.p12`, `.pfx`), which fills all three lines. Each line
+  says in words what was found: valid until, runs out soon, expired, not signed by this CA, key does not match, needs
+  its password. *Connect to the hub and search* finds the devices on the SC network, shown as `SC 22:00:00:00:00:01`,
+  and they are read, written and recorded as on IP. When the hub cannot be reached, bacnetio says why: no hub answers,
+  the hub's certificate is not from this CA, the hub refuses bacnetio's certificate. *Leave the SC network* in the
+  sidebar asks first while you hold values. Connecting and leaving are in the log. The files are kept for the next
+  start; the key only when it came without a password or *Remember the key on this computer* is ticked, readable only
+  for you (on Windows encrypted for your user). A help guide *Open a BACnet/SC plant* in every language.
+- A simulated BACnet/SC hub with a device and its certificate files (`cargo run --example simulated_sc`).
+
 ## v0.3.0 (09.11.2026)
 
 ### Added

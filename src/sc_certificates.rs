@@ -89,6 +89,8 @@ pub struct View {
     pub key: LineView,
     /// All three filled and the key fits: bacnetio can try the hub.
     pub ready: bool,
+    /// The key came with a password: kept on this computer only when the user asks.
+    pub key_password: bool,
 }
 
 impl Certificates {
@@ -204,6 +206,7 @@ impl Certificates {
             own,
             key,
             ready,
+            key_password: self.key_had_password && self.key.value().is_some(),
         }
     }
 
@@ -473,7 +476,9 @@ mod tests {
             let (file, pem) = lines.pem(line).unwrap();
             again.choose(line, &file, pem, None);
         }
-        assert_eq!(again.view(now()), view);
-        assert!(!again.key_had_password());
+        let kept = again.view(now());
+        assert_eq!((kept.ca, kept.own, kept.key), (view.ca, view.own, view.key));
+        // read back from the data folder, the key no longer has its password
+        assert!(view.key_password && !kept.key_password);
     }
 }
