@@ -4,7 +4,7 @@
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::SystemTime;
 
 use serde::{Deserialize, Serialize};
 
@@ -55,9 +55,7 @@ pub struct Change {
 pub fn from_points(device: u32, time: SystemTime, points: &[Point]) -> Reference {
     Reference {
         device,
-        time_ms: time
-            .duration_since(UNIX_EPOCH)
-            .map_or(0, |since| since.as_millis() as u64),
+        time_ms: crate::unix_time::millis(time),
         points: points.iter().map(saved).collect(),
     }
 }
@@ -142,6 +140,7 @@ mod tests {
     use super::*;
     use bacnet_types::enums::ObjectType;
     use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
+    use std::time::UNIX_EPOCH;
 
     fn point(object_type: ObjectType, instance: u32, value: PropertyValue) -> Point {
         let mut point = Point::new(ObjectIdentifier::new(object_type, instance).unwrap());

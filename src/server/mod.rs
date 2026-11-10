@@ -22,6 +22,7 @@ mod scanning;
 mod serial;
 mod session;
 mod site;
+mod site_file;
 mod workbooks;
 mod writing;
 
@@ -154,8 +155,8 @@ pub fn router(state: Shared) -> Router {
         .route("/api/sites/grouping", post(site::grouping))
         .route(
             "/api/site.json",
-            get(site::export)
-                .post(site::import)
+            get(site_file::export)
+                .post(site_file::import)
                 .layer(DefaultBodyLimit::max(MOST_SITE_BYTES)),
         )
         .route(

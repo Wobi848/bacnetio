@@ -24,7 +24,7 @@ use crate::storage;
 use crate::watch::Watch;
 use crate::write::Journal;
 use bacnet_client::client::{ReceivedCOVNotification, ReceivedEventNotification};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::SystemTime;
 use tokio::sync::broadcast;
 
 #[derive(Default)]
@@ -363,7 +363,7 @@ impl AppState {
     }
 
     pub(super) fn set_scan(&self, status: ScanStatus) {
-        *self.scan.lock().expect("scan status lock") = status;
+        *crate::locked(&self.scan) = status;
     }
 }
 
@@ -397,16 +397,14 @@ async fn follow_events(state: Shared, mut events: broadcast::Receiver<ReceivedEv
             Ok(received) => {
                 let event = received.notification;
                 let view = EventView {
-                    time: SystemTime::now()
-                        .duration_since(UNIX_EPOCH)
-                        .map_or(0, |since| since.as_secs()),
+                    time: crate::unix_time::seconds(SystemTime::now()),
                     device: event.initiating_device_identifier.instance_number(),
                     object: ObjectRef::new(event.event_object_identifier),
                     from: alarms::state_text(event.from_state),
                     to: alarms::state_text(event.to_state),
                     text: event.message_text.clone(),
                 };
-                let mut kept = state.events.lock().expect("events lock");
+                let mut kept = crate::locked(&state.events);
                 if kept.len() == KEPT_EVENTS {
                     kept.pop_front();
                 }
@@ -432,18 +430,14 @@ async fn follow_notifications(
                 let device = notification.initiating_device_identifier.instance_number();
                 let object = notification.monitored_object_identifier;
                 let value = {
-                    let mut watch = state.watch.lock().expect("watch lock");
+                    let mut watch = crate::locked(&state.watch);
                     watch.apply(notification, time);
                     watch
                         .reported(device, object)
                         .and_then(|live| crate::record::number(&live.value))
                 };
-                if state.sampler.lock().expect("sampler lock").is_some() {
-                    state
-                        .recording
-                        .lock()
-                        .expect("recording lock")
-                        .record_report(device, object, time, value);
+                if crate::locked(&state.sampler).is_some() {
+                    crate::locked(&state.recording).record_report(device, object, time, value);
                 }
             }
             // missed some; the next notification brings the current value again
@@ -473,10 +467,7 @@ async fn keep_devices_known(state: Shared, client: Weak<Client>, link: Link) {
         let Some(client) = current.filter(|current| Arc::as_ptr(current) == client.as_ptr()) else {
             return;
         };
-        let known: Vec<(u32, Option<Address>)> = state
-            .devices
-            .lock()
-            .expect("devices lock")
+        let known: Vec<(u32, Option<Address>)> = crate::locked(&state.devices)
             .iter()
             .filter(|device| device.address.link() == link)
             .map(|device| {

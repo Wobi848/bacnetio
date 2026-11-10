@@ -1,7 +1,5 @@
 //! What the API sends: the library's results in plain words, ready to show (docs/api.md).
 
-use std::time::UNIX_EPOCH;
-
 use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
 use std::collections::BTreeMap;
 
@@ -257,10 +255,7 @@ impl EntryView {
     pub fn new(entry: &Entry) -> Self {
         let (action, value) = present::entry_action(entry);
         EntryView {
-            time: entry
-                .time
-                .duration_since(UNIX_EPOCH)
-                .map_or(0, |since| since.as_secs()),
+            time: crate::unix_time::seconds(entry.time),
             device: entry.device,
             object: ObjectRef::new(entry.object),
             priority: entry.priority,

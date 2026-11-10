@@ -12,7 +12,7 @@ use super::session::{EventView, Shared};
 use super::writing::journaled;
 use crate::commands::{self, Restart};
 use crate::present::object_text;
-use crate::write::{self, Action};
+use crate::write::Action;
 use crate::{alarms, schedule};
 use bacnet_types::enums::ObjectType;
 
@@ -127,7 +127,7 @@ pub async fn acknowledge(
     Json(request): Json<AcknowledgeRequest>,
 ) -> Result<StatusCode, ApiError> {
     let object = object_id(request.object_type, request.instance)?;
-    let (date, time) = write::parse_clock(&request.date, &request.time, request.weekday)
+    let (date, time) = crate::typed::parse_clock(&request.date, &request.time, request.weekday)
         .map_err(ApiError::bad_request)?;
     let client = state.client().await?;
     let alarm = alarms::read_alarms(&client, device)
@@ -313,13 +313,5 @@ pub async fn who_has(
 
 /// Alarm messages the devices sent to this computer since the start, the latest last.
 pub async fn events(State(state): State<Shared>) -> Json<Vec<EventView>> {
-    Json(
-        state
-            .events
-            .lock()
-            .expect("events lock")
-            .iter()
-            .cloned()
-            .collect(),
-    )
+    Json(crate::locked(&state.events).iter().cloned().collect())
 }

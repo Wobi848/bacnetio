@@ -20,6 +20,11 @@ All notable changes for users of bacnetio.
   says so.
 - A simulated BACnet/SC hub with a device and its certificate files (`cargo run --example simulated_sc`).
 
+### Fixed
+
+- bacnetio keeps answering after an internal error in one request: before, a request that broke off while holding
+  part of the program's state left every later request on that state failing until a restart.
+
 ## v0.3.0 (09.11.2026)
 
 ### Added

@@ -385,7 +385,7 @@ test("every message the server sends for a wrong request has a translation", asy
   const refusals = (await Promise.all((await rustSources()).map(text))).join("\n");
   const messages = [...refusals.matchAll(/ApiError::(?:bad_request|conflict|device)\(\s*(?:format!\(\s*)?"((?:[^"\\]|\\.)*)"/gs)].map((match) => match[1]);
   // these modules check what was typed and hand their sentence to ApiError unchanged
-  const checks = ["src/write.rs", "src/connection.rs", "src/interfaces.rs", "src/record.rs", "src/plugin.rs"];
+  const checks = ["src/write.rs", "src/typed.rs", "src/connection.rs", "src/sc_connection.rs", "src/sc_certificates.rs", "src/interfaces.rs", "src/record.rs", "src/plugin.rs"];
   const checked = (await Promise.all(checks.map(text))).join("\n");
   messages.push(...[...checked.matchAll(/(?:Err|bail!|format!)\(\s*"((?:[^"\\]|\\.)*)"/gs)].map((match) => match[1]));
   assert.ok(messages.length > 40, `found ${messages.length}`);
@@ -393,6 +393,8 @@ test("every message the server sends for a wrong request has a translation", asy
   const untranslated = messages
     // nothing of its own: the message comes from somewhere else and is translated there
     .filter((message) => !/^(\s*\{[^}]*\})+\s*$/.test(message))
+    // a message is a sentence: what starts otherwise is a file format (a PEM head)
+    .filter((message) => /^["a-zA-Z]/.test(message))
     // "{text} is not {what}" builds its sentence from a word, and those sentences are messages of
     // their own; "another program uses {interface}:{port}" reaches the page inside a note
     .filter((message) => !/\{\w+\}\.?$/.test(message))

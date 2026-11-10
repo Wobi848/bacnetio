@@ -93,10 +93,7 @@ fn file(
 
 /// The name a device is known by, for its sheet.
 fn device_name(state: &Shared, device: u32) -> String {
-    state
-        .devices
-        .lock()
-        .expect("devices lock")
+    crate::locked(&state.devices)
         .iter()
         .find(|found| found.instance == device)
         .and_then(|found| found.details.name.clone())
@@ -108,7 +105,7 @@ pub async fn devices(
     Query(query): Query<WorkbookQuery>,
 ) -> Result<impl IntoResponse, ApiError> {
     let labels = query.labels()?;
-    let table = export::device_list(&state.devices.lock().expect("devices lock"));
+    let table = export::device_list(&crate::locked(&state.devices));
     file("devices", &[(named(&labels, "Devices"), &table)], &labels)
 }
 
@@ -119,7 +116,7 @@ pub async fn points(
 ) -> Result<impl IntoResponse, ApiError> {
     let labels = query.labels()?;
     let table = {
-        let readings = state.readings.lock().expect("readings lock");
+        let readings = crate::locked(&state.readings);
         let points = readings
             .get(&device)
             .ok_or_else(|| ApiError::conflict("read the device's points first"))?;
@@ -150,11 +147,8 @@ pub async fn site(
     Query(query): Query<WorkbookQuery>,
 ) -> Result<impl IntoResponse, ApiError> {
     let labels = query.labels()?;
-    let devices = export::device_list(&state.devices.lock().expect("devices lock"));
-    let mut readings: Vec<(u32, Table)> = state
-        .readings
-        .lock()
-        .expect("readings lock")
+    let devices = export::device_list(&crate::locked(&state.devices));
+    let mut readings: Vec<(u32, Table)> = crate::locked(&state.readings)
         .iter()
         .map(|(device, points)| (*device, export::point_list(*device, points)))
         .collect();
@@ -176,10 +170,7 @@ pub async fn log(
     Query(query): Query<WorkbookQuery>,
 ) -> Result<impl IntoResponse, ApiError> {
     let labels = query.labels()?;
-    let table = export::log_table(
-        state.journal.lock().expect("journal lock").entries(),
-        query.offset_min,
-    );
+    let table = export::log_table(crate::locked(&state.journal).entries(), query.offset_min);
     file("log", &[(named(&labels, "Log"), &table)], &labels)
 }
 
@@ -188,10 +179,7 @@ pub async fn recording(
     Query(query): Query<WorkbookQuery>,
 ) -> Result<impl IntoResponse, ApiError> {
     let labels = query.labels()?;
-    let table = export::recording_table(
-        &state.recording.lock().expect("recording lock"),
-        query.offset_min,
-    );
+    let table = export::recording_table(&crate::locked(&state.recording), query.offset_min);
     file(
         "recording",
         &[(named(&labels, "Recording"), &table)],

@@ -135,7 +135,7 @@ fn column(state: &Shared, device: u32, member: &BACnetDeviceObjectPropertyRefere
 
 /// The object's name as the point list read it, else the object, with its units if known.
 fn point_name(state: &Shared, device: u32, object: ObjectIdentifier) -> (String, Option<String>) {
-    let readings = state.readings.lock().expect("readings lock");
+    let readings = crate::locked(&state.readings);
     let point = readings
         .get(&device)
         .and_then(|points| points.iter().find(|point| point.object == object));

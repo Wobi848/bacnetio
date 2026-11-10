@@ -106,7 +106,7 @@ pub async fn listen(
     let heard = mstp::listen(open, &speeds, mstp::LISTEN_PER_SPEED)
         .await
         .map_err(|error| ApiError::conflict(in_words(&error)))?;
-    *state.heard.lock().expect("heard lock") = Some((port, heard.clone()));
+    *crate::locked(&state.heard) = Some((port, heard.clone()));
     Ok(Json(heard))
 }
 
@@ -133,10 +133,7 @@ pub async fn search(
     // searching again on the trunk bacnetio is on takes nothing new from it
     let joined = state.trunk().await.as_ref() == Some(&trunk);
     if !joined {
-        let heard = state
-            .heard
-            .lock()
-            .expect("heard lock")
+        let heard = crate::locked(&state.heard)
             .clone()
             .filter(|(port, _)| *port == trunk.port)
             .map(|(_, heard)| heard)
@@ -167,7 +164,7 @@ pub async fn search(
         )
         .await?;
         let view = ScanView::new(&report, Vec::new());
-        *state.devices.lock().expect("devices lock") = report.devices;
+        *crate::locked(&state.devices) = report.devices;
         Ok(view)
     });
     Ok(StatusCode::ACCEPTED)

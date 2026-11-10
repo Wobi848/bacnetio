@@ -2,19 +2,17 @@
 //! as the interface saw them. After a restart they show at once; a new search brings them live
 //! again (concept-explorer step D).
 
-use std::collections::BTreeMap;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::SystemTime;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
 use axum::Json;
-use axum::extract::{Query, State};
-use axum::http::{StatusCode, header};
-use axum::response::IntoResponse;
+use axum::extract::State;
+use axum::http::StatusCode;
 
 use super::ApiError;
 use super::json::PointView;
@@ -23,10 +21,10 @@ use super::session::{AppState, ScanStatus, Shared};
 const FILE: &str = "site.json";
 const SITES: &str = "sites";
 /// The state of a finished search, the only one a kept site can hold (`GET /api/scan`).
-const FINISHED: &str = "done";
+pub(super) const FINISHED: &str = "done";
 /// More devices than a site has; the tree draws a node per device, so a file with a hundred
 /// thousand of them would freeze the page on one click.
-const MOST_DEVICES: usize = 5_000;
+pub(super) const MOST_DEVICES: usize = 5_000;
 /// The longest name a site can be given; the field in the page stops there too.
 const LONGEST_TITLE: usize = 80;
 /// The longest grouping pattern; the field in the page stops there too.
@@ -79,14 +77,11 @@ impl Choices {
 /// The points of every device read, by device: read since the start, else as remembered. For the
 /// site's problems and the search across the site.
 pub async fn points(State(state): State<Shared>) -> Json<Map<String, Value>> {
-    let mut all = state
-        .site
-        .lock()
-        .expect("site lock")
+    let mut all = crate::locked(&state.site)
         .as_ref()
         .map(|site| site.points.clone())
         .unwrap_or_default();
-    for (device, points) in state.readings.lock().expect("readings lock").iter() {
+    for (device, points) in crate::locked(&state.readings).iter() {
         let points: Vec<PointView> = points.iter().map(PointView::new).collect();
         all.insert(device.to_string(), serde_json::json!({ "points": points }));
     }
@@ -103,7 +98,7 @@ pub fn load(dir: &Path) -> io::Result<Option<Site>> {
     }
 }
 
-fn save(dir: &Path, site: &Site) -> io::Result<()> {
+pub(super) fn save(dir: &Path, site: &Site) -> io::Result<()> {
     fs::create_dir_all(dir)?;
     keep(dir, site)?;
     let json = serde_json::to_string(site).map_err(io::Error::other)?;
@@ -125,7 +120,7 @@ fn kept_path(dir: &Path, name: &str) -> PathBuf {
 }
 
 /// The kept site of that name, if there is one.
-fn kept_site(dir: &Path, name: &str) -> Option<Site> {
+pub(super) fn kept_site(dir: &Path, name: &str) -> Option<Site> {
     let text = fs::read_to_string(kept_path(dir, name)).ok()?;
     serde_json::from_str::<Site>(&text)
         .ok()
@@ -135,7 +130,7 @@ fn kept_site(dir: &Path, name: &str) -> Option<Site> {
 /// The name a site brought in is kept under: its own, unless another site of that network is kept
 /// already, which it then stands beside as "10.0.0.0/24 (2)" instead of replacing it. The same
 /// file brought in again replaces itself.
-fn name_beside(dir: &Path, site: &Site) -> String {
+pub(super) fn name_beside(dir: &Path, site: &Site) -> String {
     let same_or_free = |name: &str| {
         let path = kept_path(dir, name);
         !path.exists() || kept_site(dir, name).is_some_and(|kept| kept.saved_ms == site.saved_ms)
@@ -157,7 +152,7 @@ fn replace(path: &Path, json: &str) -> io::Result<()> {
 }
 
 /// A file name from a site's name, which may hold slashes and anything else from a file brought in.
-fn file_stem(name: &str) -> String {
+pub(super) fn file_stem(name: &str) -> String {
     name.chars()
         .map(|c| {
             if c.is_ascii_alphanumeric() || c == '-' {
@@ -199,10 +194,7 @@ pub struct SiteView {
 
 /// The sites kept, to go back to one without searching.
 pub async fn list(State(state): State<Shared>) -> Json<Vec<SiteView>> {
-    let shown = state
-        .site
-        .lock()
-        .expect("site lock")
+    let shown = crate::locked(&state.site)
         .as_ref()
         .map(|site| site.name.clone());
     let sites = state
@@ -231,12 +223,12 @@ pub async fn list(State(state): State<Shared>) -> Json<Vec<SiteView>> {
 }
 
 /// Shows a site as remembered, instead of what was on the screen.
-fn show(state: &AppState, site: Site) {
-    *state.site.lock().expect("site lock") = Some(site);
+pub(super) fn show(state: &AppState, site: Site) {
+    *crate::locked(&state.site) = Some(site);
     state.set_scan(ScanStatus::Idle);
-    state.readings.lock().expect("readings lock").clear();
-    state.reads.lock().expect("reads lock").clear();
-    state.devices.lock().expect("devices lock").clear();
+    crate::locked(&state.readings).clear();
+    crate::locked(&state.reads).clear();
+    crate::locked(&state.devices).clear();
     super::remembered::restore(state);
 }
 
@@ -333,10 +325,7 @@ fn change_site(
     name: &str,
     change: impl Fn(&mut Site),
 ) -> Result<StatusCode, ApiError> {
-    let shown = state
-        .site
-        .lock()
-        .expect("site lock")
+    let shown = crate::locked(&state.site)
         .as_ref()
         .is_some_and(|site| site.name == name);
     if shown {
@@ -354,136 +343,10 @@ fn change_site(
     Ok(StatusCode::NO_CONTENT)
 }
 
-#[derive(Deserialize)]
-pub struct ExportQuery {
-    /// A kept site; without it the site shown now.
-    name: Option<String>,
-}
-
-/// A site as a file, to keep it or to hand it to a colleague.
-pub async fn export(
-    State(state): State<Shared>,
-    Query(query): Query<ExportQuery>,
-) -> Result<impl IntoResponse, ApiError> {
-    let shown = state.site.lock().expect("site lock").clone();
-    let site = match query.name {
-        Some(name) if shown.as_ref().is_none_or(|site| site.name != name) => state
-            .data_dir
-            .as_deref()
-            .and_then(|dir| kept_site(dir, &name))
-            .ok_or_else(|| ApiError::bad_request(format!("no site named {name}")))?,
-        _ => shown.ok_or_else(|| ApiError::conflict("search for devices first"))?,
-    };
-    let disposition = format!(
-        "attachment; filename=\"bacnetio-site-{}.json\"",
-        file_stem(&site.name)
-    );
-    Ok(([(header::CONTENT_DISPOSITION, disposition)], Json(site)))
-}
-
-/// The numbers of a device in a site file; everything else in it is shown as escaped text.
-#[derive(Deserialize)]
-struct CheckedDevice {
-    #[serde(rename = "instance")]
-    _instance: u32,
-    #[serde(rename = "network")]
-    _network: Option<u16>,
-    #[serde(default, rename = "objects")]
-    _objects: Option<CheckedObjects>,
-}
-
-#[derive(Deserialize)]
-struct CheckedObjects {
-    #[serde(rename = "read")]
-    _read: usize,
-    #[serde(rename = "total")]
-    _total: Option<usize>,
-    #[serde(default, rename = "types")]
-    _types: BTreeMap<u32, usize>,
-}
-
-#[derive(Deserialize)]
-struct CheckedRouter {
-    #[serde(rename = "networks")]
-    _networks: Vec<u16>,
-}
-
-/// What the interface reads as text or walks as a list. A number in `value` or `status` throws in
-/// the page (`value.endsWith`, `status.includes`) and takes the whole redraw with it.
-#[derive(Deserialize)]
-struct CheckedPoint {
-    #[serde(rename = "type")]
-    _object_type: u32,
-    #[serde(rename = "instance")]
-    _instance: u32,
-    #[serde(default, rename = "value")]
-    _value: String,
-    #[serde(default, rename = "status")]
-    _status: String,
-    #[serde(default, rename = "units")]
-    _units: Option<String>,
-    #[serde(default, rename = "state_texts")]
-    _state_texts: Vec<String>,
-    #[serde(default, rename = "binary_texts")]
-    _binary_texts: Vec<String>,
-    #[serde(default, rename = "notification_class")]
-    _notification_class: Option<u32>,
-}
-
-#[derive(Deserialize)]
-struct CheckedPoints {
-    #[serde(rename = "points")]
-    _points: Vec<CheckedPoint>,
-}
-
-/// A file from outside is checked for what the interface puts into its pages as it is, numbers
-/// above all: a script in place of a device ID would run in the page that can write to the plant.
-/// Beyond that it must not be able to wedge the page: a search that never ends, a value the page
-/// reads as text, or more devices than the tree can draw.
-fn well_formed(site: &Site) -> bool {
-    fn fits<T: serde::de::DeserializeOwned>(value: &Value) -> bool {
-        serde_json::from_value::<T>(value.clone()).is_ok()
-    }
-    let Some(scan) = &site.scan else {
-        return false;
-    };
-    // a kept site is a finished search; "running" would set the page polling for a scan that is
-    // not there, with no way out of "Searching …"
-    scan["state"] == FINISHED
-        && scan["devices"]
-            .as_array()
-            .is_some_and(|devices| devices.len() <= MOST_DEVICES)
-        && fits::<Vec<CheckedDevice>>(&scan["devices"])
-        && (scan["routers"].is_null() || fits::<Vec<CheckedRouter>>(&scan["routers"]))
-        && site
-            .points
-            .iter()
-            .all(|(device, points)| device.parse::<u32>().is_ok() && fits::<CheckedPoints>(points))
-}
-
-/// A site file brought back in. It comes from outside, so its form is checked before it is kept.
-pub async fn import(
-    State(state): State<Shared>,
-    Json(mut site): Json<Site>,
-) -> Result<StatusCode, ApiError> {
-    if !well_formed(&site) {
-        return Err(ApiError::bad_request("this is not a bacnetio site file"));
-    }
-    if site.name.is_empty() {
-        site.name = "imported".to_string();
-    }
-    if let Some(dir) = &state.data_dir {
-        site.name = name_beside(dir, &site);
-        save(dir, &site).map_err(|error| ApiError::internal(error.to_string()))?;
-    }
-    show(&state, site);
-    Ok(StatusCode::NO_CONTENT)
-}
-
 impl AppState {
     /// What was chosen for the site kept for that network, so a new search keeps it.
     pub(super) fn kept_choices(&self, name: &str) -> Choices {
-        if let Some(site) = self.site.lock().expect("site lock").as_ref()
+        if let Some(site) = crate::locked(&self.site).as_ref()
             && site.name == name
         {
             return Choices::of(site);
@@ -497,12 +360,10 @@ impl AppState {
 
     /// Changes the remembered site and writes it to the data folder, if there is one.
     pub(super) fn remember(&self, change: impl FnOnce(&mut Site)) {
-        let mut site = self.site.lock().expect("site lock");
+        let mut site = crate::locked(&self.site);
         let site = site.get_or_insert_with(Site::default);
         change(site);
-        site.saved_ms = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .map_or(0, |since| since.as_millis() as u64);
+        site.saved_ms = crate::unix_time::millis(SystemTime::now());
         if let Some(dir) = &self.data_dir
             && let Err(reason) = save(dir, site)
         {
@@ -577,77 +438,6 @@ mod tests {
         );
         assert_eq!(kept_site(&dir, "10.0.0.0/24").unwrap().saved_ms, 1);
         fs::remove_dir_all(&dir).unwrap();
-    }
-
-    #[test]
-    fn a_site_file_with_anything_but_numbers_where_numbers_belong_is_refused() {
-        let site = |scan: Value, points: Value| Site {
-            scan: Some(scan),
-            points: serde_json::from_value(points).unwrap(),
-            ..Site::default()
-        };
-        let device = serde_json::json!({ "instance": 21, "network": null, "name": "<b>any text</b>",
-            "objects": { "read": 3, "total": 3, "done": true, "error": null, "types": { "0": 2 } } });
-        let good =
-            serde_json::json!({ "21": { "points": [{ "type": 0, "instance": 1, "name": "x" }] } });
-        assert!(well_formed(&site(
-            serde_json::json!({ "state": "done", "devices": [device] }),
-            good.clone()
-        )));
-        let script = "<img src=x onerror=alert(1)>";
-        for bad in [
-            serde_json::json!({ "state": "done", "devices": "none" }),
-            serde_json::json!({ "state": "done", "devices": [{ "instance": script, "network": null }] }),
-            serde_json::json!({ "state": "done", "devices": [{ "instance": 1, "network": script }] }),
-            serde_json::json!({ "state": "done", "devices": [{ "instance": 1, "network": null, "objects": { "read": 1, "total": script } }] }),
-            serde_json::json!({ "state": "done", "devices": [], "routers": [{ "networks": [script] }] }),
-        ] {
-            assert!(!well_formed(&site(bad, good.clone())));
-        }
-        let scan = serde_json::json!({ "state": "done", "devices": [] });
-        assert!(!well_formed(&site(
-            scan.clone(),
-            serde_json::json!({ "21": { "points": [{ "type": script, "instance": 1 }] } })
-        )));
-        assert!(!well_formed(&site(
-            scan,
-            serde_json::json!({ script: { "points": [] } })
-        )));
-        assert!(!well_formed(&Site::default()));
-    }
-
-    /// A file that would leave the page unusable: a search that never ends, a value the page reads
-    /// as text, or more devices than the tree can draw.
-    #[test]
-    fn a_site_file_that_would_wedge_the_page_is_refused() {
-        let site = |scan: Value, points: Value| Site {
-            scan: Some(scan),
-            points: serde_json::from_value(points).unwrap(),
-            ..Site::default()
-        };
-        let empty = serde_json::json!({ "21": { "points": [] } });
-        for state in ["running", "idle", "failed"] {
-            let scan = serde_json::json!({ "state": state, "devices": [] });
-            assert!(
-                !well_formed(&site(scan, empty.clone())),
-                "a site file with the state {state} was taken in"
-            );
-        }
-        let done = serde_json::json!({ "state": "done", "devices": [] });
-        for bad in [
-            serde_json::json!({ "type": 0, "instance": 1, "value": 21.5 }),
-            serde_json::json!({ "type": 0, "instance": 1, "status": ["fault"] }),
-            serde_json::json!({ "type": 0, "instance": 1, "units": 62 }),
-            serde_json::json!({ "type": 0, "instance": 1, "state_texts": "Off" }),
-        ] {
-            let points = serde_json::json!({ "21": { "points": [bad] } });
-            assert!(!well_formed(&site(done.clone(), points)));
-        }
-        let many: Vec<Value> = (0..=MOST_DEVICES)
-            .map(|instance| serde_json::json!({ "instance": instance, "network": null }))
-            .collect();
-        let crowd = serde_json::json!({ "state": "done", "devices": many });
-        assert!(!well_formed(&site(crowd, empty)));
     }
 
     #[test]

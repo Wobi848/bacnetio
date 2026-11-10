@@ -11,7 +11,8 @@ use bacnet_types::enums::{ObjectType, PropertyIdentifier};
 use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
 use serde::{Deserialize, Serialize};
 
-use crate::write::{Action, Command, Entry, parse_clock};
+use crate::typed::parse_clock;
+use crate::write::{Action, Command, Entry};
 
 pub const JOURNAL_FILE: &str = "writes.jsonl";
 
@@ -201,10 +202,7 @@ fn stored(entry: &Entry) -> Option<StoredEntry> {
         },
     };
     Some(StoredEntry {
-        time_ms: entry
-            .time
-            .duration_since(UNIX_EPOCH)
-            .map_or(0, |since| since.as_millis() as u64),
+        time_ms: crate::unix_time::millis(entry.time),
         device: entry.device,
         address: entry.address,
         object_type: entry.object.object_type().to_raw(),

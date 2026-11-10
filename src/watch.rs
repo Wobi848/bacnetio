@@ -131,9 +131,7 @@ pub async fn current_value(
     object: ObjectIdentifier,
 ) -> Result<(Live, Source), ReadError> {
     keep_subscribed(watch, client, device, object).await;
-    let reported = watch
-        .lock()
-        .expect("watch lock")
+    let reported = crate::locked(watch)
         .live(device, object, Instant::now())
         .cloned();
     if let Some(live) = reported {
@@ -151,13 +149,10 @@ pub async fn keep_subscribed(
     object: ObjectIdentifier,
 ) -> bool {
     let now = Instant::now();
-    let due = watch
-        .lock()
-        .expect("watch lock")
-        .needs_subscription(device, object, now);
+    let due = crate::locked(watch).needs_subscription(device, object, now);
     if due {
         let subscribed = subscribe(client, device, object).await;
-        let mut watch = watch.lock().expect("watch lock");
+        let mut watch = crate::locked(watch);
         match subscribed {
             Ok(()) => watch.subscribed(device, object, now),
             // only the device's own refusal counts; a device not found yet is tried again
@@ -165,7 +160,7 @@ pub async fn keep_subscribed(
             Err(_) => {}
         }
     }
-    !watch.lock().expect("watch lock").is_refused(device, object)
+    !crate::locked(watch).is_refused(device, object)
 }
 
 /// The value asked for now, whatever the device reports by itself.

@@ -11,6 +11,8 @@ shows it, then a test against it.
 ## The simulators
 
 - `simulated_plant.rs`: AHU-01 (1001), mixed object types, trend log, schedule
+- `simulated_sc.rs`: a BACnet/SC hub with SC-AHU (5001) on it and the site's certificate files
+  written into a folder (docs/concept-sc.md); the browser tests choose those files
 - `simulated_controller.rs`: a controller named by paths like a DDC4000, 170+ points, no segmentation
 
 The current list is `examples/`; README.md describes each one.

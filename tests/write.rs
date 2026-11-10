@@ -8,6 +8,7 @@ use bacnet_types::enums::{EngineeringUnits, ObjectType, Segmentation};
 use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
 use bacnetio::object;
 use bacnetio::scan;
+use bacnetio::typed;
 use bacnetio::write::{self, Action, Entry, Journal};
 use common::{at, connect, simulated_device};
 
@@ -35,7 +36,7 @@ async fn writes_at_a_priority_and_releases_again() {
     let valve = analog(ObjectType::ANALOG_OUTPUT, 1);
 
     let before = object::read_object(client, instance, valve).await;
-    let value = write::parse_value(ObjectType::ANALOG_OUTPUT, "42,5").unwrap();
+    let value = typed::parse_value(ObjectType::ANALOG_OUTPUT, "42,5").unwrap();
     let mut journal = Journal::default();
     for (priority, action) in [(8, Action::Write(value)), (8, Action::Release)] {
         let result = write::perform(client, instance, valve, Some(priority), &action).await;

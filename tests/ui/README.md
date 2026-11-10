@@ -5,7 +5,9 @@ The tests start the two simulated devices from `examples/` on loopback addresses
 `--test-loopback` switch, operate the interface like a user and check the result. No real network
 and no administrator rights are needed. On Linux they also start `simulated_mstp`, an MS/TP device on a
 pseudo-terminal, and hand its name to bacnetio in `BACNETIO_TEST_SERIAL`; elsewhere the MS/TP test
-has nothing to listen to and passes without checking.
+has nothing to listen to and passes without checking. `simulated_sc`, a BACnet/SC hub with a device
+on `wss://localhost:47443/`, writes its certificate files into a folder the tests find in
+`BACNETIO_TEST_SC_DIR`, the hub's address in `BACNETIO_TEST_SC_HUB`.
 
 ```sh
 cargo build --all-targets

@@ -45,7 +45,8 @@ It has to contain these rules:
 
 **Before saying "done"**
 - Run everything CI runs, plus the browser tests: `cargo fmt --check`, `cargo test`,
-  `cargo clippy --all-targets -- -D warnings`, `node --test tests/web/*.test.js`.
+  `cargo clippy --all-targets -- -D warnings`, `cargo clippy --no-default-features -- -D warnings`
+  (the build without BACnet/SC), `node --test tests/web/*.test.js`.
 - Say what could not be checked (real devices, real networks, other browsers).
 - Never say "done" while known points are open. Name them and work through them; do not stop at
   "the next step would be".

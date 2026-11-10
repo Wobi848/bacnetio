@@ -28,6 +28,7 @@ Outside `unshare`, so the maintainer's browser reaches it; on loopback, so nothi
 target/debug/examples/simulated_plant 127.0.0.2 47809 &      # AHU-01
 target/debug/examples/simulated_controller 127.0.0.3 47809 & # DDC4000_#21, path names
 target/debug/examples/simulated_commands 127.0.0.4 47809 &   # outputs held at several priorities
+target/debug/examples/simulated_sc <scratchpad>/live/sc 47443 &  # a BACnet/SC hub with SC-AHU; the certificate files land in that folder
 target/debug/bacnetio --no-browser --test-loopback --web-port 18081 --data-dir <scratchpad>/live/data &
 ```
 
