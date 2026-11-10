@@ -10,11 +10,13 @@ edition = "2024"
 # its TLS stack, should that ever not build on a platform
 [features]
 default = ["sc"]
-sc = ["bacnet-transport/sc-tls", "dep:getrandom"]
+sc = ["bacnet-transport/sc-tls", "dep:getrandom", "dep:base64", "dep:p12-keystore", "dep:pkcs8"]
 
 [dependencies]
 anyhow = "1.0.104"
 axum = "0.8"
+# SC certificates handed to bacnet-transport's check as PEM (src/sc_files.rs)
+base64 = { version = "0.23", optional = true }
 bacnet-client = "=0.15.0"
 bacnet-encoding = "=0.15.0"
 bacnet-services = "=0.15.0"
@@ -25,6 +27,10 @@ clap = { version = "4.6.7", features = ["derive"] }
 # bacnetio's own device UUID on BACnet/SC; the version bacnet-transport uses
 getrandom = { version = "0.3", optional = true }
 if-addrs = "0.15.0"
+# SC certificates in a PKCS#12 file, also the old 3DES/RC2 form many tools still write (src/sc_files.rs)
+p12-keystore = { version = "0.4.1", optional = true, features = ["pbes1"] }
+# SC keys with a password (encrypted PKCS#8)
+pkcs8 = { version = "0.11", optional = true, features = ["encryption", "pem", "std", "3des"] }
 mime_guess = "2"
 rust-embed = "8"
 # the Excel exports (workbook.rs, docs/concept-excel.md)
@@ -40,7 +46,8 @@ webpki-roots = "1"
 [dev-dependencies]
 bacnet-objects = "=0.15.0"
 bacnet-server = { version = "=0.15.0", features = ["sc-tls"] }
-# certificates for the hub and devices the SC tests make
+# certificates for the hub and devices the SC tests make, and keys with a password
+pkcs8 = { version = "0.11", features = ["getrandom"] }
 rcgen = "0.14"
 tower = { version = "0.5", features = ["util"] }
 # opens the Excel files again in tests; the version rust_xlsxwriter writes them with
@@ -62,7 +69,7 @@ bacnet-transport = { version = "=0.15.0", features = ["serial"] }
 tokio-serial = "5"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_Networking_WinSock"] }
+windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_NetworkManagement_IpHelper", "Win32_Networking_WinSock", "Win32_Security_Cryptography"] }
 
 [target.'cfg(windows)'.build-dependencies]
 winresource = "0.1"

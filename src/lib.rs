@@ -30,7 +30,13 @@ pub mod property_text;
 pub mod record;
 pub mod reference;
 #[cfg(feature = "sc")]
+pub mod sc_certificates;
+#[cfg(feature = "sc")]
+pub mod sc_files;
+#[cfg(feature = "sc")]
 pub mod sc_identity;
+#[cfg(feature = "sc")]
+pub mod sc_store;
 pub mod scan;
 pub mod schedule;
 pub mod server;
