@@ -124,6 +124,11 @@ where
         if matches!(status, ScanStatus::Done(_)) {
             let scan = serde_json::to_value(scan_view(&status)).expect("scan state is JSON");
             let choices = state.kept_choices(&scope);
+            // a site found through an SC hub is opened again by that hub
+            #[cfg(feature = "sc")]
+            let hubs = state.sc_network().await.map(|(hubs, _)| hubs);
+            #[cfg(not(feature = "sc"))]
+            let hubs: Option<(String, Option<String>)> = None;
             // another site starts without the points read on the last one, as opening one does
             let other_site = crate::locked(&state.site)
                 .as_ref()
@@ -136,6 +141,16 @@ where
                 site.name = scope;
                 site.scan = Some(scan);
                 site.points.clear();
+                #[cfg(feature = "sc")]
+                {
+                    site.sc_hub = hubs.as_ref().map(|hubs| hubs.primary.clone());
+                    site.sc_failover_hub = hubs.and_then(|hubs| hubs.failover);
+                }
+                #[cfg(not(feature = "sc"))]
+                {
+                    site.sc_hub = hubs.as_ref().map(|hubs| hubs.0.clone());
+                    site.sc_failover_hub = hubs.and_then(|hubs| hubs.1);
+                }
             });
         }
         state.set_scan(status);

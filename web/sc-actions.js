@@ -82,6 +82,15 @@ export async function searchOnSc() {
   return joined;
 }
 
+/** A site found through an SC hub opens with that hub in the search settings. */
+export function takeSiteHubs(site) {
+  if (!site?.sc_hub) return;
+  state.link = "sc";
+  state.sc.hub = site.sc_hub;
+  state.sc.failoverHub = site.sc_failover_hub ?? "";
+  if (state.sc.view === null) loadSc();
+}
+
 /** Deletes the key kept on this computer; the certificates stay. */
 export async function forgetScKey() {
   try {

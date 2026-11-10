@@ -433,9 +433,11 @@ the day is typed wrong, `409` when the kind cannot be told, `502` when the devic
 `POST /api/who-has` `{ "name": "…" }` asks the whole network for 3 s and answers `[{ "device", "type",
 "instance", "name" }]`.
 
-`GET /api/sites` lists the sites kept (`{ name, title, saved_ms, devices, read, open }`), one per
-subnet, BBMD or adapter searched; `name` is that network, `title` the name the technician gave it or
-`null`, `open` whether it is the site shown. `POST /api/sites/open` `{ "name": "…" }` shows one as
+`GET /api/sites` lists the sites kept (`{ name, title, saved_ms, devices, read, open, sc_hub,
+sc_failover_hub }`), one per subnet, BBMD, adapter or SC hub searched; `name` is that network, `title`
+the name the technician gave it or `null`, `open` whether it is the site shown, `sc_hub` and
+`sc_failover_hub` the hubs a site on BACnet/SC was found through (else `null`), which the page puts
+back into the search settings when the site is opened. `POST /api/sites/open` `{ "name": "…" }` shows one as
 remembered. `POST /api/sites/rename` `{ "name": "…", "title": "…" }` names one (at most 80
 characters; empty goes back to the network); a new search of the same network keeps the name.
 `POST /api/sites/grouping` `{ "name": "…", "pattern": "…" }` gives one its own grouping pattern, a

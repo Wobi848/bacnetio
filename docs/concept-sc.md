@@ -148,8 +148,9 @@ The status bar shows `BACnet/SC · hub.plant.example · connected` (or *connecti
 ### A site on SC
 
 A site found on SC is named after its hub (`hub.plant.example`) until the user names it, and it
-remembers the hub address and which certificates belong to it (by their fingerprints, never the
-key), so opening it again offers *Connect to the hub* with the same files.
+remembers the hub address, so opening it again offers *Connect to the hub* with it. The
+certificates are kept once per computer (see *Keys and certificates*); remembering which files
+belong to which site (by their fingerprints, never the key) waits for a user with two SC sites.
 
 ### On a phone
 
@@ -237,7 +238,10 @@ for the demo and the browser tests. No key or certificate enters the repository.
    the hub in the sidebar head and the status bar, held values only on SC, *Forget the SC key* in
    *Settings*, *Capture* saying it records nothing on SC, the failover hub and connecting again by
    itself (`src/sc_connection.rs`), the state of the connection in the sidebar and the status bar.
-   Open: a site that remembers its hub and certificates.
+   A site found on SC remembers its hub and failover hub (`sc_hub` in the site file) and opens with
+   them in the search settings. Not done: the certificates per site; they are kept once per
+   computer (`sc/`), so a second SC site with other files means choosing them again. Open until a
+   user has two SC sites.
 4. **Android:** the file picker, checked on a phone.
 5. **Key and CSR made in bacnetio**, the signed certificate taken back.
 6. **Direct connections** (Annex AB.4, node to node without the hub), where the hub announces them:
