@@ -6,16 +6,24 @@ repository = "https://github.com/Wobi848/bacnetio"
 license = "MIT"
 edition = "2024"
 
+# BACnet/SC (docs/concept-sc.md), in every release; `--no-default-features` builds without it and
+# its TLS stack, should that ever not build on a platform
+[features]
+default = ["sc"]
+sc = ["bacnet-transport/sc-tls", "dep:getrandom"]
+
 [dependencies]
 anyhow = "1.0.104"
 axum = "0.8"
 bacnet-client = "=0.15.0"
 bacnet-encoding = "=0.15.0"
 bacnet-services = "=0.15.0"
-bacnet-transport = { version = "=0.15.0", features = ["sc-tls"] }
+bacnet-transport = "=0.15.0"
 bacnet-types = "=0.15.0"
 bytes = "1"
 clap = { version = "4.6.7", features = ["derive"] }
+# bacnetio's own device UUID on BACnet/SC; the version bacnet-transport uses
+getrandom = { version = "0.3", optional = true }
 if-addrs = "0.15.0"
 mime_guess = "2"
 rust-embed = "8"
@@ -31,7 +39,9 @@ webpki-roots = "1"
 
 [dev-dependencies]
 bacnet-objects = "=0.15.0"
-bacnet-server = "=0.15.0"
+bacnet-server = { version = "=0.15.0", features = ["sc-tls"] }
+# certificates for the hub and devices the SC tests make
+rcgen = "0.14"
 tower = { version = "0.5", features = ["util"] }
 # opens the Excel files again in tests; the version rust_xlsxwriter writes them with
 zip = { version = "9", default-features = false, features = ["deflate"] }

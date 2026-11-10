@@ -98,6 +98,15 @@ test("known server errors are translated, unknown ones stay as they are", () => 
   assert.equal(errorText("the device refused: write access denied"), "Das Gerät hat abgelehnt: write access denied");
   assert.equal(errorText("\"warm\" is not a number"), "„warm“ ist keine Zahl.");
   assert.equal(errorText("something new"), "something new");
+  // an SC address has colons of its own
+  assert.equal(
+    errorText("device 5001 is on a BACnet/SC network as SC 20:00:00:00:00:01: connect to its hub first"),
+    "Gerät 5001 ist als SC 20:00:00:00:00:01 an einem BACnet/SC-Netz: zuerst mit seinem Hub verbinden.",
+  );
+  assert.equal(
+    errorText("cannot connect to the hub at wss://hub.local:443/: invalid peer certificate: UnknownIssuer"),
+    "Keine Verbindung zum Hub wss://hub.local:443/: invalid peer certificate: UnknownIssuer",
+  );
   setLanguage("en");
   assert.equal(errorText("search for devices first"), "search for devices first");
 });

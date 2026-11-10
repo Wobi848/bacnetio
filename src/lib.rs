@@ -29,6 +29,8 @@ pub mod present;
 pub mod property_text;
 pub mod record;
 pub mod reference;
+#[cfg(feature = "sc")]
+pub mod sc_identity;
 pub mod scan;
 pub mod schedule;
 pub mod server;

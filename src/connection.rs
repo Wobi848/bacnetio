@@ -1,5 +1,5 @@
-//! The BACnet/IP client every command talks through: opening it on the chosen adapter, and the
-//! small conversions requests need.
+//! The client every command talks through: opening it on the chosen adapter, an MS/TP trunk or a
+//! BACnet/SC hub, and the small conversions requests need.
 
 use std::net::{Ipv4Addr, SocketAddrV4};
 use std::sync::Arc;
@@ -14,6 +14,8 @@ use bacnet_types::enums::{AbortReason, PropertyIdentifier};
 use bacnet_types::error::{Error, RemoteError};
 use bacnet_types::primitives::{ObjectIdentifier, PropertyValue};
 
+use crate::address::Link;
+
 pub const BACNET_PORT: u16 = 47808;
 const APDU_TIMEOUT_MS: u64 = 2000;
 const APDU_RETRIES: u8 = 1;
@@ -25,6 +27,16 @@ const REGISTRATION_POLL: Duration = Duration::from_millis(100);
 /// Over any transport, so that a connection to an MS/TP trunk can take BACnet/IP's place
 /// (`docs/concept-mstp.md`).
 pub type Client = BACnetClient<AnyTransport>;
+
+/// The kind of link the client is on, to read the MACs it reports.
+pub fn link(client: &Client) -> Link {
+    match client.transport() {
+        AnyTransport::Mstp(_) => Link::Mstp,
+        #[cfg(feature = "sc")]
+        AnyTransport::Sc(_) => Link::Sc,
+        _ => Link::Ip,
+    }
+}
 
 pub struct Endpoint {
     pub interface: Ipv4Addr,
@@ -171,6 +183,44 @@ async fn wait_in_ring(client: &Client, trunk: &Trunk) -> anyhow::Result<()> {
         }
         tokio::time::sleep(RING_POLL).await;
     }
+}
+
+/// How long the TLS and WebSocket handshake with an SC hub may take.
+#[cfg(feature = "sc")]
+const SC_CONNECT_WAIT: Duration = Duration::from_secs(10);
+
+/// Connects to the hub of a BACnet/SC network (docs/concept-sc.md) as `identity`, with the
+/// certificates in `tls`. `hub` is the hub's `wss://` URL.
+#[cfg(feature = "sc")]
+pub async fn open_sc(
+    hub: &str,
+    tls: bacnet_transport::sc_tls::ScNodeTlsConfig,
+    identity: crate::sc_identity::Identity,
+) -> anyhow::Result<Connection> {
+    use bacnet_transport::sc::ScTransport;
+    use bacnet_transport::sc_tls::TlsWebSocket;
+    let socket = tokio::time::timeout(SC_CONNECT_WAIT, TlsWebSocket::connect(hub, tls))
+        .await
+        .with_context(|| {
+            format!(
+                "the hub at {hub} did not answer within {} s",
+                SC_CONNECT_WAIT.as_secs()
+            )
+        })?
+        .with_context(|| format!("cannot connect to the hub at {hub}"))?;
+    let transport = ScTransport::new(socket, identity.vmac).with_device_uuid(identity.uuid);
+    let client = BACnetClient::generic_builder()
+        .transport(AnyTransport::Sc(Box::new(transport)))
+        .apdu_timeout_ms(APDU_TIMEOUT_MS)
+        .apdu_retries(APDU_RETRIES)
+        .build()
+        .await
+        .with_context(|| format!("the hub at {hub} did not take bacnetio in"))?;
+    Ok(Connection {
+        client: Arc::new(client),
+        local_port: 0,
+        port_unavailable: None,
+    })
 }
 
 /// Registers with the BBMD where one is given.

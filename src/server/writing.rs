@@ -325,7 +325,7 @@ pub(super) async fn journaled(
         .get_device(device)
         .await
         .filter(|found| found.source_network.is_none())
-        .and_then(|found| Address::from_mac(&found.mac_address));
+        .and_then(|found| Address::from_mac(crate::connection::link(&client), &found.mac_address));
     let result = write::perform(&client, device, object, priority, &action).await;
     let error = result.err().map(|error| error.to_string());
     if error.is_none() {

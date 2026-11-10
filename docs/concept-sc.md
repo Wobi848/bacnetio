@@ -1,6 +1,6 @@
 # Concept: BACnet/SC (Secure Connect)
 
-Status: approved on 09.11.2026, decisions below. Step 0 (build check) done on 10.11.2026, branch `sc-build`; nothing to see yet. The maintainer asked for the
+Status: approved on 09.11.2026, decisions below. Steps 0 and 1 built on 10.11.2026 (branches `sc-build`, `sc-connection`); nothing to see yet. The maintainer asked for the
 concept in full and whether it works with bacnetio's interface to BACnet ("bitte nichts bauen zu SC
 aber Konzept voll ausbauen und ob es geht mit unserer Schnittstelle").
 
@@ -223,8 +223,11 @@ for the demo and the browser tests. No key or certificate enters the repository.
 
 0. ✓ **Build check, nothing to see** (done 10.11.2026, all three build): the feature `sc-tls` on in `Cargo.toml`, CI builds Windows,
    Linux and Android; size and build time measured. If Windows fails, stop and look again.
-1. **Addresses and connection:** `Address::Sc`, `from_mac` by connection, `open_sc`, the kept
-   VMAC and UUID; a Rust test with hub and SC device made in the test.
+1. ✓ **Addresses and connection** (done 10.11.2026): `Address::Sc` (`src/address.rs`), `from_mac`
+   by the kind of link (`Link`, `connection::link`), `connection::open_sc`, the VMAC and UUID kept
+   in `sc/identity.json` (`src/sc_identity.rs`); a device is released only over the link it was
+   written on, SC included (`other_link` in `src/server/session.rs`). Test: `tests/sc.rs` with a hub
+   and an SC device made in the test, and a certificate of another CA refused.
 2. **Search settings and certificates:** the third connection type, the three files checked in
    words, the key kept as described, the reasons for a failed connection; `simulated_sc` and
    browser tests; help guide *Open a BACnet/SC plant* in all languages.
@@ -252,6 +255,14 @@ as flexible as possible ("sc sicher auf allen plattformen ... es soll möglichst
    checked against the site's CA only, no system certificate store, no way to switch the check off).
    Step 0 proves the build on all three before anything else.
 4. **Direct connections:** built as step 6, after the hub connection works on a real plant.
+
+Added on 10.11.2026, asked by the maintainer ("könnten wir am Schluss auch builden ohne SC?"):
+
+5. **A build without SC:** the feature `sc` of bacnetio, on by default, brings the TLS stack;
+   `cargo build --no-default-features` leaves it out. The releases keep SC on all three platforms;
+   the build without is the way out should the TLS stack ever not build on one. The SC code sits in
+   its own modules behind `#[cfg(feature = "sc")]`; an SC address stays readable in every build, so
+   files load the same. CI checks the build without (`cargo clippy --no-default-features`).
 
 Reading PKCS#12 and encrypted keys needs a library beside the TLS stack (pure Rust, so it builds
 the same on every platform); which one is chosen in step 2, after a look at what the TLS stack

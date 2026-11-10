@@ -157,7 +157,7 @@ pub async fn run_in_range(
         })
         .transpose()?;
     let wanted = |instance: u32| instances.is_none_or(|(from, to)| (from..=to).contains(&instance));
-    let mut live = Live::new(sweep.len());
+    let mut live = Live::new(sweep.len(), crate::connection::link(client));
     progress(live.progress(Phase::WhoIs, wanted));
     // the client keeps the first address it heard for an ID and refuses others: a device that took
     // a new ID, or several sharing one, would stay where the last search found them
@@ -272,7 +272,7 @@ fn report(live: Live, routers: Vec<DiscoveredRouter>, wanted: impl Fn(u32) -> bo
             .into_iter()
             .filter_map(|router| {
                 Some(Router {
-                    address: Address::from_mac(&router.mac)?,
+                    address: Address::from_mac(live.link, &router.mac)?,
                     networks: router.networks,
                 })
             })

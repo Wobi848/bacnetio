@@ -178,7 +178,8 @@ async fn reads_every_property_of_an_object() {
             PropertyIdentifier::UNITS,
             &units,
             None,
-            &[]
+            &[],
+            bacnetio::address::Link::Ip,
         ),
         "°C"
     );

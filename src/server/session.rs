@@ -13,7 +13,7 @@ use super::ApiError;
 use super::json::ObjectRef;
 use super::recording::Sampler;
 use super::scanning::ScanView;
-use crate::address::Address;
+use crate::address::{Address, Link};
 use crate::alarms;
 use crate::connection::{self, BACNET_PORT, Client, Connection, Endpoint, Trunk};
 use crate::interfaces::{self, Adapter};
@@ -175,9 +175,8 @@ impl AppState {
         address: Option<Address>,
     ) -> Result<Arc<Client>, ApiError> {
         // a value held over a trunk is released over that trunk: bacnetio joins one only after
-        // listening, never by itself (docs/concept-mstp.md)
-        let on_trunk = self.trunk().await.is_some();
-        if let Some(reason) = other_link(device, address, on_trunk) {
+        // listening, never by itself (docs/concept-mstp.md); the same for an SC network
+        if let Some(reason) = other_link(device, address, self.link().await) {
             return Err(ApiError::conflict(reason));
         }
         match self.client().await {
@@ -229,6 +228,17 @@ impl AppState {
         Ok(Some(trunk))
     }
 
+    /// The kind of link bacnetio is on; BACnet/IP also when no connection is open, as one on the
+    /// default adapter is opened then.
+    async fn link(&self) -> Link {
+        match &*self.connection.lock().await {
+            Some(Open {
+                key: Key::Mstp(_), ..
+            }) => Link::Mstp,
+            _ => Link::Ip,
+        }
+    }
+
     /// The trunk bacnetio is on, if it is on one.
     pub(super) async fn trunk(&self) -> Option<Trunk> {
         match &*self.connection.lock().await {
@@ -277,7 +287,7 @@ impl AppState {
         tokio::spawn(keep_devices_known(
             Arc::clone(self),
             Arc::downgrade(&connection.client),
-            matches!(key, Key::Mstp(_)),
+            connection::link(&connection.client),
         ));
         let found = (
             Arc::clone(&connection.client),
@@ -393,7 +403,7 @@ async fn follow_notifications(
 /// Holds the client only weakly between rounds, so a search on another adapter can close it.
 /// Only devices of the client's own link: a device found over IP is not on the trunk, and its
 /// address means nothing there.
-async fn keep_devices_known(state: Shared, client: Weak<Client>, on_trunk: bool) {
+async fn keep_devices_known(state: Shared, client: Weak<Client>, link: Link) {
     let mut ticks = tokio::time::interval(KEEP_KNOWN_EVERY);
     ticks.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
     loop {
@@ -412,7 +422,7 @@ async fn keep_devices_known(state: Shared, client: Weak<Client>, on_trunk: bool)
             .lock()
             .expect("devices lock")
             .iter()
-            .filter(|device| matches!(device.address, Address::Mstp(_)) == on_trunk)
+            .filter(|device| device.address.link() == link)
             .map(|device| {
                 let by_address = !device.answered_who_is && device.remote.is_none();
                 (device.instance, by_address.then_some(device.address))
@@ -436,19 +446,28 @@ async fn keep_devices_known(state: Shared, client: Weak<Client>, on_trunk: bool)
     }
 }
 
-/// Why `device`, last reached at `address`, cannot be reached on the connection bacnetio has now:
-/// it sits on an MS/TP trunk and bacnetio is not on one, or the other way round.
-fn other_link(device: u32, address: Option<Address>, on_trunk: bool) -> Option<String> {
-    match (address, on_trunk) {
-        (Some(Address::Mstp(station)), false) => Some(format!(
+/// Why `device`, last reached at `address`, cannot be reached on the link bacnetio is on now: it
+/// sits on an MS/TP trunk or a BACnet/SC network and bacnetio is not there, or the other way round.
+fn other_link(device: u32, address: Option<Address>, link: Link) -> Option<String> {
+    let address = address.filter(|address| address.link() != link)?;
+    Some(match (address, link) {
+        (Address::Mstp(station), _) => format!(
             "device {device} sits on an MS/TP trunk as station {station}: listen to the trunk \
              and join it first"
-        )),
-        (Some(Address::Ip(_)), true) => Some(format!(
-            "device {device} is on BACnet/IP: leave the trunk and search on BACnet/IP first"
-        )),
-        _ => None,
-    }
+        ),
+        (Address::Sc(_), _) => format!(
+            "device {device} is on a BACnet/SC network as {}: connect to its hub first",
+            address.shown()
+        ),
+        (Address::Ip(_), Link::Mstp) => {
+            format!(
+                "device {device} is on BACnet/IP: leave the trunk and search on BACnet/IP first"
+            )
+        }
+        (Address::Ip(_), _) => format!(
+            "device {device} is on BACnet/IP: leave the SC network and search on BACnet/IP first"
+        ),
+    })
 }
 
 /// Adapter, port and BBMD of a request; all optional.
@@ -497,19 +516,31 @@ mod tests {
         let station = Some(Address::Mstp(5));
         let ip = Some(Address::Ip("10.0.0.20:47808".parse().unwrap()));
         assert!(
-            other_link(2005, station, false)
+            other_link(2005, station, Link::Ip)
                 .unwrap()
                 .contains("sits on an MS/TP trunk as station 5")
         );
-        assert_eq!(other_link(2005, station, true), None);
+        assert_eq!(other_link(2005, station, Link::Mstp), None);
         assert!(
-            other_link(3001, ip, true)
+            other_link(3001, ip, Link::Mstp)
                 .unwrap()
-                .contains("is on BACnet/IP")
+                .contains("leave the trunk")
         );
-        assert_eq!(other_link(3001, ip, false), None);
+        assert_eq!(other_link(3001, ip, Link::Ip), None);
         // behind a router no address is kept: the open connection is tried
-        assert_eq!(other_link(3001, None, true), None);
+        assert_eq!(other_link(3001, None, Link::Mstp), None);
+        // an SC device only over its network, and IP devices not from there
+        let sc = Some(Address::Sc([0x20, 0, 0, 0, 0, 1]));
+        assert_eq!(
+            other_link(5001, sc, Link::Ip).unwrap(),
+            "device 5001 is on a BACnet/SC network as SC 20:00:00:00:00:01: connect to its hub first"
+        );
+        assert_eq!(other_link(5001, sc, Link::Sc), None);
+        assert!(
+            other_link(3001, ip, Link::Sc)
+                .unwrap()
+                .contains("leave the SC network")
+        );
     }
 
     /// The tasks that follow a connection must not keep it open: a search on another adapter or
