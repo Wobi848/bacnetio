@@ -265,5 +265,12 @@ Added on 10.11.2026, asked by the maintainer ("könnten wir am Schluss auch buil
    files load the same. CI checks the build without (`cargo clippy --no-default-features`).
 
 Reading PKCS#12 and encrypted keys needs a library beside the TLS stack (pure Rust, so it builds
-the same on every platform); which one is chosen in step 2, after a look at what the TLS stack
-brings already.
+the same on every platform). Chosen on 10.11.2026: `p12-keystore` for PKCS#12, with the old
+3DES/RC2 form older Windows and many vendor tools still write, and `pkcs8` for encrypted keys. The
+dates, the 7 and 30 days before a certificate runs out, whether the CA signed bacnetio's
+certificate and whether the key fits it come from the check `bacnet-transport` brings
+(`inspect_sc_pem`); bacnetio hands it the files as PEM.
+
+Step 2 is built in parts: first reading and checking the files and keeping them
+(`src/sc_files.rs`, `src/sc_certificates.rs`, `src/sc_store.rs`, with unit tests for every form,
+password, expiry and mismatch), then the routes, the search settings and the simulator.
