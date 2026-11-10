@@ -79,6 +79,11 @@ pub fn kept_hub(data_dir: &Path) -> io::Result<Option<String>> {
     }
 }
 
+/// Whether a key is kept.
+pub fn key_kept(data_dir: &Path) -> bool {
+    data_dir.join(SC_DIR).join(file_of(Line::Key)).exists()
+}
+
 /// Deletes the kept key; the certificates stay.
 pub fn forget_key(data_dir: &Path) -> io::Result<()> {
     match fs::remove_file(data_dir.join(SC_DIR).join(file_of(Line::Key))) {

@@ -116,6 +116,8 @@ its row. UI tests are in `tests/ui/`, Rust tests in `tests/` and next to the cod
 | Read, write, release over SC; a value held on an SC device released only over SC | as on IP; *Held by you* | `tests/sc.rs`, `session.rs` (`a_device_is_reached_only_over_the_link_it_was_written_on`), `ui/50-sc` |
 | Leave the SC network; asks first while values are held; connecting and leaving logged | sidebar head while on an SC network; *Written* log | `ui/50-sc` |
 | The SC files kept for the next start, the key protected | data folder `sc/` | `sc_store.rs`, `ui/50-sc` (reload) |
+| Forget the SC key; the certificates stay | *Settings*, card *BACnet/SC key* | `ui/51-sc-key` |
+| The capture records nothing on SC and says so | *Settings*, card *Capture for Wireshark* | `ui/51-sc-key` |
 | BBMD tables read (BDT and FDT), never written; a device that is none says so | device details, *BBMD tables* | `ui/24-bbmd`, `tests/bbmd.rs` (both tables, no BBMD), `web/ui.test.js` |
 | Device by IP address | table of the site, toolbar, *Device by IP …* (BACnet/IP only, not on a trunk) | `ui/10-locate` |
 | Routers and the networks behind them | tree and strips above the table | `scan.rs` (routers) |

@@ -3,6 +3,7 @@
 
 import { api } from "./api.js";
 import { runSearch } from "./device-actions.js";
+import { t } from "./i18n.js";
 import { render, state, toast } from "./store.js";
 
 /** The lines as the server checked them, and the hub bacnetio is on or was on last. */
@@ -53,6 +54,17 @@ export async function searchOnSc() {
   const joined = await runSearch(() => api.scSearch(hub.trim(), rememberKey));
   await loadSc();
   return joined;
+}
+
+/** Deletes the key kept on this computer; the certificates stay. */
+export async function forgetScKey() {
+  try {
+    state.sc.view = await api.scForgetKey();
+    toast(t("sc.keyForgotten"));
+  } catch (error) {
+    toast(error.message, true);
+  }
+  render();
 }
 
 /** Leaves the SC network. */

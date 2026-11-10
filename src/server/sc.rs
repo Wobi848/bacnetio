@@ -33,6 +33,8 @@ pub struct ScView {
     hub: Option<String>,
     /// The hub of the last connection, kept in the data folder, to offer again.
     last_hub: Option<String>,
+    /// A private key is kept in the data folder.
+    key_kept: bool,
 }
 
 fn now() -> i64 {
@@ -47,10 +49,12 @@ async fn view(state: &AppState) -> ScView {
         .data_dir
         .as_ref()
         .and_then(|dir| sc_store::kept_hub(dir).ok().flatten());
+    let key_kept = state.data_dir.as_deref().is_some_and(sc_store::key_kept);
     ScView {
         certificates,
         hub: state.sc_hub().await,
         last_hub,
+        key_kept,
     }
 }
 
@@ -211,6 +215,17 @@ fn keep_files(state: &AppState, hub: &str, remember_key: bool) {
             );
         }
     }
+}
+
+/// Deletes the kept key and empties its line; the certificates stay. A connection open now keeps
+/// running until it is left.
+pub async fn forget_key(State(state): State<Shared>) -> Result<Json<ScView>, ApiError> {
+    if let Some(dir) = &state.data_dir {
+        sc_store::forget_key(dir)
+            .map_err(|error| ApiError::internal(format!("cannot delete the SC key: {error}")))?;
+    }
+    state.sc.lock().expect("sc lock").forget_key();
+    Ok(Json(view(&state).await))
 }
 
 /// Leaves the SC network; nothing to do when bacnetio is on none.

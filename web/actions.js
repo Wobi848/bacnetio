@@ -13,7 +13,7 @@ import { saveFile } from "./file-actions.js";
 import { installPlugin, removePlugin, switchPlugin } from "./plugin-actions.js";
 import { recordHere, recordingRequest, recordPoint, removeRecorded, setRecordMode } from "./recording-actions.js";
 import { chooseLink, leaveTrunk, listenToTrunk, loadSerialPorts, searchOnTrunk, searchTrunkAgain } from "./mstp-actions.js";
-import { leaveSc, openScFile, searchOnSc } from "./sc-actions.js";
+import { forgetScKey, leaveSc, openScFile, searchOnSc } from "./sc-actions.js";
 import { setAccent, setBackground, setTheme } from "./settings.js";
 import { openSiteOf, siteName } from "./sites.js";
 import { chooseCompare, openComparedPoint, readBoth, startCompare } from "./compare-actions.js";
@@ -62,6 +62,7 @@ export const actions = {
     if (state.held.length) { state.sc.leaving = true; render(); } else leaveSc();
   },
   "sc-leave-anyway": () => leaveSc(),
+  "sc-forget-key": () => forgetScKey(),
   "toggle-head": () => { state.headOpen = !state.headOpen; render(); },
   // the adapter is chosen in the search settings: open them with the choice in focus
   "focus-adapter": () => {

@@ -239,6 +239,12 @@ impl Certificates {
         Some((file, pem.into_bytes()))
     }
 
+    /// Empties the key line; the certificates stay.
+    pub fn forget_key(&mut self) {
+        self.key = Slot::Empty;
+        self.key_had_password = false;
+    }
+
     pub fn key_had_password(&self) -> bool {
         self.key_had_password
     }

@@ -1,6 +1,7 @@
 // Settings: language and theme. Both follow the system until chosen here; each choice applies at once.
 
 import { captureCardHtml } from "./capture.js";
+import { scKeyCardHtml } from "./sc.js";
 import { h } from "./html.js";
 import { LANGUAGES, languageChoice, t } from "./i18n.js";
 import { pluginsCardHtml } from "./plugins.js";
@@ -131,6 +132,7 @@ export function viewSettings(state) {
       ${updateCardHtml(state)}
       ${pluginsCardHtml(state)}
       ${captureCardHtml(state)}
+      ${scKeyCardHtml(state)}
       <section class="card"><h2>${t("set.keys")}</h2><p class="hint">${t("help.keysMoved")}</p>
         <div class="acts"><button type="button" class="quiet" data-act="help-guide" data-guide="keys">${t("help.showKeys")}</button></div></section>
     </div></div>`,
