@@ -92,11 +92,18 @@ fn release_from_location(location: &str) -> Option<Release> {
     })
 }
 
-/// Whether `candidate` is a later release than `current`. Only plain `major.minor.patch` counts:
-/// a pre-release such as `0.2.0-rc1` is never offered.
+/// Whether `candidate` is a later release than `current`. Only plain `major.minor.patch` is
+/// offered: a pre-release such as `0.2.0-rc1` never is. A pre-release running now is older than
+/// the release of its numbers, so `0.4.0` is offered to `0.4.0-beta.1`.
 pub fn is_newer(candidate: &str, current: &str) -> bool {
+    let (current, pre_release) = match current.split_once('-') {
+        Some((numbers, _)) => (numbers, true),
+        None => (current, false),
+    };
     match (numbers(candidate), numbers(current)) {
-        (Some(candidate), Some(current)) => candidate > current,
+        (Some(candidate), Some(current)) => {
+            candidate > current || (candidate == current && pre_release)
+        }
         _ => false,
     }
 }
@@ -146,5 +153,10 @@ mod tests {
         assert!(!is_newer("0.0.9", "0.1.0"));
         assert!(!is_newer("0.2.0-rc1", "0.1.0"));
         assert!(!is_newer("nightly", "0.1.0"));
+        // a beta is told of its release and of later ones, not of the one before it
+        assert!(is_newer("0.4.0", "0.4.0-beta.1"));
+        assert!(is_newer("0.4.1", "0.4.0-beta.1"));
+        assert!(!is_newer("0.3.0", "0.4.0-beta.1"));
+        assert!(!is_newer("0.4.0-beta.2", "0.4.0-beta.1"));
     }
 }

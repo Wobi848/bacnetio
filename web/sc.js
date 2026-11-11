@@ -52,7 +52,8 @@ export function scFieldsHtml(state) {
     ? `<dd class="sc-remember"><label><input id="sc-remember" type="checkbox"${sc.rememberKey ? " checked" : ""}> ${t("sc.rememberKey")}</label></dd>
       <dd class="hint">${t("sc.rememberHint")}</dd>`
     : "";
-  return `<dt><label for="sc-hub">${t("sc.hub")}</label></dt>
+  return `<dd class="hint warn sc-experimental">${t("sc.experimental")}</dd>
+    <dt><label for="sc-hub">${t("sc.hub")}</label></dt>
     <dd><input id="sc-hub" class="mono" placeholder="wss://hub.example:443/" value="${h(sc.hub)}"></dd>
     <dd class="hint">${t("sc.hubHint")}</dd>
     <dt><label for="sc-failover">${t("sc.failoverHub")}</label></dt>

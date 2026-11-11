@@ -4,7 +4,8 @@ plugins {
 }
 
 // The version comes from Cargo.toml, so it is kept in one place
-val cargoVersion = Regex("""(?m)^version = "(\d+)\.(\d+)\.(\d+)"""")
+// "0.4.0-beta.1" for a pre-release: its numbers make the version code, the whole is the name
+val cargoVersion = Regex("""(?m)^version = "((\d+)\.(\d+)\.(\d+)(-[0-9A-Za-z.]+)?)"""")
     .find(rootDir.parentFile.resolve("Cargo.toml").readText())!!.groupValues
 
 android {
@@ -17,8 +18,8 @@ android {
         // Android 10: saving to Downloads without storage permission
         minSdk = 29
         targetSdk = 36
-        versionCode = cargoVersion[1].toInt() * 10000 + cargoVersion[2].toInt() * 100 + cargoVersion[3].toInt()
-        versionName = cargoVersion.drop(1).joinToString(".")
+        versionCode = cargoVersion[2].toInt() * 10000 + cargoVersion[3].toInt() * 100 + cargoVersion[4].toInt()
+        versionName = cargoVersion[1]
         ndk { abiFilters += "arm64-v8a" }
     }
 

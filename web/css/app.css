@@ -24,6 +24,8 @@ h1, h2, h3, p { margin: 0; }
 .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; }
 .sub { color: var(--muted); font-size: 13px; font-weight: 400; }
 .hint { color: var(--muted); font-size: 12.5px; }
+/* a hint that warns: an experimental function, a capture that lost packets or records nothing */
+.hint.warn { color: var(--warn); }
 a { color: var(--accent); }
 
 /* ---------------------------------------------------------------- Controls */
