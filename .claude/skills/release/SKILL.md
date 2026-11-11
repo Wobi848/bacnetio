@@ -16,6 +16,16 @@ publishes for everyone; ask first when anything is unclear.
   there, in English, under Changed or Fixed (Added for new features).
 - Bump by semver: patch for fixes only, minor for new functions, major when something breaks.
 
+## A pre-release (beta)
+
+For something not yet tried in the field, such as BACnet/SC: `version = "X.Y.Z-beta.N"` in
+`Cargo.toml`, the changelog section `## vX.Y.Z-beta.N (DD.MM.YYYY)` above the unreleased rest, and
+the tag `vX.Y.Z-beta.N`. A tag with a hyphen is published as a pre-release (`build.yml`): never
+"Latest", so the download page and the update check keep offering the last full release, and
+nobody on it is told about the beta. A beta is told of the full release of its numbers. Android
+takes the numbers as its version code, so the full release installs over the beta. Back to
+`X.Y.Z` for the full release.
+
 ## Steps
 
 1. Branch `release-vX.Y.Z` from `origin/main`:

@@ -133,3 +133,6 @@ jobs:
       - uses: softprops/action-gh-release@v3
         with:
           files: dist/*
+          # a tag like v0.4.0-beta.1 is a pre-release: never "Latest", so the update check and the
+          # download page keep offering the last full release
+          prerelease: ${{ contains(github.ref_name, '-') }}

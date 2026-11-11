@@ -6,7 +6,8 @@ All notable changes for users of bacnetio.
 
 ### Added
 
-- BACnet/SC (Secure Connect): *Search settings* offer *BACnet/SC* beside *BACnet/IP* and *MS/TP*. Enter the hub's
+- BACnet/SC (Secure Connect), experimental: built after the standard and tried against a simulator, not yet on a real
+  plant; the interface says so. *Search settings* offer *BACnet/SC* beside *BACnet/IP* and *MS/TP*. Enter the hub's
   address and choose the site's three files: its CA, bacnetio's certificate and its private key, as PEM or DER, in one
   PEM file, as a key with a password or as one PKCS#12 file (`.p12`, `.pfx`), which fills all three lines. Each line
   says in words what was found: valid until, runs out soon, expired, not signed by this CA, key does not match, needs
